@@ -6,7 +6,7 @@ using System.Windows.Forms;
 
 namespace sth1edwv
 {
-    public class Level
+    public class Level: IDataItem
     {
         //   SP FW FW FH  FH LX LX ??  LW LY LY XH  LH SX SY FL 
         //   FL FS FS BM  BM LA LA 09  SA SA IP CS  CC CP OL OL 
@@ -16,7 +16,7 @@ namespace sth1edwv
         private readonly ushort _floorWidth;
         private readonly ushort _floorHeight;
         public readonly int   floorAddress;
-        public readonly ushort floorSize;
+        public ushort floorSize;
         private readonly int   _blockMappingAddress;
         private readonly ushort _levelXOffset;
         private readonly byte   _levelWidth;
@@ -38,8 +38,11 @@ namespace sth1edwv
         {
             _label = label;
             var address = BitConverter.ToUInt16(cartridge.Memory, offset);
+            Offset = address + 0x15580;
+            LengthConsumed = 37;
             _header = new byte[37];
             Array.Copy(cartridge.Memory, address + 0x15580, _header, 0, _header.Length);
+
 
             _solidityIndex = _header[0];
             _floorWidth = BitConverter.ToUInt16(_header, 1);
@@ -170,6 +173,13 @@ namespace sth1edwv
         {
             x /= _blockSize;
             y /= _blockSize;
+        }
+
+        public int Offset { get; }
+        public int LengthConsumed { get; }
+        public IList<byte> GetData()
+        {
+            throw new NotImplementedException();
         }
     }
 }

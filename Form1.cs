@@ -441,6 +441,9 @@ namespace sth1edwv
 
             // Apply to the ROM
             newData.CopyTo(_cartridge.Memory, level.Floor.Offset);
+            // We also have to change the level header to match
+            _cartridge.Memory[level.Offset + 17] = (byte)(newData.Count & 0xff);
+            _cartridge.Memory[level.Offset + 17] = (byte)(newData.Count >> 8);
 
             // Redraw the level
             RenderLevel();
