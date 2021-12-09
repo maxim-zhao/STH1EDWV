@@ -58,7 +58,7 @@ jobs:
       shell: cmd
       run: |
         cd editor
-        dotnet build sth1edwv.sln --configuration Release
+        dotnet build sth1edwv.sln --configuration Release /p:UseSharedCompilation=false 
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
