@@ -37,7 +37,7 @@ namespace sth1edwv.Controls
                 return;
             }
             
-            const int padding = 4;
+            const int padding = 1;
             const int banksGap = 1;
 
             // Clear the background to the "control" colour
@@ -49,10 +49,10 @@ namespace sth1edwv.Controls
             e.Graphics.DrawString(text, Font, SystemBrushes.ControlText, new RectangleF(padding, 0, Width - padding * 2, Height), new StringFormat {Alignment = StringAlignment.Near, LineAlignment = StringAlignment.Center});
             var textWidth = (int)e.Graphics.MeasureString(text, Font).Width + padding;
 
-            // Add a border
-            e.Graphics.DrawRectangle(SystemPens.ControlDarkDark, new Rectangle(padding + textWidth, padding, Width - textWidth - padding * 2 - 1, Height - padding * 2 - 1));
+            // Fill the background
+            e.Graphics.FillRectangle(SystemBrushes.ControlDarkDark, new Rectangle(padding + textWidth, padding, Width - textWidth - padding * 2, Height - padding * 2));
 
-            // The pixel width of the area we want to fill
+            // The pixel width of the area we want to fill inside this
             var totalWidth = Width - textWidth - padding * 2 - 2;
             const int top = padding + 1;
             var left = textWidth + padding + 1;
@@ -64,40 +64,64 @@ namespace sth1edwv.Controls
             {
                 return left + banksGap * bank + (int)(bank * 0x4000 * pixelsPerByte);
             }
-            int OffsetToPixel(int offset)
-            {
-                // We have bank-1 gaps to the left
-                var bank = offset / 0x4000;
-                var bankLeft = BankStart(bank);
-                var bankWidth = BankStart(bank + 1) - bankLeft - banksGap;
-                var offsetInBank = offset % 0x4000;
-                return bankLeft + offsetInBank * bankWidth / 0x4000;
-            }
 
-            // Draw in the whole lot as "fixed"
-            e.Graphics.FillRectangle(SystemBrushes.ControlDark, left, top, totalWidth, height);
-
-            // Draw initial free space over it as "consumed"
-            foreach (var span in _initialSpace.Spans)
-            {
-                var x = OffsetToPixel(span.Start);
-                var width = OffsetToPixel(Math.Min(_space.Maximum, span.End) - 1) - x + 1;
-                e.Graphics.FillRectangle(SystemBrushes.Highlight, x, top, width, height);
-            }
-
-            // Draw free space over it as "unused"
-            foreach (var span in _space.Spans)
-            {
-                var x = OffsetToPixel(span.Start);
-                var width = OffsetToPixel(span.End - 1) - x + 1;
-                e.Graphics.FillRectangle(SystemBrushes.Control, x, top, width, height);
-            }
-
-            // Draw in banks boundaries
             for (var bank = 0; bank < banks; ++bank)
             {
-                var x = OffsetToPixel(0x4000 * bank);
-                e.Graphics.FillRectangle(SystemBrushes.ControlDarkDark, x-banksGap, top, banksGap, height);
+                // Get the bank area
+                var bankLeft = BankStart(bank);
+                var bankWidth = BankStart(bank + 1) - bankLeft - banksGap;
+                var offset = bank * 0x4000;
+                var limit = offset + 0x4000;
+                var dotsPerByte = (double)bankWidth * height / 0x4000;
+
+                void FillSpan(int start, int end, Brush brush)
+                {
+                    // Convert to relative offsets...
+                    start -= offset;
+                    end -= offset;
+                    // We convert to "dots" in the current bank...
+                    start = (int)(start * dotsPerByte);
+                    end = (int)(end * dotsPerByte);
+                    // We require at least one pixel...
+                    if (end == start)
+                    {
+                        ++end;
+                    }
+                    // We convert to x,y pairs
+                    var startX = start / height;
+                    var startY = start % height;
+                    var endX = end / height;
+                    var endY = end % height;
+                    if (startX == endX)
+                    {
+                        // Less than one line -> draw the bit we have
+                        e.Graphics.FillRectangle(brush, bankLeft + startX, top + startY, 1, endY - startY);
+                    }
+                    else
+                    {
+                        // We draw the ends...
+                        e.Graphics.FillRectangle(brush, bankLeft + startX, top + startY, 1, height - startY);
+                        e.Graphics.FillRectangle(brush, bankLeft + endX, top, 1, endY);
+                        // And the middle...
+                        if (endX - startX > 1)
+                        {
+                            e.Graphics.FillRectangle(brush, bankLeft + startX + 1, top, endX - startX - 1, height);
+                        }
+                    }
+                }
+
+                // Draw it in grey first
+                e.Graphics.FillRectangle(SystemBrushes.ControlDark, bankLeft, top, bankWidth, height);
+                // Then draw "initial free space" over it in the "consumed" colour
+                foreach (var span in _initialSpace.Spans.Where(x => x.End > offset && x.Start < limit))
+                {
+                    FillSpan(Math.Max(offset, span.Start), Math.Min(limit, span.End), SystemBrushes.Highlight);
+                }
+                // And then "remaining free space" on the top. (This is kind of inefficient...)
+                foreach (var span in _space.Spans.Where(x => x.End > offset && x.Start < limit))
+                {
+                    FillSpan(Math.Max(offset, span.Start), Math.Min(limit, span.End), SystemBrushes.Control);
+                }
             }
         }
     }

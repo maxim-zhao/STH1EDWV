@@ -8,12 +8,17 @@
     <LangVersion>9</LangVersion>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <DebugType>portable</DebugType>
-    <Optimize>True</Optimize>
     <StartupObject>sth1edwv.Program</StartupObject>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
     <ApplicationIcon>Resources\icon.ico</ApplicationIcon>
     <UseWindowsForms>True</UseWindowsForms>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <Optimize>True</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <Optimize>False</Optimize>
   </PropertyGroup>
   <ItemGroup>
     <Compile Update="Controls\SpaceVisualizer.cs" />
