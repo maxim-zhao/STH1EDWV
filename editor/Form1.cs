@@ -424,7 +424,7 @@ namespace sth1edwv
             {
                 var filename = Path.Combine(Path.GetTempPath(), "test.sms");
                 File.WriteAllBytes(filename, _cartridge.MakeRom());
-                Process.Start(filename);
+                new Process { StartInfo = new ProcessStartInfo(filename) { UseShellExecute = true } }.Start();
             }
             catch (Exception ex)
             {
