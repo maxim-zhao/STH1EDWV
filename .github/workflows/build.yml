@@ -11,22 +11,22 @@ jobs:
     - name: checkout
       uses: actions/checkout@v2
 
-    - name: Set up MSBuild
-      uses: microsoft/setup-msbuild@v1.0.3
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '6.0.x'
 
     - name: Build
       shell: cmd
       run: |
         cd editor
-        nuget restore
-        msbuild sth1edwv.sln /p:Configuration=Release
-        7z a program.zip bin\Release\*
+        dotnet build sth1edwv.sln --configuration Release
+        7z a program.zip bin\Release\net6.0-windows\*.exe bin\Release\net6.0-windows\*.dll
 
     - name: Make artifact
       uses: actions/upload-artifact@v2
       with:
         name: program
-        path: editor\bin\Release\*
+        path: editor\bin\Release\net6.0-windows\*
 
     - name: Build Number Generator
       uses: einaregilsson/build-number@v3
@@ -34,6 +34,7 @@ jobs:
         token: ${{secrets.GITHUB_TOKEN}}  
 
     - name: Create release
+      if: github.ref == 'refs/heads/master'
       uses: "marvinpinto/action-automatic-releases@latest"
       with:
         repo_token: "${{secrets.GITHUB_TOKEN}}"

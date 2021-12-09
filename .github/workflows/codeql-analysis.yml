@@ -50,15 +50,15 @@ jobs:
         # Prefix the list here with "+" to use these queries and those in the config file.
         # queries: ./path/to/local/query, your-org/your-repo/queries@main
 
-    - name: Set up MSBuild
-      uses: microsoft/setup-msbuild@v1.0.3
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '6.0.x'
 
     - name: Build
       shell: cmd
       run: |
         cd editor
-        nuget restore
-        msbuild sth1edwv.sln /p:Configuration=Release /p:UseSharedCompilation=false
+        dotnet build sth1edwv.sln --configuration Release
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1

@@ -1,185 +1,95 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{3EAD2353-5D44-458F-BA4B-346A2A6427E6}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>sth1edwv</RootNamespace>
-    <AssemblyName>sth1edwv</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <AssemblyTitle>sth1edwv</AssemblyTitle>
+    <Product>sth1edwv</Product>
+    <Copyright>Copyright ©  2016</Copyright>
     <LangVersion>9</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>9</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ApplicationIcon>Resources\icon.ico</ApplicationIcon>
-  </PropertyGroup>
-  <PropertyGroup>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <DebugType>portable</DebugType>
+    <Optimize>True</Optimize>
     <StartupObject>sth1edwv.Program</StartupObject>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+    <ApplicationIcon>Resources\icon.ico</ApplicationIcon>
+    <UseWindowsForms>True</UseWindowsForms>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Equin.ApplicationFramework.BindingListView, Version=1.4.5222.35545, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\Equin.ApplicationFramework.BindingListView.1.4.5222.35545\lib\net40-Client\Equin.ApplicationFramework.BindingListView.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.VisualBasic" />
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Deployment" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="ArtItem.cs" />
-    <Compile Include="Controls\SpaceVisualizer.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Controls\SpaceVisualizer.Designer.cs">
+    <Compile Update="Controls\SpaceVisualizer.cs" />
+    <Compile Update="Controls\SpaceVisualizer.Designer.cs">
       <DependentUpon>SpaceVisualizer.cs</DependentUpon>
     </Compile>
-    <Compile Include="FreeSpace.cs" />
-    <Compile Include="GameObjects\IDrawableBlock.cs" />
-    <Compile Include="Controls\PaletteEditor.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Controls\PaletteEditor.Designer.cs">
+    <Compile Update="Controls\PaletteEditor.cs" />
+    <Compile Update="Controls\PaletteEditor.Designer.cs">
       <DependentUpon>PaletteEditor.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\FloorSharingEditor.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\FloorSharingEditor.Designer.cs">
+    <Compile Update="Forms\FloorSharingEditor.cs" />
+    <Compile Update="Forms\FloorSharingEditor.Designer.cs">
       <DependentUpon>FloorSharingEditor.cs</DependentUpon>
     </Compile>
-    <Compile Include="GameObjects\Block.cs" />
-    <Compile Include="GameObjects\BlockMapping.cs" />
-    <Compile Include="Cartridge.cs" />
-    <Compile Include="GameObjects\EnumerableMemoryStream.cs" />
-    <Compile Include="GameObjects\Floor.cs" />
-    <Compile Include="Controls\FloorEditor.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="Controls\FloorEditor.Designer.cs">
+    <Compile Update="Controls\FloorEditor.cs" />
+    <Compile Update="Controls\FloorEditor.Designer.cs">
       <DependentUpon>FloorEditor.cs</DependentUpon>
     </Compile>
-    <Compile Include="Form1.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Form1.Designer.cs">
+    <Compile Update="Form1.cs" />
+    <Compile Update="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\FloorSizeEditor.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\FloorSizeEditor.Designer.cs">
+    <Compile Update="Forms\FloorSizeEditor.cs" />
+    <Compile Update="Forms\FloorSizeEditor.Designer.cs">
       <DependentUpon>FloorSizeEditor.cs</DependentUpon>
     </Compile>
-    <Compile Include="GameObjects\GameText.cs" />
-    <Compile Include="GameObjects\Level.cs" />
-    <Compile Include="GameObjects\LevelObject.cs" />
-    <Compile Include="GameObjects\LevelObjectSet.cs" />
-    <Compile Include="GameObjects\TileMap.cs" />
-    <Compile Include="Memory.cs" />
-    <Compile Include="Forms\ObjectEditor.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\ObjectEditor.Designer.cs">
+    <Compile Update="Forms\ObjectEditor.cs" />
+    <Compile Update="Forms\ObjectEditor.Designer.cs">
       <DependentUpon>ObjectEditor.cs</DependentUpon>
     </Compile>
-    <Compile Include="GameObjects\Palette.cs" />
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Compression.cs" />
-    <Compile Include="GameObjects\Tile.cs" />
-    <Compile Include="Forms\TileChooser.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\TileChooser.Designer.cs">
+    <Compile Update="Forms\TileChooser.cs" />
+    <Compile Update="Forms\TileChooser.Designer.cs">
       <DependentUpon>TileChooser.cs</DependentUpon>
     </Compile>
-    <Compile Include="Controls\ItemPicker.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="Controls\ItemPicker.Designer.cs">
+    <Compile Update="Controls\ItemPicker.cs" />
+    <Compile Update="Controls\ItemPicker.Designer.cs">
       <DependentUpon>ItemPicker.cs</DependentUpon>
     </Compile>
-    <Compile Include="GameObjects\TileSet.cs" />
-    <Compile Include="Controls\TileSetViewer.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Controls\TileSetViewer.Designer.cs">
+    <Compile Update="Controls\TileSetViewer.cs" />
+    <Compile Update="Controls\TileSetViewer.Designer.cs">
       <DependentUpon>TileSetViewer.cs</DependentUpon>
     </Compile>
-    <EmbeddedResource Include="Controls\PaletteEditor.resx">
+    <EmbeddedResource Update="Controls\PaletteEditor.resx">
       <DependentUpon>PaletteEditor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Controls\SpaceVisualizer.resx">
+    <EmbeddedResource Update="Controls\SpaceVisualizer.resx">
       <DependentUpon>SpaceVisualizer.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\FloorSharingEditor.resx">
+    <EmbeddedResource Update="Forms\FloorSharingEditor.resx">
       <DependentUpon>FloorSharingEditor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\FloorSizeEditor.resx">
+    <EmbeddedResource Update="Forms\FloorSizeEditor.resx">
       <DependentUpon>FloorSizeEditor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Form1.resx">
+    <EmbeddedResource Update="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\ObjectEditor.resx">
+    <EmbeddedResource Update="Forms\ObjectEditor.resx">
       <DependentUpon>ObjectEditor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Properties\Resources.resx">
+    <EmbeddedResource Update="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
+    <Compile Update="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <EmbeddedResource Include="Forms\TileChooser.resx">
+    <EmbeddedResource Update="Forms\TileChooser.resx">
       <DependentUpon>TileChooser.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Controls\TileSetViewer.resx">
+    <EmbeddedResource Update="Controls\TileSetViewer.resx">
       <DependentUpon>TileSetViewer.cs</DependentUpon>
     </EmbeddedResource>
-    <None Include="packages.config" />
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\package.png" />
@@ -190,13 +100,4 @@
   <ItemGroup>
     <Content Include="Resources\icon.ico" />
   </ItemGroup>
-  <ItemGroup />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>
