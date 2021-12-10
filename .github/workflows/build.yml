@@ -20,16 +20,11 @@ jobs:
       with:
         token: ${{secrets.GITHUB_TOKEN}}  
 
-    - name: Set version on AssemblyInfo.cs
-      uses: dannevesdantas/set-version-assemblyinfo-win@v1.0.0
-      with:
-        version: "0.${{env.BUILD_NUMBER}}"
-        
     - name: Build
       shell: cmd
       run: |
         cd editor
-        dotnet publish sth1edwv.sln --configuration Release --output foo
+        dotnet publish sth1edwv.sln --configuration Release --output foo /p:Version=0.${{env.BUILD_NUMBER}}
         7z a program.zip .\foo\*
 
     - name: Make artifact
