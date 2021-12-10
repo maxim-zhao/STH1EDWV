@@ -29,7 +29,11 @@ namespace sth1edwv
         {
             Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
             Font = SystemFonts.MessageBoxFont;
+
             InitializeComponent();
+
+            Text += $" :: v{Assembly.GetCallingAssembly().GetName().Version}";
+            
             _solidityImages = new ImageList
             {
                 ColorDepth = ColorDepth.Depth16Bit,
