@@ -19,14 +19,14 @@ jobs:
       shell: cmd
       run: |
         cd editor
-        dotnet build sth1edwv.sln --configuration Release
-        7z a program.zip bin\Release\net6.0-windows\*.exe bin\Release\net6.0-windows\*.dll
+        dotnet publish sth1edwv.sln --configuration Release --output foo
+        7z a program.zip .\foo\*
 
     - name: Make artifact
       uses: actions/upload-artifact@v2
       with:
         name: program
-        path: editor\bin\Release\net6.0-windows\*
+        path: foo\*
 
     - name: Build Number Generator
       uses: einaregilsson/build-number@v3
