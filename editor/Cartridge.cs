@@ -1147,11 +1147,11 @@ namespace sth1edwv
                 if (sdscParts.Count > 0)
                 {
                     sdscParts.Add("Header", new AssetToPack("SDSC header", new Game.Asset{Type = Game.Asset.Types.Misc, Restrictions = new Game.LocationRestriction { MinimumOffset = 0x7fe0, MaximumOffset = 0x7fea }}, SdscTag, SdscTag.GetData()));
-                    // Mark the pointers area as unused, set them to 0 for now
+                    // Set all the pointers to the "unused" value
                     freeSpace.Remove(0x7fea, 6);
                     for (var i = 0x7fea; i < 0x7ff0; ++i)
                     {
-                        memory[i] = 0;
+                        memory[i] = 0xff; // Unused pointers are $ffff
                     }
                 }
 
@@ -1243,26 +1243,6 @@ namespace sth1edwv
                 if (log)
                 {
                     _logger($"- Wrote level header for {level} at offset ${level.Offset:X}");
-                }
-            }
-
-            // We fix up the SDSC header
-            if (sdscParts.Count > 1)
-            {
-                foreach (var (key, value) in sdscParts)
-                {
-                    var offset = key switch
-                    {
-                        "SDSC Author" => 0x7fea,
-                        "SDSC Title" => 0x7fec,
-                        "SDSC Notes" => 0x7fee,
-                        _ => 0
-                    };
-                    if (offset > 0)
-                    {
-                        memory[offset + 0] = (byte)(value.DataItem.Offset & 0xff);
-                        memory[offset + 1] = (byte)(value.DataItem.Offset >> 8);
-                    }
                 }
             }
 
