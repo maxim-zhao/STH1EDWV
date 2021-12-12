@@ -50,6 +50,11 @@ namespace sth1edwv
 
         private void openROMToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (UserWantsToSaveModifications())
+            {
+                return;
+            }
+
             using var d = new OpenFileDialog{Filter = "*.sms|*.sms"};
             if (d.ShowDialog(this) != DialogResult.OK)
             {
@@ -673,39 +678,49 @@ namespace sth1edwv
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (e.CloseReason == CloseReason.UserClosing && _lastSaved != null)
+            e.Cancel = e.CloseReason == CloseReason.UserClosing && UserWantsToSaveModifications();
+        }
+
+        // Returns true if there are modifications and the user does not want to discard them.
+        private bool UserWantsToSaveModifications()
+        {
+            if (_lastSaved == null)
             {
-                try
-                {
-                    var current = _cartridge.MakeRom(false);
-                    if (!current.SequenceEqual(_lastSaved))
-                    {
-                        if (MessageBox.Show(
-                                this, 
-                                "You have unsaved changes. Do you want to discard them?",
-                                "Unsaved changes", 
-                                MessageBoxButtons.YesNo, 
-                                MessageBoxIcon.Warning,
-                                MessageBoxDefaultButton.Button2) == DialogResult.No)
-                        {
-                            e.Cancel = true;
-                        }
-                    }
-                }
-                catch (Exception ex)
+                return false;
+            }
+
+            try
+            {
+                var current = _cartridge.MakeRom(false);
+                if (!current.SequenceEqual(_lastSaved))
                 {
                     if (MessageBox.Show(
                             this,
-                            $"There may be unsaved changes, however there is currently an error:\n\n{ex.Message}",
-                            "Unsaved changes", 
-                            MessageBoxButtons.YesNo, 
+                            "You have unsaved changes. Do you want to discard them?",
+                            "Unsaved changes",
+                            MessageBoxButtons.YesNo,
                             MessageBoxIcon.Warning,
                             MessageBoxDefaultButton.Button2) == DialogResult.No)
                     {
-                        e.Cancel = true;
+                        return true;
                     }
                 }
             }
+            catch (Exception ex)
+            {
+                if (MessageBox.Show(
+                        this,
+                        $"There may be unsaved changes, however there is currently an error:\n\n{ex.Message}\n\nDo you want to discard them?",
+                        "Unsaved changes",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Warning,
+                        MessageBoxDefaultButton.Button2) == DialogResult.No)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private void Log(string text)
