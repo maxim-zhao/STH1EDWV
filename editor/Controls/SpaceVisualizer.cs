@@ -9,6 +9,7 @@ namespace sth1edwv.Controls
     {
         private FreeSpace _space;
         private FreeSpace _initialSpace;
+        private string _message;
 
         public SpaceVisualizer()
         {
@@ -18,6 +19,7 @@ namespace sth1edwv.Controls
 
         public void SetData(FreeSpace space, FreeSpace initialSpace)
         {
+            _message = null;
             _space = space;
             _initialSpace = initialSpace;
             Invalidate();
@@ -31,15 +33,23 @@ namespace sth1edwv.Controls
 
         protected override void OnPaint(PaintEventArgs e)
         {
+            const int padding = 1;
+            const int banksGap = 1;
+
+            if (_message != null)
+            {
+                e.Graphics.Clear(Color.DarkRed);
+                e.Graphics.DrawString(_message, Font, Brushes.White, new RectangleF(padding, 0, Width - padding * 2, Height), new StringFormat {Alignment = StringAlignment.Near, LineAlignment = StringAlignment.Center});
+                return;
+            }
+
+
             if (_space == null)
             {
                 base.OnPaint(e);
                 return;
             }
             
-            const int padding = 1;
-            const int banksGap = 1;
-
             // Clear the background to the "control" colour
             e.Graphics.Clear(SystemColors.Control);
 
@@ -123,6 +133,14 @@ namespace sth1edwv.Controls
                     FillSpan(Math.Max(offset, span.Start), Math.Min(limit, span.End), SystemBrushes.Control);
                 }
             }
+        }
+
+        public void SetError(string message)
+        {
+            _message = message;
+            _space = null;
+            _initialSpace = null;
+            Invalidate();
         }
     }
 }

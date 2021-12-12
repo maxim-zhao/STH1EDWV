@@ -66,6 +66,7 @@ namespace sth1edwv
 
         private void LoadFile(string filename)
         {
+            _loading = true;
             _cartridge = new Cartridge(filename, Log);
             listBoxLevels.Items.Clear();
             listBoxLevels.Items.AddRange(_cartridge.Levels.ToArray<object>());
@@ -74,6 +75,15 @@ namespace sth1edwv
             listBoxArt.Items.Clear();
             listBoxArt.Items.AddRange(_cartridge.Art.ToArray<object>());
             listBoxArt.Sorted = true;
+
+            if (_cartridge.SdscTag != null)
+            {
+                textBoxSDSCTitle.Text = _cartridge.SdscTag.Title ?? "";
+                textBoxSDSCAuthor.Text = _cartridge.SdscTag.Author ?? "";
+                textBoxSDSCNotes.Text = (_cartridge.SdscTag.Notes ?? "").ReplaceLineEndings();
+                udSDSCVersion.Value = _cartridge.SdscTag.Version;
+                dateTimePickerSDSCDate.Value = _cartridge.SdscTag.Date;
+            }
 
             // Add or replace filename in title bar
             Text = $"{Regex.Replace(Text, " \\[.+\\]$", "")} [{Path.GetFileName(filename)}]";
@@ -85,6 +95,7 @@ namespace sth1edwv
             _lastSaved = _cartridge.MakeRom(false);
 
             spaceVisualizer1.SetData(_cartridge.LastFreeSpace, _cartridge.InitialFreeSpace);
+            _loading = false;
         }
 
         private void SelectedLevelChanged(object sender, EventArgs e)
@@ -725,11 +736,11 @@ namespace sth1edwv
 
         private void Log(string text)
         {
-            logTextBox.BeginInvoke(new Action(() =>
+            logTextBox.BeginInvoke(() =>
             {
                 logTextBox.AppendText(text);
                 logTextBox.AppendText("\r\n");
-            }));
+            });
         }
 
         private void buttonSaveScreen_Click(object sender, EventArgs e)
@@ -815,6 +826,7 @@ namespace sth1edwv
 
         private bool _awaitingUpdate;
         private Task _updateTask;
+        private bool _loading;
 
         private void UpdateSpace()
         {
@@ -829,22 +841,25 @@ namespace sth1edwv
                 try
                 {
                     _cartridge.MakeRom(false);
-                    BeginInvoke(new Action(() => { spaceVisualizer1.SetData(_cartridge.LastFreeSpace, _cartridge.InitialFreeSpace); }));
+                    BeginInvoke(() => { spaceVisualizer1.SetData(_cartridge.LastFreeSpace, _cartridge.InitialFreeSpace); });
                 }
                 catch (Exception ex)
                 {
-                    BeginInvoke(new Action(() => { MessageBox.Show(ex.Message); }));
+                    BeginInvoke(() =>
+                    {
+                        spaceVisualizer1.SetError(ex.Message);
+                    });
                 }
                 finally
                 {
-                    BeginInvoke(new Action(() =>
+                    BeginInvoke(() =>
                     {
                         if (_awaitingUpdate)
                         {
                             _awaitingUpdate = false;
                             UpdateSpace();
                         }
-                    }));
+                    });
                 }
             });
         }
@@ -917,6 +932,23 @@ namespace sth1edwv
                 floorEditor1.Invalidate();
             }
 
+            UpdateSpace();
+        }
+
+        private void textBoxSDSCTitle_TextChanged(object sender, EventArgs e)
+        {
+            if (_loading)
+            {
+                return;
+            }
+            _cartridge.SdscTag = new SdscTag
+            {
+                Author = textBoxSDSCAuthor.Text,
+                Title = textBoxSDSCTitle.Text,
+                Notes = textBoxSDSCNotes.Text,
+                Date = dateTimePickerSDSCDate.Value.Date,
+                Version = udSDSCVersion.Value
+            };
             UpdateSpace();
         }
     }

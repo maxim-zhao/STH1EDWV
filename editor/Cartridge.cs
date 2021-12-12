@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text;
 using sth1edwv.GameObjects;
 
 namespace sth1edwv
@@ -139,6 +140,16 @@ namespace sth1edwv
             // These are in ROM order to help me keep track
             Assets = new Dictionary<string, Game.Asset> {
                 {
+                    "Start of ROM gap 1", new Game.Asset { OriginalOffset = 0xc, OriginalSize = 0xc, Type = Game.Asset.Types.Misc}
+                }, {
+                    "Start of ROM gap 2", new Game.Asset { OriginalOffset = 0x1b, OriginalSize = 0x5, Type = Game.Asset.Types.Misc}
+                }, {
+                    "Start of ROM gap 3", new Game.Asset { OriginalOffset = 0x23, OriginalSize = 0x5, Type = Game.Asset.Types.Misc}
+                }, {
+                    "Start of ROM gap 4", new Game.Asset { OriginalOffset = 0x2b, OriginalSize = 0x5, Type = Game.Asset.Types.Misc}
+                }, {
+                    "Start of ROM gap 5", new Game.Asset { OriginalOffset = 0x3b, OriginalSize = 0x2b, Type = Game.Asset.Types.Misc}
+                }, {
                     // Palettes scattered in the low ROM area
                     "Underwater palette", new Game.Asset { 
                         OriginalOffset = 0x024B,
@@ -319,17 +330,7 @@ namespace sth1edwv
                 }, {
                     "Sky Base interior cycling palette", 
                     new Game.Asset { OriginalOffset = 0x65ae, OriginalSize = 64, Type = Game.Asset.Types.Palette, FixedSize = 64, References = new List<Game.Reference> { new() { Offset = 0x6298, Type = Game.Reference.Types.Absolute} }, Restrictions = { MaximumOffset = 0x8000 } } // TODO: all these references and addresses need to be checked
-                }, /*{
-                    "Green Hill cycling palette", new Game.Asset {
-                        Type = Game.Asset.Types.Palette,
-                        // OriginalOffset = 0x62be,
-                        // OriginalSize = 48,
-                        References = new List<Game.Reference> {
-                            new() { Offset = 0x628c, Type = Game.Reference.Types.Absolute},
-                            new() { Offset = 0x155CA + 28, Type = Game.Reference.Types.Size8} // Cycle count
-                        }
-                    }
-                },*/ {
+                }, {
                     "Boss sprites palette", new Game.Asset {
                         OriginalOffset = 0x731c,
                         OriginalSize = 16,
@@ -345,6 +346,8 @@ namespace sth1edwv
                         }, 
                         Restrictions = { MaximumOffset = 0x8000 }
                     }
+                }, {
+                    "Unused space bank 2", new Game.Asset { OriginalOffset = 0x07fdb, OriginalSize = 0x15, Type = Game.Asset.Types.Unused }
                 }, {
                     "Unused space bank 3", new Game.Asset { OriginalOffset = 0x0ffb1, OriginalSize = 0x4f, Type = Game.Asset.Types.Unused }
                 }, {
@@ -834,6 +837,7 @@ namespace sth1edwv
         public List<GameText> GameText { get; } = new();
         public List<ArtItem> Art { get; } = new();
         public FreeSpace LastFreeSpace { get; private set; }
+        public SdscTag SdscTag { get; set; }
 
         private readonly Dictionary<int, TileSet> _tileSets = new();
         private readonly Dictionary<int, Floor> _floors = new();
@@ -854,6 +858,7 @@ namespace sth1edwv
             ReadAssets();
             ReadLevels();
             ReadGameText();
+            ReadSdscTag();
 
             // Apply rings to level tile sets
             var rings = Art.Find(x => x.Name == "Rings").TileSet;
@@ -863,6 +868,17 @@ namespace sth1edwv
             }
 
             _logger($"Load complete in {sw.Elapsed}");
+        }
+
+        private void ReadSdscTag()
+        {
+            if (Memory.String(0x7fe0, 4) != "SDSC")
+            {
+                SdscTag = null;
+                return;
+            }
+
+            SdscTag = new SdscTag(Memory);
         }
 
         private void ReadAssets()
@@ -1039,6 +1055,15 @@ namespace sth1edwv
             }
         }
 
+        private class RawAsset : IDataItem
+        {
+            public int Offset { get; set; }
+            public IList<byte> GetData()
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         public byte[] MakeRom(bool log = true)
         {
             if (log)
@@ -1086,6 +1111,52 @@ namespace sth1edwv
 
             // Then log the state
             if (log) _logger($"Initial free space: {freeSpace}");
+
+            // - SDSC tag
+            var sdscParts = new Dictionary<string, AssetToPack>();
+            if (SdscTag != null)
+            {
+                // Add parts for the SDSC header
+                void AddString(string name, string value, int referenceOffset)
+                {
+                    if (string.IsNullOrWhiteSpace(value))
+                    {
+                        return;
+                    }
+                    sdscParts.Add(
+                        name,
+                        new AssetToPack(
+                            name,
+                            new Game.Asset
+                            {
+                                Type = Game.Asset.Types.Misc,
+                                Restrictions = new Game.LocationRestriction { MaximumOffset = 0x10000 },
+                                References = new List<Game.Reference>
+                                {
+                                    new() { Offset = referenceOffset, Type = Game.Reference.Types.Absolute }
+                                }
+                            },
+                            new RawAsset(),
+                            Encoding.UTF8.GetBytes(value + "\0")));
+                }
+
+                AddString("SDSC author", SdscTag.Author, 0x7fea);
+                AddString("SDSC title", SdscTag.Title, 0x7fec);
+                AddString("SDSC notes", SdscTag.Notes, 0x7fee);
+
+                if (sdscParts.Count > 0)
+                {
+                    sdscParts.Add("Header", new AssetToPack("SDSC header", new Game.Asset{Type = Game.Asset.Types.Misc, Restrictions = new Game.LocationRestriction { MinimumOffset = 0x7fe0, MaximumOffset = 0x7fea }}, SdscTag, SdscTag.GetData()));
+                    // Mark the pointers area as unused, set them to 0 for now
+                    freeSpace.Remove(0x7fea, 6);
+                    for (var i = 0x7fea; i < 0x7ff0; ++i)
+                    {
+                        memory[i] = 0;
+                    }
+                }
+
+                assetsToPack.UnionWith(sdscParts.Values);
+            }
 
             // - Game text (at original offsets)
             // 122d..1286 inclusive
@@ -1135,39 +1206,64 @@ namespace sth1edwv
             var writtenItems = new HashSet<IDataItem>();
             var writtenReferences = new HashSet<int>();
 
-            try
+            // We look for the ones that "must follow" each other and combine them together
+            var followers = assetsToPack
+                .Where(x => !string.IsNullOrEmpty(x.Asset.Restrictions.MustFollow))
+                .ToDictionary(x => x.Asset.Restrictions.MustFollow);
+
+            // Then we remove them from the list as we will get to them inside the loop when we get to their "precedent"
+            assetsToPack.ExceptWith(followers.Values);
+
+            // We write the assets ordered by urgency (in the restricted space) and then by size
+            while (assetsToPack.Count > 0)
             {
-                // We look for the ones that "must follow" each other and combine them together
-                var followers = assetsToPack
-                    .Where(x => !string.IsNullOrEmpty(x.Asset.Restrictions.MustFollow))
-                    .ToDictionary(x => x.Asset.Restrictions.MustFollow);
-
-                // Then we remove them from the list as we will get to them inside the loop when we get to their "precedent"
-                assetsToPack.ExceptWith(followers.Values);
-
-                // We write the assets ordered by urgency (in the restricted space) and then by size
-                while (assetsToPack.Count > 0)
+                // We continuously re-order as the "urgency" changes over time
+                var item = assetsToPack
+                    .OrderBy(x => freeSpace.GetEaseOfPlacing(x.Data.Count, x.Asset.Restrictions.MinimumOffset,
+                        x.Asset.Restrictions.MaximumOffset))
+                    .ThenByDescending(x => x.Data.Count)
+                    .First();
+                try
                 {
-                    // We continuously re-order as the "urgency" changes over time
-                    var item = assetsToPack
-                        .OrderBy(x => freeSpace.GetEaseOfPlacing(x.Data.Count, x.Asset.Restrictions.MinimumOffset, x.Asset.Restrictions.MaximumOffset))
-                        .ThenByDescending(x => x.Data.Count)
-                        .First();
                     WriteAsset(item, writtenItems, writtenReferences, freeSpace, memory, followers, log);
                     assetsToPack.Remove(item);
                 }
-            }
-            catch (Exception ex)
-            {
-                _logger(ex.Message);
-                _logger(freeSpace.ToString());
+                catch (Exception ex)
+                {
+                    _logger(ex.Message);
+                    _logger(freeSpace.ToString());
+                    throw new Exception($"{ex.Message} while packing {item.Name}");
+                }
             }
 
             // - Level headers (at original offsets). We do these last so they pick up info from the contained objects.
             foreach (var level in Levels)
             {
                 level.GetData().CopyTo(memory, level.Offset);
-                _logger($"- Wrote level header for {level} at offset ${level.Offset:X}");
+                if (log)
+                {
+                    _logger($"- Wrote level header for {level} at offset ${level.Offset:X}");
+                }
+            }
+
+            // We fix up the SDSC header
+            if (sdscParts.Count > 1)
+            {
+                foreach (var (key, value) in sdscParts)
+                {
+                    var offset = key switch
+                    {
+                        "SDSC Author" => 0x7fea,
+                        "SDSC Title" => 0x7fec,
+                        "SDSC Notes" => 0x7fee,
+                        _ => 0
+                    };
+                    if (offset > 0)
+                    {
+                        memory[offset + 0] = (byte)(value.DataItem.Offset & 0xff);
+                        memory[offset + 1] = (byte)(value.DataItem.Offset >> 8);
+                    }
+                }
             }
 
             // Next we round to a multiple of 64KB. This is needed for Everdrive compatibility.
@@ -1188,9 +1284,9 @@ namespace sth1edwv
             return memory;
         }
 
-        public FreeSpace InitialFreeSpace { get; set; }
+        public FreeSpace InitialFreeSpace { get; private set; }
 
-        private static void AddAssets(HashSet<AssetToPack> assetsToPack, IEnumerable<IGrouping<IDataItem, Level>> items, string prefix, Game.LocationRestriction restriction)
+        private static void AddAssets(ISet<AssetToPack> assetsToPack, IEnumerable<IGrouping<IDataItem, Level>> items, string prefix, Game.LocationRestriction restriction)
         {
             assetsToPack.UnionWith(items.Select(group => new AssetToPack(
                 $"{prefix} for {string.Join(", ", group)}",
@@ -1266,9 +1362,9 @@ namespace sth1edwv
                         case Game.Reference.Types.Absolute:
                         {
                             var value = offset + reference.Delta;
-                            if (value >= 0x8000)
+                            if (value >= 0x10000)
                             {
-                                throw new Exception($"Can't write absolute address for offset {offset:X}: {value:X} is >= 0x8000");
+                                throw new Exception($"Can't write absolute address for offset {offset:X}: {value:X} is >= 0x10000");
                             }
                             memory[reference.Offset + 0] = (byte)(value & 0xff);
                             memory[reference.Offset + 1] = (byte)(value >> 8);
@@ -1342,7 +1438,10 @@ namespace sth1edwv
             item.TileSet = value;
             // The tricky part is this lookup...
             var asset = item.Assets.Find(x => x.Type == Game.Asset.Types.TileSet);
-            _assetsLookup[asset] = value;
+            if (asset != null)
+            {
+                _assetsLookup[asset] = value;
+            }
         }
     }
 }
