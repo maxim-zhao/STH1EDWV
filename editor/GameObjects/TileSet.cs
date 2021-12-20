@@ -92,7 +92,7 @@ namespace sth1edwv.GameObjects
             // Read the data and convert to tiles
             Tiles = new EnumerableMemoryStream(memory.GetStream(offset, length))
                 .PlanarToChunky(bitPlanes)
-                .ToChunks(64 * grouping.Count)
+                .ToChunks(64 * _grouping.Count)
                 .Select((x, index) => new Tile(x, grouping, index))
                 .ToList();
         }
@@ -109,7 +109,7 @@ namespace sth1edwv.GameObjects
             // Default grouping
             _grouping = grouping ?? Groupings.Single;
 
-            var decompressed = Compression.DecompressArt(memory, offset, out var foo);
+            var decompressed = Compression.DecompressArt(memory, offset, out _);
             Tiles = decompressed
                 .ToChunks(64 * _grouping.Count)
                 .Select((x, index) => new Tile(x, _grouping, index))
@@ -143,7 +143,7 @@ namespace sth1edwv.GameObjects
                     Marshal.Copy(data.Scan0 + (y + row) * data.Stride + x, buffer, row*8, 8);
                 }
                 // Check if we already have it
-                if (!tiles.Any(x => x.SequenceEqual(buffer)))
+                if (!tiles.Any(tile => tile.SequenceEqual(buffer)))
                 {
                     // No, so add it
                     tiles.Add(buffer);
@@ -169,7 +169,7 @@ namespace sth1edwv.GameObjects
             // We copy these from the base to ensure we match formats on serialization.
             Compressed = baseTileSet.Compressed;
             _bitPlanes = baseTileSet._bitPlanes;
-            Tiles = tiles.Select((x, index) => new Tile(x, TileSet.Groupings.Single, index)).ToList();
+            Tiles = tiles.Select((x, index) => new Tile(x, Groupings.Single, index)).ToList();
         }
 
         public int Offset { get; set; }
@@ -352,7 +352,7 @@ namespace sth1edwv.GameObjects
 
         public void RemoveTile()
         {
-            var tile = Tiles[Tiles.Count - 1];
+            var tile = Tiles[^1];
             Tiles.RemoveAt(Tiles.Count - 1);
             tile.Dispose();
         }

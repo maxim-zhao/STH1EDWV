@@ -637,14 +637,14 @@ namespace sth1edwv
             if (artItem.TileMap != null)
             {
                 pictureBoxArtLayout.Image?.Dispose();
-                pictureBoxArtLayout.Image = artItem.TileMap.GetImage(artItem.TileSet, artItem.Palette);
+                pictureBoxArtLayout.Image = artItem.TileMap.GetImage(artItem.TileSet, artItem.Palette.GetSubPalette(0, 16));
                 tabControlArt.TabPages.Add(tabPageArtLayout);
             }
 
             if (artItem.TileSet != null)
             {
                 otherArtTileSetViewer.TilesPerRow = artItem.TileSet.TilesPerRow;
-                otherArtTileSetViewer.SetData(artItem.TileSet, artItem.Palette);
+                otherArtTileSetViewer.SetData(artItem.TileSet, artItem.Palette.GetSubPalette(0, 16));
                 tabControlArt.TabPages.Add(tabPageArtTiles);
             }
 
