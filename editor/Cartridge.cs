@@ -925,7 +925,7 @@ namespace sth1edwv
                         {
                             // We assume these are set second so we have to check if it's a set or overlay
                             var tileMap = new TileMap(Memory, offset, asset.GetLength(Memory));
-                            if (tileMap.IsOverlay())
+                            if (tileMap.IsOverlay() && item.TileMap != null)
                             {
                                 item.TileMap.OverlayWith(tileMap);
                                 _assetsLookup[asset] = item.TileMap; // Point at the same object for both

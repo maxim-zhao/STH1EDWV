@@ -168,6 +168,11 @@ namespace sth1edwv.GameObjects
                         throw new Exception($"Tile mismatch: tile in source image at ({x}, {y}) not found in tiles");
                     }
 
+                    if (tileIndex >= 255)
+                    {
+                        throw new Exception($"Tile index too high: tile in source image at ({x}, {y}) has tile index {tileIndex}; this must be less than 255");
+                    }
+
                     indices.Add((ushort)tileIndex);
                 }
 
