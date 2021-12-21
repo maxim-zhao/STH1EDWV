@@ -31,7 +31,7 @@ namespace sth1edwv
 
             InitializeComponent();
 
-            Text += $" :: v{Assembly.GetCallingAssembly().GetName().Version}";
+            Text += $" :: v{Assembly.GetCallingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}";
             
             _solidityImages = new ImageList
             {
