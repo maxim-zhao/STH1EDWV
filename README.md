@@ -25,3 +25,5 @@ Still to come (in no particular order):
 - Sonic 1 GG support
 
 [Downloads in the Releases section.](https://github.com/maxim-zhao/STH1EDWV/releases/latest)
+
+[Feedback and discussion is welcome at this SMS Power! forum thread](https://www.smspower.org/forums/18729-STH1EDWVSonicTheHedgehogEditor) or you may raise issues here on GitHub.
