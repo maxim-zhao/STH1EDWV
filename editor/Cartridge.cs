@@ -69,18 +69,19 @@ namespace sth1edwv
                     return $"{Type} from {OriginalOffset:X} ({OriginalSize}B)";
                 }
 
-                public enum Types { TileSet, Palette, TileMap, SpriteTileSet, ForegroundTileMap, Unused, Misc }
-                public Types Type { get; set; }
-                public List<Reference> References { get; set; }
-                public LocationRestriction Restrictions { get; set; } = new(); // Default to defaults...
-                public int FixedSize { get; set; }
-                public int BitPlanes { get; set; }
-                public List<Point> TileGrouping { get; set; }
-                public int TilesPerRow { get; set; } = 16; // 16 is often the best default
-                public bool Hidden { get; set; }
+                public enum Types { TileSet, Palette, TileMap, SpriteTileSet, ForegroundTileMap, Unused, Misc, TileMapData }
+                public Types Type { get; init; }
+                public List<Reference> References { get; init; }
+                public LocationRestriction Restrictions { get; init; } = new(); // Default to defaults...
+                public int FixedSize { get; init; }
+                public int BitPlanes { get; init; }
+                public List<Point> TileGrouping { get; init; }
+                public int TilesPerRow { get; init; } = 16; // 16 is often the best default
+                public bool Hidden { get; init; }
+
                 // These are in the original ROM, not where we loaded from
-                public int OriginalOffset { get; set; }
-                public int OriginalSize { get; set; }
+                public int OriginalOffset { get; init; }
+                public int OriginalSize { get; init; }
 
                 public int GetOffset(Memory memory)
                 {
@@ -140,15 +141,15 @@ namespace sth1edwv
             // These are in ROM order to help me keep track
             Assets = new Dictionary<string, Game.Asset> {
                 {
-                    "Start of ROM gap 1", new Game.Asset { OriginalOffset = 0xc, OriginalSize = 0xc, Type = Game.Asset.Types.Misc}
+                    "Start of ROM gap 1", new Game.Asset { OriginalOffset = 0xc, OriginalSize = 0xc, Type = Game.Asset.Types.Unused}
                 }, {
-                    "Start of ROM gap 2", new Game.Asset { OriginalOffset = 0x1b, OriginalSize = 0x5, Type = Game.Asset.Types.Misc}
+                    "Start of ROM gap 2", new Game.Asset { OriginalOffset = 0x1b, OriginalSize = 0x5, Type = Game.Asset.Types.Unused}
                 }, {
-                    "Start of ROM gap 3", new Game.Asset { OriginalOffset = 0x23, OriginalSize = 0x5, Type = Game.Asset.Types.Misc}
+                    "Start of ROM gap 3", new Game.Asset { OriginalOffset = 0x23, OriginalSize = 0x5, Type = Game.Asset.Types.Unused}
                 }, {
-                    "Start of ROM gap 4", new Game.Asset { OriginalOffset = 0x2b, OriginalSize = 0x5, Type = Game.Asset.Types.Misc}
+                    "Start of ROM gap 4", new Game.Asset { OriginalOffset = 0x2b, OriginalSize = 0x5, Type = Game.Asset.Types.Unused}
                 }, {
-                    "Start of ROM gap 5", new Game.Asset { OriginalOffset = 0x3b, OriginalSize = 0x2b, Type = Game.Asset.Types.Misc}
+                    "Start of ROM gap 5", new Game.Asset { OriginalOffset = 0x3b, OriginalSize = 0x2b, Type = Game.Asset.Types.Unused}
                 }, {
                     // Palettes scattered in the low ROM area
                     "Underwater palette", new Game.Asset { 
@@ -199,6 +200,78 @@ namespace sth1edwv
                         Restrictions = { MaximumOffset = 0x4000 }
                     }
                 }, {
+                    "Map screen text: Green Hill", new Game.Asset { 
+                        OriginalOffset = 0x122d,
+                        OriginalSize = 15,
+                        Type = Game.Asset.Types.TileMapData,
+                        References = new List<Game.Reference> {
+                            new() {Offset = 0x1209, Type = Game.Reference.Types.Absolute},
+                            new() {Offset = 0x120b, Type = Game.Reference.Types.Absolute},
+                            new() {Offset = 0x120d, Type = Game.Reference.Types.Absolute},
+                        }, 
+                        Restrictions = { MaximumOffset = 0x4000 }
+                    }
+                }, {
+                    "Map screen text: Bridge", new Game.Asset { 
+                        OriginalOffset = 0x123c,
+                        OriginalSize = 15,
+                        Type = Game.Asset.Types.TileMapData,
+                        References = new List<Game.Reference> {
+                            new() {Offset = 0x120f, Type = Game.Reference.Types.Absolute},
+                            new() {Offset = 0x1211, Type = Game.Reference.Types.Absolute},
+                            new() {Offset = 0x1213, Type = Game.Reference.Types.Absolute},
+                        }, 
+                        Restrictions = { MaximumOffset = 0x4000 }
+                    }
+                }, {
+                    "Map screen text: Jungle", new Game.Asset { 
+                        OriginalOffset = 0x124b,
+                        OriginalSize = 15,
+                        Type = Game.Asset.Types.TileMapData,
+                        References = new List<Game.Reference> {
+                            new() {Offset = 0x1215, Type = Game.Reference.Types.Absolute},
+                            new() {Offset = 0x1217, Type = Game.Reference.Types.Absolute},
+                            new() {Offset = 0x1219, Type = Game.Reference.Types.Absolute},
+                        }, 
+                        Restrictions = { MaximumOffset = 0x4000 }
+                    }
+                }, {
+                    "Map screen text: Labyrinth", new Game.Asset { 
+                        OriginalOffset = 0x125a,
+                        OriginalSize = 15,
+                        Type = Game.Asset.Types.TileMapData,
+                        References = new List<Game.Reference> {
+                            new() {Offset = 0x121b, Type = Game.Reference.Types.Absolute},
+                            new() {Offset = 0x121d, Type = Game.Reference.Types.Absolute},
+                            new() {Offset = 0x121f, Type = Game.Reference.Types.Absolute},
+                        }, 
+                        Restrictions = { MaximumOffset = 0x4000 }
+                    }
+                }, {
+                    "Map screen text: Scrap Brain", new Game.Asset { 
+                        OriginalOffset = 0x1269,
+                        OriginalSize = 15,
+                        Type = Game.Asset.Types.TileMapData,
+                        References = new List<Game.Reference> {
+                            new() {Offset = 0x1221, Type = Game.Reference.Types.Absolute},
+                            new() {Offset = 0x1223, Type = Game.Reference.Types.Absolute},
+                            new() {Offset = 0x1225, Type = Game.Reference.Types.Absolute},
+                        }, 
+                        Restrictions = { MaximumOffset = 0x4000 }
+                    }
+                }, {
+                    "Map screen text: Sky Base", new Game.Asset { 
+                        OriginalOffset = 0x1278,
+                        OriginalSize = 15,
+                        Type = Game.Asset.Types.TileMapData,
+                        References = new List<Game.Reference> {
+                            new() {Offset = 0x1227, Type = Game.Reference.Types.Absolute},
+                            new() {Offset = 0x1229, Type = Game.Reference.Types.Absolute},
+                            new() {Offset = 0x122b, Type = Game.Reference.Types.Absolute},
+                        }, 
+                        Restrictions = { MaximumOffset = 0x4000 }
+                    }
+                }, {
                     "Title screen palette", new Game.Asset { 
                         OriginalOffset = 0x13e1,
                         OriginalSize = 32,
@@ -217,6 +290,116 @@ namespace sth1edwv
                         FixedSize = 32,
                         References = new List<Game.Reference> {
                             new() {Offset = 0x143c + 1, Type = Game.Reference.Types.Absolute} // ld hl,$14fc ; 00143C 21 FC 14 
+                        }, 
+                        Restrictions = { MaximumOffset = 0x4000 }
+                    }
+                }, {
+                    "Ending text: box 1", new Game.Asset { 
+                        OriginalOffset = 0x1907,
+                        OriginalSize = 21,
+                        Type = Game.Asset.Types.TileMapData,
+                        References = new List<Game.Reference> {
+                            new() {Offset = 0x1785 + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$1907 ; 001785 21 07 19 
+                        }, 
+                        Restrictions = { MaximumOffset = 0x4000 }
+                    }
+                }, {
+                    "Ending text: box 2", new Game.Asset { 
+                        OriginalOffset = 0x191c,
+                        OriginalSize = 21,
+                        Type = Game.Asset.Types.TileMapData,
+                        References = new List<Game.Reference> {
+                            new() {Offset = 0x178B + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$191c ; 00178B 21 1C 19 
+                        }, 
+                        Restrictions = { MaximumOffset = 0x4000 }
+                    }
+                }, {
+                    "Ending text: box 3", new Game.Asset { 
+                        OriginalOffset = 0x1931,
+                        OriginalSize = 21,
+                        Type = Game.Asset.Types.TileMapData,
+                        References = new List<Game.Reference> {
+                            new() {Offset = 0x1791 + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$1931 ; 001791 21 31 19 
+                        }, 
+                        Restrictions = { MaximumOffset = 0x4000 }
+                    }
+                }, {
+                    "Ending text: box 4", new Game.Asset { 
+                        OriginalOffset = 0x1946,
+                        OriginalSize = 13,
+                        Type = Game.Asset.Types.TileMapData,
+                        References = new List<Game.Reference> {
+                            new() {Offset = 0x1797 + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$1946 ; 001797 21 46 19 
+                        }, 
+                        Restrictions = { MaximumOffset = 0x4000 }
+                    }
+                }, {
+                    "Ending text: box 5", new Game.Asset { 
+                        OriginalOffset = 0x1953,
+                        OriginalSize = 13,
+                        Type = Game.Asset.Types.TileMapData,
+                        References = new List<Game.Reference> {
+                            new() {Offset = 0x179D + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$1953 ; 00179D 21 53 19
+                        }, 
+                        Restrictions = { MaximumOffset = 0x4000 }
+                    }
+                }, {
+                    "Ending text: box 6", new Game.Asset { 
+                        OriginalOffset = 0x1960,
+                        OriginalSize = 13,
+                        Type = Game.Asset.Types.TileMapData,
+                        References = new List<Game.Reference> {
+                            new() {Offset = 0x17A3 + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$1960 ; 0017A3 21 60 19 
+                        }, 
+                        Restrictions = { MaximumOffset = 0x4000 }
+                    }
+                }, {
+                    "Ending text: box 7", new Game.Asset { 
+                        OriginalOffset = 0x196d,
+                        OriginalSize = 13,
+                        Type = Game.Asset.Types.TileMapData,
+                        References = new List<Game.Reference> {
+                            new() {Offset = 0x17A9 + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$196d ; 0017A9 21 6D 19
+                        }, 
+                        Restrictions = { MaximumOffset = 0x4000 }
+                    }
+                }, {
+                    "Ending text: box 8", new Game.Asset { 
+                        OriginalOffset = 0x197a,
+                        OriginalSize = 4,
+                        Type = Game.Asset.Types.TileMapData,
+                        References = new List<Game.Reference> {
+                            new() {Offset = 0x1823 + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$197a ; 001823 21 7A 19 
+                        }, 
+                        Restrictions = { MaximumOffset = 0x4000 }
+                    }
+                }, {
+                    "Ending text: Chaos Emerald", new Game.Asset { 
+                        OriginalOffset = 0x197e,
+                        OriginalSize = 16,
+                        Type = Game.Asset.Types.TileMapData,
+                        References = new List<Game.Reference> {
+                            new() {Offset = 0x17af + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$197e ; 0017AF 21 7E 19 
+                        }, 
+                        Restrictions = { MaximumOffset = 0x4000 }
+                    }
+                }, {
+                    "Ending text: Sonic Left", new Game.Asset { 
+                        OriginalOffset = 0x198e,
+                        OriginalSize = 16,
+                        Type = Game.Asset.Types.TileMapData,
+                        References = new List<Game.Reference> {
+                            new() {Offset = 0x17e8 + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$198e ; 0017E8 21 8E 19 
+                        }, 
+                        Restrictions = { MaximumOffset = 0x4000 }
+                    }
+                }, {
+                    "Ending text: Special Bonus", new Game.Asset { 
+                        OriginalOffset = 0x199e,
+                        OriginalSize = 16,
+                        Type = Game.Asset.Types.TileMapData,
+                        References = new List<Game.Reference> {
+                            new() {Offset = 0x181d + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$199e ; 00181D 21 9E 19 
                         }, 
                         Restrictions = { MaximumOffset = 0x4000 }
                     }
@@ -564,6 +747,26 @@ namespace sth1edwv
                         Restrictions = { CanCrossBanks = true }
                     }
                 }, {
+                    "Title screen press button text 1", new Game.Asset { 
+                        OriginalOffset = 0x1352,
+                        OriginalSize = 16,
+                        Type = Game.Asset.Types.TileMapData,
+                        References = new List<Game.Reference> {
+                            new() {Offset = 0x1305 + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$1352 ; 001305 21 52 13 
+                        },
+                        Restrictions = { MaximumOffset = 0x4000 }
+                    }
+                }, {
+                    "Title screen press button text 2", new Game.Asset { 
+                        OriginalOffset = 0x1362,
+                        OriginalSize = 16,
+                        Type = Game.Asset.Types.TileMapData,
+                        References = new List<Game.Reference> {
+                            new() {Offset = 0x130c + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$1362 ; 00130C 21 62 13
+                        },
+                        Restrictions = { MaximumOffset = 0x4000 }
+                    }
+                }, {
                     "Act Complete tiles", new Game.Asset { 
                         OriginalOffset = 0x2751f,
                         OriginalSize = 0x28294 - 0x2751f,
@@ -777,16 +980,16 @@ namespace sth1edwv
             // These all need to match strings above. This is a bit nasty but I don't see a better way.
             AssetGroups = new Dictionary<string, IEnumerable<string>>
             {
-                { "Map screen 1", new [] { "Map screen 1 tileset", "Map screen 1 tilemap 1", "Map screen 1 tilemap 2", "Map screen 1 palette", "Map screen 1 sprite tiles", "HUD sprite tiles" } }, // HUD sprites only used for life counter
-                { "Map screen 2", new [] { "Map screen 2 tileset", "Map screen 2 tilemap 1", "Map screen 2 tilemap 2", "Map screen 2 palette", "Map screen 2 sprite tiles", "HUD sprite tiles" } },
+                { "Map screen 1", new [] { "Map screen 1 tileset", "Map screen 1 tilemap 1", "Map screen 1 tilemap 2", "Map screen 1 palette", "Map screen 1 sprite tiles", "HUD sprite tiles", "Map screen text: Green Hill", "Map screen text: Bridge", "Map screen text: Jungle" } }, // HUD sprites only used for life counter
+                { "Map screen 2", new [] { "Map screen 2 tileset", "Map screen 2 tilemap 1", "Map screen 2 tilemap 2", "Map screen 2 palette", "Map screen 2 sprite tiles", "HUD sprite tiles", "Map screen text: Labyrinth", "Map screen text: Scrap Brain", "Map screen text: Sky Base" } },
                 { "Sonic", new[] { "Sonic (right)", "Sonic (left)", "HUD sprite tiles", "Green Hill palette" } }, // HUD sprites contain the spring jump toes, the ones in the art seem unused...
                 { "Monitors", new [] { "Monitor Art", "HUD sprite tiles", "Green Hill palette"  } }, // Monitor bases are in the HUD sprites
-                { "Title screen", new [] { "Title screen tiles", "Title screen sprites", "Title screen palette", "Title screen tilemap" } },
+                { "Title screen", new [] { "Title screen tiles", "Title screen sprites", "Title screen palette", "Title screen tilemap", "Title screen press button text 1", "Title screen press button text 2" } },
                 { "Game Over", new [] { "Act Complete tiles", "Game Over palette", "Game Over tilemap" } },
                 { "Act Complete", new [] { "Act Complete tiles", "Act Complete palette", "Act Complete tilemap", "HUD sprite tiles" } },
                 { "Special Stage Complete", new [] { "Act Complete tiles", "Act Complete palette", "Special Stage Complete tilemap", "HUD sprite tiles" } },
                 { "Ending 1", new [] { "Map screen 1 tileset", "Ending palette", "Ending 1 tilemap" } },
-                { "Ending 2", new [] { "Map screen 1 tileset", "Ending palette", "Ending 2 tilemap" } },
+                { "Ending 2", new [] { "Map screen 1 tileset", "Ending palette", "Ending 2 tilemap", "Ending text: box 1", "Ending text: box 2", "Ending text: box 3", "Ending text: box 4", "Ending text: box 5", "Ending text: box 6", "Ending text: box 7", "Ending text: box 8", "Ending text: Chaos Emerald", "Ending text: Sonic Left", "Ending text: Special Bonus" } },
                 { "Credits", new [] { "Map screen 2 tileset", "Title screen sprites", "Credits tilemap", "Credits palette" } },
                 { "End sign", new [] { "End sign tileset", "End sign palette" } },
                 { "Rings", new [] { "Rings", "Green Hill palette" } },
@@ -834,7 +1037,6 @@ namespace sth1edwv
 
         public Memory Memory { get; }
         public List<Level> Levels { get; } = new();
-        public List<GameText> GameText { get; } = new();
         public List<ArtItem> Art { get; } = new();
         public FreeSpace LastFreeSpace { get; private set; }
         public SdscTag SdscTag { get; set; }
@@ -857,14 +1059,16 @@ namespace sth1edwv
 
             ReadAssets();
             ReadLevels();
-            ReadGameText();
             ReadSdscTag();
 
             // Apply rings to level tile sets
-            var rings = Art.Find(x => x.Name == "Rings").TileSet;
-            foreach (var tileSet in Levels.Select(x => x.TileSet).Distinct())
+            var rings = Art.Find(x => x.Name == "Rings");
+            if (rings != null)
             {
-                tileSet.SetRings(rings.Tiles[0]);
+                foreach (var tileSet in Levels.Select(x => x.TileSet).Distinct())
+                {
+                    tileSet.SetRings(rings.TileSet.Tiles[0]);
+                }
             }
 
             _logger($"Load complete in {sw.Elapsed}");
@@ -936,6 +1140,11 @@ namespace sth1edwv
                             }
                             break;
                         }
+                        case Game.Asset.Types.TileMapData:
+                            var tileMapData = new TileMapData(Memory, offset, part.Name);
+                            _assetsLookup[asset] = tileMapData;
+                            item.TileMapData.Add(tileMapData);
+                            break;
                         case Game.Asset.Types.SpriteTileSet:
                             var tileSet = asset.BitPlanes > 0 
                                 ? GetTileSet(offset, asset.GetLength(Memory), asset.BitPlanes, asset.TileGrouping, asset.TilesPerRow) 
@@ -1002,20 +1211,6 @@ namespace sth1edwv
             }
 
             return result;
-        }
-
-        private void ReadGameText()
-        {
-            _logger("Loading game text...");
-            GameText.Clear();
-            for (var i = 0; i < 6; i++)
-            {
-                GameText.Add(new GameText(this, 0x122D + i * 0xF, i < 3));
-            }
-            for (var i = 0; i < 3; i++)
-            {
-                GameText.Add(new GameText(this, 0x197E + i * 0x10, true));
-            }
         }
 
         public void Dispose()
@@ -1156,16 +1351,6 @@ namespace sth1edwv
                 }
 
                 assetsToPack.UnionWith(sdscParts.Values);
-            }
-
-            // - Game text (at original offsets)
-            // 122d..1286 inclusive
-            // 197e..19ad inclusive
-            foreach (var gameText in GameText)
-            {
-                var data = gameText.GetData();
-                data.CopyTo(memory, gameText.Offset);
-                if (log) _logger($"- Wrote game text \"{gameText.Text}\" at offset ${gameText.Offset:X}, length {data.Count} bytes");
             }
 
             // Add level data to assets list

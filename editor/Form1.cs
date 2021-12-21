@@ -10,7 +10,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Equin.ApplicationFramework;
-using Microsoft.VisualBasic;
 using sth1edwv.Controls;
 using sth1edwv.Forms;
 using sth1edwv.GameObjects;
@@ -70,8 +69,6 @@ namespace sth1edwv
             _cartridge = new Cartridge(filename, Log);
             listBoxLevels.Items.Clear();
             listBoxLevels.Items.AddRange(_cartridge.Levels.ToArray<object>());
-            listBoxGameText.Items.Clear();
-            listBoxGameText.Items.AddRange(_cartridge.GameText.ToArray<object>());
             listBoxArt.Items.Clear();
             listBoxArt.Items.AddRange(_cartridge.Art.ToArray<object>());
             listBoxArt.Sorted = true;
@@ -309,40 +306,6 @@ namespace sth1edwv
             {
                 floorEditor1.Invalidate();
             }
-        }
-
-        private void GameTextDoubleClicked(object sender, EventArgs e)
-        {
-            if (listBoxGameText.SelectedItem is not GameText text)
-            {
-                return;
-            }
-            var input = Interaction.InputBox(
-                "Please enter new game text, format X;Y;TEXT\n(TEXT can be 'A'-'Z', ' ' and '©')", "Edit game text",
-                $"{text.X};{text.Y};{text.Text}");
-            if (input == "")
-            {
-                return;
-            }
-            try
-            {
-                var match = Regex.Match(input, "^(?<x>\\d+);(?<y>\\d+);(?<text>.+)$");
-                if (!match.Success)
-                {
-                    throw new Exception("Invalid text entered");
-                }
-
-                text.Text = match.Groups["text"].Value;
-                text.X = Convert.ToByte(match.Groups["x"].Value);
-                text.Y = Convert.ToByte(match.Groups["y"].Value);
-            }
-            catch (Exception exception)
-            {
-                MessageBox.Show(this, exception.Message);
-            }
-
-            // This makes the listbox re-get the text
-            listBoxGameText.Items[listBoxGameText.SelectedIndex] = text;
         }
 
         private void toolStripButtonSaveRenderedLevel_Click(object sender, EventArgs e)
@@ -618,8 +581,6 @@ namespace sth1edwv
 
         private void listBoxArt_SelectedIndexChanged(object sender, EventArgs e)
         {
-            propertyGrid1.SelectedObject = listBoxArt.SelectedItem;
-
             if (listBoxArt.SelectedItem is not ArtItem artItem)
             {
                 return;
@@ -681,6 +642,26 @@ namespace sth1edwv
                 tabPageArtPalette.Controls.Add(paletteEditor);
                 paletteEditor.Dock = DockStyle.Fill;
                 tabControlArt.TabPages.Add(tabPageArtPalette);
+            }
+
+            bool shownExtraDataPage = false;
+            foreach (var asset in artItem.TileMapData)
+            {
+                if (!shownExtraDataPage)
+                {
+                    foreach (Control control in extraDataLayoutPanel.Controls)
+                    {
+                        control.Dispose();
+                    }
+                    extraDataLayoutPanel.Controls.Clear();
+                    tabControlArt.TabPages.Add(tabPageExtraData);
+
+                    shownExtraDataPage = true;
+                }
+
+                // Make an editor for it
+                extraDataLayoutPanel.Controls.Add(new Label{Text = asset.Name, AutoSize = true});
+                extraDataLayoutPanel.Controls.Add(new TileMapDataEditor(asset, artItem.TileSet, artItem.Palette));
             }
 
             // The tab control steals focus, we give it back

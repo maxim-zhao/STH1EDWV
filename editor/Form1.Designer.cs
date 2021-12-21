@@ -100,8 +100,6 @@ namespace sth1edwv
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.buttonResizeFloor = new System.Windows.Forms.ToolStripButton();
             this.SharingButton = new System.Windows.Forms.ToolStripButton();
-            this.tabPage9 = new System.Windows.Forms.TabPage();
-            this.listBoxGameText = new System.Windows.Forms.ListBox();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
@@ -111,12 +109,14 @@ namespace sth1edwv
             this.toolStrip2 = new System.Windows.Forms.ToolStrip();
             this.buttonSaveScreen = new System.Windows.Forms.ToolStripButton();
             this.buttonLoadTileset = new System.Windows.Forms.ToolStripButton();
-            this.propertyGrid1 = new System.Windows.Forms.PropertyGrid();
             this.pictureBoxArtLayout = new System.Windows.Forms.PictureBox();
             this.tabPageArtTiles = new System.Windows.Forms.TabPage();
             this.otherArtTileSetViewer = new sth1edwv.Controls.TileSetViewer();
             this.tabPageArtPalette = new System.Windows.Forms.TabPage();
+            this.tabPageExtraData = new System.Windows.Forms.TabPage();
+            this.extraDataLayoutPanel = new System.Windows.Forms.FlowLayoutPanel();
             this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.udSDSCVersion = new System.Windows.Forms.NumericUpDown();
             this.label5 = new System.Windows.Forms.Label();
             this.dateTimePickerSDSCDate = new System.Windows.Forms.DateTimePicker();
             this.label4 = new System.Windows.Forms.Label();
@@ -130,7 +130,6 @@ namespace sth1edwv
             this.logTextBox = new System.Windows.Forms.TextBox();
             this.spaceVisualizer1 = new sth1edwv.Controls.SpaceVisualizer();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-            this.udSDSCVersion = new System.Windows.Forms.NumericUpDown();
             this.menuStrip1.SuspendLayout();
             this.tabPage5.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer6)).BeginInit();
@@ -161,7 +160,6 @@ namespace sth1edwv
             this.splitContainer7.SuspendLayout();
             this.levelEditorContextMenu.SuspendLayout();
             this.toolStripLayout.SuspendLayout();
-            this.tabPage9.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).BeginInit();
@@ -173,13 +171,14 @@ namespace sth1edwv
             this.toolStrip2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxArtLayout)).BeginInit();
             this.tabPageArtTiles.SuspendLayout();
+            this.tabPageExtraData.SuspendLayout();
             this.tabPage3.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.udSDSCVersion)).BeginInit();
             this.tabPage2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.udSDSCVersion)).BeginInit();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -813,33 +812,9 @@ namespace sth1edwv
             this.SharingButton.Text = "Sharing...";
             this.SharingButton.Click += new System.EventHandler(this.SharingButton_Click);
             // 
-            // tabPage9
-            // 
-            this.tabPage9.Controls.Add(this.listBoxGameText);
-            this.tabPage9.Location = new System.Drawing.Point(4, 24);
-            this.tabPage9.Name = "tabPage9";
-            this.tabPage9.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage9.Size = new System.Drawing.Size(1323, 528);
-            this.tabPage9.TabIndex = 7;
-            this.tabPage9.Text = "Game Text";
-            this.tabPage9.UseVisualStyleBackColor = true;
-            // 
-            // listBoxGameText
-            // 
-            this.listBoxGameText.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listBoxGameText.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.listBoxGameText.FormattingEnabled = true;
-            this.listBoxGameText.IntegralHeight = false;
-            this.listBoxGameText.Location = new System.Drawing.Point(3, 3);
-            this.listBoxGameText.Name = "listBoxGameText";
-            this.listBoxGameText.Size = new System.Drawing.Size(1317, 522);
-            this.listBoxGameText.TabIndex = 1;
-            this.listBoxGameText.DoubleClick += new System.EventHandler(this.GameTextDoubleClicked);
-            // 
             // tabControl1
             // 
             this.tabControl1.Controls.Add(this.tabPage5);
-            this.tabControl1.Controls.Add(this.tabPage9);
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage3);
             this.tabControl1.Controls.Add(this.tabPage2);
@@ -853,10 +828,10 @@ namespace sth1edwv
             // tabPage1
             // 
             this.tabPage1.Controls.Add(this.splitContainer3);
-            this.tabPage1.Location = new System.Drawing.Point(4, 24);
+            this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(1323, 528);
+            this.tabPage1.Size = new System.Drawing.Size(1323, 530);
             this.tabPage1.TabIndex = 9;
             this.tabPage1.Text = "Other art";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -874,7 +849,7 @@ namespace sth1edwv
             // splitContainer3.Panel2
             // 
             this.splitContainer3.Panel2.Controls.Add(this.tabControlArt);
-            this.splitContainer3.Size = new System.Drawing.Size(1317, 522);
+            this.splitContainer3.Size = new System.Drawing.Size(1317, 524);
             this.splitContainer3.SplitterDistance = 261;
             this.splitContainer3.TabIndex = 1;
             // 
@@ -884,7 +859,7 @@ namespace sth1edwv
             this.listBoxArt.FormattingEnabled = true;
             this.listBoxArt.Location = new System.Drawing.Point(0, 0);
             this.listBoxArt.Name = "listBoxArt";
-            this.listBoxArt.Size = new System.Drawing.Size(261, 522);
+            this.listBoxArt.Size = new System.Drawing.Size(261, 524);
             this.listBoxArt.TabIndex = 0;
             this.listBoxArt.SelectedIndexChanged += new System.EventHandler(this.listBoxArt_SelectedIndexChanged);
             // 
@@ -893,22 +868,22 @@ namespace sth1edwv
             this.tabControlArt.Controls.Add(this.tabPageArtLayout);
             this.tabControlArt.Controls.Add(this.tabPageArtTiles);
             this.tabControlArt.Controls.Add(this.tabPageArtPalette);
+            this.tabControlArt.Controls.Add(this.tabPageExtraData);
             this.tabControlArt.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControlArt.Location = new System.Drawing.Point(0, 0);
             this.tabControlArt.Name = "tabControlArt";
             this.tabControlArt.SelectedIndex = 0;
-            this.tabControlArt.Size = new System.Drawing.Size(1052, 522);
+            this.tabControlArt.Size = new System.Drawing.Size(1052, 524);
             this.tabControlArt.TabIndex = 1;
             // 
             // tabPageArtLayout
             // 
             this.tabPageArtLayout.Controls.Add(this.toolStrip2);
-            this.tabPageArtLayout.Controls.Add(this.propertyGrid1);
             this.tabPageArtLayout.Controls.Add(this.pictureBoxArtLayout);
             this.tabPageArtLayout.Location = new System.Drawing.Point(4, 22);
             this.tabPageArtLayout.Name = "tabPageArtLayout";
             this.tabPageArtLayout.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageArtLayout.Size = new System.Drawing.Size(1044, 496);
+            this.tabPageArtLayout.Size = new System.Drawing.Size(1044, 498);
             this.tabPageArtLayout.TabIndex = 2;
             this.tabPageArtLayout.Text = "Layout";
             this.tabPageArtLayout.UseVisualStyleBackColor = true;
@@ -920,7 +895,7 @@ namespace sth1edwv
             this.buttonLoadTileset});
             this.toolStrip2.Location = new System.Drawing.Point(3, 3);
             this.toolStrip2.Name = "toolStrip2";
-            this.toolStrip2.Size = new System.Drawing.Size(734, 25);
+            this.toolStrip2.Size = new System.Drawing.Size(1038, 25);
             this.toolStrip2.TabIndex = 5;
             this.toolStrip2.Text = "toolStrip2";
             // 
@@ -941,14 +916,6 @@ namespace sth1edwv
             this.buttonLoadTileset.Size = new System.Drawing.Size(62, 22);
             this.buttonLoadTileset.Text = "Load...";
             this.buttonLoadTileset.Click += new System.EventHandler(this.buttonLoadTileset_Click);
-            // 
-            // propertyGrid1
-            // 
-            this.propertyGrid1.Dock = System.Windows.Forms.DockStyle.Right;
-            this.propertyGrid1.Location = new System.Drawing.Point(737, 3);
-            this.propertyGrid1.Name = "propertyGrid1";
-            this.propertyGrid1.Size = new System.Drawing.Size(304, 490);
-            this.propertyGrid1.TabIndex = 1;
             // 
             // pictureBoxArtLayout
             // 
@@ -989,6 +956,30 @@ namespace sth1edwv
             this.tabPageArtPalette.Text = "Palette";
             this.tabPageArtPalette.UseVisualStyleBackColor = true;
             // 
+            // tabPageExtraData
+            // 
+            this.tabPageExtraData.Controls.Add(this.extraDataLayoutPanel);
+            this.tabPageExtraData.Location = new System.Drawing.Point(4, 22);
+            this.tabPageExtraData.Name = "tabPageExtraData";
+            this.tabPageExtraData.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPageExtraData.Size = new System.Drawing.Size(1044, 498);
+            this.tabPageExtraData.TabIndex = 3;
+            this.tabPageExtraData.Text = "Extra data";
+            this.tabPageExtraData.UseVisualStyleBackColor = true;
+            // 
+            // extraDataLayoutPanel
+            // 
+            this.extraDataLayoutPanel.AutoScroll = true;
+            this.extraDataLayoutPanel.AutoSize = true;
+            this.extraDataLayoutPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.extraDataLayoutPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.extraDataLayoutPanel.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
+            this.extraDataLayoutPanel.Location = new System.Drawing.Point(3, 3);
+            this.extraDataLayoutPanel.Name = "extraDataLayoutPanel";
+            this.extraDataLayoutPanel.Size = new System.Drawing.Size(1038, 492);
+            this.extraDataLayoutPanel.TabIndex = 0;
+            this.extraDataLayoutPanel.WrapContents = false;
+            // 
             // tabPage3
             // 
             this.tabPage3.Controls.Add(this.udSDSCVersion);
@@ -1001,13 +992,31 @@ namespace sth1edwv
             this.tabPage3.Controls.Add(this.textBoxSDSCTitle);
             this.tabPage3.Controls.Add(this.textBoxSDSCNotes);
             this.tabPage3.Controls.Add(this.textBoxSDSCAuthor);
-            this.tabPage3.Location = new System.Drawing.Point(4, 22);
+            this.tabPage3.Location = new System.Drawing.Point(4, 24);
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage3.Size = new System.Drawing.Size(1323, 530);
+            this.tabPage3.Size = new System.Drawing.Size(1323, 528);
             this.tabPage3.TabIndex = 11;
             this.tabPage3.Text = "SDSC tag";
             this.tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // udSDSCVersion
+            // 
+            this.udSDSCVersion.DecimalPlaces = 2;
+            this.udSDSCVersion.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            131072});
+            this.udSDSCVersion.Location = new System.Drawing.Point(97, 34);
+            this.udSDSCVersion.Maximum = new decimal(new int[] {
+            9999,
+            0,
+            0,
+            131072});
+            this.udSDSCVersion.Name = "udSDSCVersion";
+            this.udSDSCVersion.Size = new System.Drawing.Size(225, 22);
+            this.udSDSCVersion.TabIndex = 2;
             // 
             // label5
             // 
@@ -1137,24 +1146,6 @@ namespace sth1edwv
             this.splitContainer1.SplitterDistance = 556;
             this.splitContainer1.TabIndex = 3;
             // 
-            // udSDSCVersion
-            // 
-            this.udSDSCVersion.DecimalPlaces = 2;
-            this.udSDSCVersion.Increment = new decimal(new int[] {
-            1,
-            0,
-            0,
-            131072});
-            this.udSDSCVersion.Location = new System.Drawing.Point(97, 34);
-            this.udSDSCVersion.Maximum = new decimal(new int[] {
-            9999,
-            0,
-            0,
-            131072});
-            this.udSDSCVersion.Name = "udSDSCVersion";
-            this.udSDSCVersion.Size = new System.Drawing.Size(225, 22);
-            this.udSDSCVersion.TabIndex = 2;
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1203,7 +1194,6 @@ namespace sth1edwv
             this.levelEditorContextMenu.ResumeLayout(false);
             this.toolStripLayout.ResumeLayout(false);
             this.toolStripLayout.PerformLayout();
-            this.tabPage9.ResumeLayout(false);
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.splitContainer3.Panel1.ResumeLayout(false);
@@ -1217,15 +1207,17 @@ namespace sth1edwv
             this.toolStrip2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxArtLayout)).EndInit();
             this.tabPageArtTiles.ResumeLayout(false);
+            this.tabPageExtraData.ResumeLayout(false);
+            this.tabPageExtraData.PerformLayout();
             this.tabPage3.ResumeLayout(false);
             this.tabPage3.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.udSDSCVersion)).EndInit();
             this.tabPage2.ResumeLayout(false);
             this.tabPage2.PerformLayout();
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.udSDSCVersion)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1269,8 +1261,6 @@ namespace sth1edwv
         private ToolStripButton toolStripButtonSaveRenderedLevel;
         private ToolStripButton buttonCopyFloor;
         private ToolStripButton buttonPasteFloor;
-        private TabPage tabPage9;
-        private ListBox listBoxGameText;
         private TabControl tabControl1;
         private SplitContainer splitContainer7;
         private ItemPicker layoutBlockChooser;
@@ -1298,10 +1288,8 @@ namespace sth1edwv
         private ListBox listBoxArt;
         private TabControl tabControlArt;
         private TabPage tabPageArtTiles;
-        private TabPage tabPageArtPalette;
         private TabPage tabPageArtLayout;
         private PictureBox pictureBoxArtLayout;
-        private PropertyGrid propertyGrid1;
         private TabPage tabPage2;
         private TextBox logTextBox;
         private ToolStrip toolStrip2;
@@ -1323,6 +1311,9 @@ namespace sth1edwv
         private Label label5;
         private DateTimePicker dateTimePickerSDSCDate;
         private NumericUpDown udSDSCVersion;
+        private TabPage tabPageExtraData;
+        private TabPage tabPageArtPalette;
+        private FlowLayoutPanel extraDataLayoutPanel;
     }
 }
 

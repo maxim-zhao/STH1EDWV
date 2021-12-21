@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using sth1edwv.GameObjects;
 
 namespace sth1edwv
@@ -11,6 +12,7 @@ namespace sth1edwv
         public string Name { get; set; }
         public TileMap TileMap { get; set; }
         public List<TileSet> SpriteTileSets { get; } = new();
+        public List<TileMapData> TileMapData { get; } = new();
         public List<Cartridge.Game.Asset> Assets { get; } = new();
 
         public override string ToString()
