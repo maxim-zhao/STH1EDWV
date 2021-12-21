@@ -1321,7 +1321,7 @@ namespace sth1edwv
             foreach (var assetToPack in assetsToPack.Where(x => x.Asset.Type == Game.Asset.Types.RawValue))
             {
                 assetToPack.Asset.Restrictions.MinimumOffset = assetToPack.Asset.OriginalOffset;
-                assetToPack.Asset.Restrictions.MaximumOffset = assetToPack.Asset.OriginalOffset;
+                assetToPack.Asset.Restrictions.MaximumOffset = assetToPack.Asset.OriginalOffset + assetToPack.Data.Count;
             }
 
             // First we build a list of "free space". We include all the "original assets" so we will overwrite unused space. Missing "original" data makes us ignore it.
@@ -1522,7 +1522,7 @@ namespace sth1edwv
                 offset = freeSpace.FindSpace(sizeNeeded, item.Asset.Restrictions);
                 item.DataItem.Offset = offset;
                 item.Data.CopyTo(memory, offset);
-                if (log) _logger($"- Wrote data for asset {item.Name} at {offset:X}, length {item.Data.Count} bytes");
+                if (log) _logger($"- Wrote data for asset {item.Name} at ${offset:X}, length {item.Data.Count} bytes");
                 freeSpace.Remove(offset, item.Data.Count);
 
                 writtenItems.Add(item.DataItem);

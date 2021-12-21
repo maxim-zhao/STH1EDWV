@@ -154,7 +154,7 @@ namespace sth1edwv
                 // Same for the max
                 possibleSpans = possibleSpans
                     .Where(x => x.Start <= restriction.MaximumOffset)
-                    .Select(x => new Span { Start = x.Start, End = Math.Min(restriction.MaximumOffset + size, x.End) });
+                    .Select(x => new Span { Start = x.Start, End = Math.Min(restriction.MaximumOffset, x.End) });
             }
 
             if (!restriction.CanCrossBanks)
@@ -171,6 +171,10 @@ namespace sth1edwv
                 .FirstOrDefault();
             if (span != null)
             {
+                if (span.Start > 0x3ff20)
+                {
+                    span.Start += 1;
+                }
                 return span.Start;
             }
 
