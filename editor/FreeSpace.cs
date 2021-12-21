@@ -153,8 +153,8 @@ namespace sth1edwv
             {
                 // Same for the max
                 possibleSpans = possibleSpans
-                    .Where(x => x.Start < restriction.MaximumOffset)
-                    .Select(x => new Span { Start = x.Start, End = Math.Min(restriction.MaximumOffset, x.End) });
+                    .Where(x => x.Start <= restriction.MaximumOffset)
+                    .Select(x => new Span { Start = x.Start, End = Math.Min(restriction.MaximumOffset + size, x.End) });
             }
 
             if (!restriction.CanCrossBanks)
@@ -173,8 +173,6 @@ namespace sth1edwv
             {
                 return span.Start;
             }
-
-            // Neither of these can do a decent job. I guess it is one of those hard problems?
 
             // If we get here then we failed
             throw new Exception($"Unable to find free space big enough for {size} bytes");

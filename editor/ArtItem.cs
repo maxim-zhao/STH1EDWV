@@ -14,6 +14,7 @@ namespace sth1edwv
         public List<TileSet> SpriteTileSets { get; } = new();
         public List<TileMapData> TileMapData { get; } = new();
         public List<Cartridge.Game.Asset> Assets { get; } = new();
+        public List<RawValue> RawValues { get; } = new();
 
         public override string ToString()
         {

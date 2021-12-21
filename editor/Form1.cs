@@ -598,6 +598,12 @@ namespace sth1edwv
                 tabPage.Dispose();
             }
 
+            foreach (Control control in extraDataLayoutPanel.Controls)
+            {
+                control.Dispose();
+            }
+            extraDataLayoutPanel.Controls.Clear();
+
             tabControlArt.TabPages.Clear();
 
             if (artItem.TileMap != null)
@@ -650,25 +656,31 @@ namespace sth1edwv
             }
 
             bool shownExtraDataPage = false;
+
+            void CheckExtraDataPage()
+            {
+                if (shownExtraDataPage) return;
+                tabControlArt.TabPages.Add(tabPageExtraData);
+                shownExtraDataPage = true;
+            }
             foreach (var asset in artItem.TileMapData)
             {
-                if (!shownExtraDataPage)
-                {
-                    foreach (Control control in extraDataLayoutPanel.Controls)
-                    {
-                        control.Dispose();
-                    }
-                    extraDataLayoutPanel.Controls.Clear();
-                    tabControlArt.TabPages.Add(tabPageExtraData);
-
-                    shownExtraDataPage = true;
-                }
+                CheckExtraDataPage();
 
                 // Make an editor for it
                 extraDataLayoutPanel.Controls.Add(new Label{Text = asset.Name, AutoSize = true});
                 var editor = new TileMapDataEditor(asset, artItem.TileSet, artItem.Palette);
                 editor.DataChanged += _ => UpdateSpace();
                 extraDataLayoutPanel.Controls.Add(editor);
+            }
+
+            foreach (var asset in artItem.RawValues)
+            {
+                CheckExtraDataPage();
+
+                // Make an editor for it
+                extraDataLayoutPanel.Controls.Add(new Label{Text = asset.Name, AutoSize = true});
+                extraDataLayoutPanel.Controls.Add(new RawValueEditor(asset));
             }
 
             // The tab control steals focus, we give it back

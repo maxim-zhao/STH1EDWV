@@ -69,7 +69,7 @@ namespace sth1edwv
                     return $"{Type} from {OriginalOffset:X} ({OriginalSize}B)";
                 }
 
-                public enum Types { TileSet, Palette, TileMap, SpriteTileSet, ForegroundTileMap, Unused, Misc, TileMapData }
+                public enum Types { TileSet, Palette, TileMap, SpriteTileSet, ForegroundTileMap, Unused, Misc, TileMapData, RawValue }
                 public Types Type { get; init; }
                 public List<Reference> References { get; init; }
                 public LocationRestriction Restrictions { get; init; } = new(); // Default to defaults...
@@ -85,6 +85,12 @@ namespace sth1edwv
 
                 public int GetOffset(Memory memory)
                 {
+                    // Raw values are not relocatable
+                    if (Type == Types.RawValue)
+                    {
+                        return OriginalOffset;
+                    }
+
                     // The offset is implied by the references
                     // First see if there is an absolute one
                     var absoluteReference = References.FirstOrDefault(x => x.Type == Reference.Types.Absolute);
@@ -270,6 +276,24 @@ namespace sth1edwv
                             new() {Offset = 0x122b, Type = Game.Reference.Types.Absolute},
                         }, 
                         Restrictions = { MaximumOffset = 0x4000 }
+                    }
+                }, {
+                    "Title screen music", new Game.Asset {
+                        OriginalOffset = 0x12d8 + 1, // ld a,$06 ; 0012D8 3E 06 
+                        OriginalSize = 1,
+                        Type = Game.Asset.Types.RawValue
+                    }
+                }, {
+                    "Title screen \"PRESS BUTTON\" flash time", new Game.Asset {
+                        OriginalOffset = 0x1308 + 1, // cp $40 ; 001308 FE 40 
+                        OriginalSize = 1,
+                        Type = Game.Asset.Types.RawValue
+                    }
+                }, {
+                    "Title screen \"PRESS BUTTON\" total time", new Game.Asset {
+                        OriginalOffset = 0x12fd + 1, // cp $64 ; 0012FD FE 64 
+                        OriginalSize = 1,
+                        Type = Game.Asset.Types.RawValue
                     }
                 }, {
                     "Title screen palette", new Game.Asset { 
@@ -984,7 +1008,7 @@ namespace sth1edwv
                 { "Map screen 2", new [] { "Map screen 2 tileset", "Map screen 2 tilemap 1", "Map screen 2 tilemap 2", "Map screen 2 palette", "Map screen 2 sprite tiles", "HUD sprite tiles", "Map screen text: Labyrinth", "Map screen text: Scrap Brain", "Map screen text: Sky Base" } },
                 { "Sonic", new[] { "Sonic (right)", "Sonic (left)", "HUD sprite tiles", "Green Hill palette" } }, // HUD sprites contain the spring jump toes, the ones in the art seem unused...
                 { "Monitors", new [] { "Monitor Art", "HUD sprite tiles", "Green Hill palette"  } }, // Monitor bases are in the HUD sprites
-                { "Title screen", new [] { "Title screen tiles", "Title screen sprites", "Title screen palette", "Title screen tilemap", "Title screen press button text 1", "Title screen press button text 2" } },
+                { "Title screen", new [] { "Title screen tiles", "Title screen sprites", "Title screen palette", "Title screen tilemap", "Title screen press button text 1", "Title screen press button text 2", "Title screen music", "Title screen \"PRESS BUTTON\" flash time", "Title screen \"PRESS BUTTON\" total time" } },
                 { "Game Over", new [] { "Act Complete tiles", "Game Over palette", "Game Over tilemap" } },
                 { "Act Complete", new [] { "Act Complete tiles", "Act Complete palette", "Act Complete tilemap", "HUD sprite tiles" } },
                 { "Special Stage Complete", new [] { "Act Complete tiles", "Act Complete palette", "Special Stage Complete tilemap", "HUD sprite tiles" } },
@@ -1152,6 +1176,11 @@ namespace sth1edwv
                             _assetsLookup[asset] = tileSet;
                             item.SpriteTileSets.Add(tileSet);
                             break;
+                        case Game.Asset.Types.RawValue:
+                            var rawValue = new RawValue(Memory, part.Asset.OriginalOffset, part.Asset.OriginalSize, part.Name);
+                            _assetsLookup[asset] = rawValue;
+                            item.RawValues.Add(rawValue);
+                            break;
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
@@ -1287,6 +1316,13 @@ namespace sth1edwv
                     .Distinct() // Remove duplicates
                     .Select(x => new AssetToPack(x, Sonic1MasterSystem.Assets[x], _assetsLookup[Sonic1MasterSystem.Assets[x]], _assetsLookup[Sonic1MasterSystem.Assets[x]].GetData())) // Select the asset name, details and serialized data
                     .Where(x => x.Asset.OriginalOffset != 0)); // Exclude any not yet configured with a source location
+
+            // Raw values must go to their original locations
+            foreach (var assetToPack in assetsToPack.Where(x => x.Asset.Type == Game.Asset.Types.RawValue))
+            {
+                assetToPack.Asset.Restrictions.MinimumOffset = assetToPack.Asset.OriginalOffset;
+                assetToPack.Asset.Restrictions.MaximumOffset = assetToPack.Asset.OriginalOffset;
+            }
 
             // First we build a list of "free space". We include all the "original assets" so we will overwrite unused space. Missing "original" data makes us ignore it.
             var freeSpace = new FreeSpace();
