@@ -71,7 +71,7 @@ namespace sth1edwv.Controls
             this.buttonRemoveTile});
             this.toolStrip2.Location = new System.Drawing.Point(0, 0);
             this.toolStrip2.Name = "toolStrip2";
-            this.toolStrip2.Size = new System.Drawing.Size(825, 25);
+            this.toolStrip2.Size = new System.Drawing.Size(962, 25);
             this.toolStrip2.TabIndex = 4;
             this.toolStrip2.Text = "toolStrip2";
             // 
@@ -130,6 +130,7 @@ namespace sth1edwv.Controls
             this.splitContainer2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.splitContainer2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.splitContainer2.Location = new System.Drawing.Point(0, 25);
+            this.splitContainer2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.splitContainer2.Name = "splitContainer2";
             // 
             // splitContainer2.Panel1
@@ -139,8 +140,9 @@ namespace sth1edwv.Controls
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.Controls.Add(this.splitContainer5);
-            this.splitContainer2.Size = new System.Drawing.Size(825, 389);
-            this.splitContainer2.SplitterDistance = 333;
+            this.splitContainer2.Size = new System.Drawing.Size(962, 453);
+            this.splitContainer2.SplitterDistance = 388;
+            this.splitContainer2.SplitterWidth = 5;
             this.splitContainer2.TabIndex = 5;
             // 
             // tilePicker
@@ -149,11 +151,12 @@ namespace sth1edwv.Controls
             this.tilePicker.FixedItemsPerRow = true;
             this.tilePicker.ItemsPerRow = 16;
             this.tilePicker.Location = new System.Drawing.Point(0, 0);
+            this.tilePicker.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.tilePicker.Name = "tilePicker";
             this.tilePicker.Scaling = 1;
             this.tilePicker.SelectedIndex = -1;
             this.tilePicker.ShowTransparency = false;
-            this.tilePicker.Size = new System.Drawing.Size(331, 387);
+            this.tilePicker.Size = new System.Drawing.Size(386, 451);
             this.tilePicker.TabIndex = 0;
             this.tilePicker.SelectionChanged += new System.EventHandler<sth1edwv.GameObjects.IDrawableBlock>(this.tilePicker_SelectionChanged);
             // 
@@ -162,6 +165,7 @@ namespace sth1edwv.Controls
             this.splitContainer5.Dock = System.Windows.Forms.DockStyle.Fill;
             this.splitContainer5.FixedPanel = System.Windows.Forms.FixedPanel.Panel2;
             this.splitContainer5.Location = new System.Drawing.Point(0, 0);
+            this.splitContainer5.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.splitContainer5.Name = "splitContainer5";
             this.splitContainer5.Orientation = System.Windows.Forms.Orientation.Horizontal;
             // 
@@ -173,16 +177,19 @@ namespace sth1edwv.Controls
             // 
             this.splitContainer5.Panel2.Controls.Add(this.panel2);
             this.splitContainer5.Panel2.Controls.Add(this.label1);
-            this.splitContainer5.Size = new System.Drawing.Size(486, 387);
-            this.splitContainer5.SplitterDistance = 268;
+            this.splitContainer5.Size = new System.Drawing.Size(567, 451);
+            this.splitContainer5.SplitterDistance = 330;
+            this.splitContainer5.SplitterWidth = 5;
             this.splitContainer5.TabIndex = 1;
             // 
             // pictureBoxTilePreview
             // 
+            this.pictureBoxTilePreview.BackColor = System.Drawing.SystemColors.ControlDark;
             this.pictureBoxTilePreview.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pictureBoxTilePreview.Location = new System.Drawing.Point(0, 0);
+            this.pictureBoxTilePreview.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.pictureBoxTilePreview.Name = "pictureBoxTilePreview";
-            this.pictureBoxTilePreview.Size = new System.Drawing.Size(486, 268);
+            this.pictureBoxTilePreview.Size = new System.Drawing.Size(567, 330);
             this.pictureBoxTilePreview.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.pictureBoxTilePreview.TabIndex = 0;
             this.pictureBoxTilePreview.TabStop = false;
@@ -192,14 +199,16 @@ namespace sth1edwv.Controls
             this.panel2.AutoScroll = true;
             this.panel2.Controls.Add(this.pictureBoxTileUsedIn);
             this.panel2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel2.Location = new System.Drawing.Point(0, 13);
+            this.panel2.Location = new System.Drawing.Point(0, 15);
+            this.panel2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(486, 102);
+            this.panel2.Size = new System.Drawing.Size(567, 101);
             this.panel2.TabIndex = 1;
             // 
             // pictureBoxTileUsedIn
             // 
-            this.pictureBoxTileUsedIn.Location = new System.Drawing.Point(3, 3);
+            this.pictureBoxTileUsedIn.Location = new System.Drawing.Point(4, 3);
+            this.pictureBoxTileUsedIn.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.pictureBoxTileUsedIn.Name = "pictureBoxTileUsedIn";
             this.pictureBoxTileUsedIn.Size = new System.Drawing.Size(142, 82);
             this.pictureBoxTileUsedIn.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -211,17 +220,19 @@ namespace sth1edwv.Controls
             this.label1.AutoSize = true;
             this.label1.Dock = System.Windows.Forms.DockStyle.Top;
             this.label1.Location = new System.Drawing.Point(0, 0);
+            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(80, 13);
+            this.label1.Size = new System.Drawing.Size(86, 15);
             this.label1.TabIndex = 0;
             this.label1.Text = "Used in blocks:";
             // 
             // checkBoxTransparency
             // 
             this.checkBoxTransparency.AutoSize = true;
-            this.checkBoxTransparency.Location = new System.Drawing.Point(527, 2);
+            this.checkBoxTransparency.Location = new System.Drawing.Point(615, 2);
+            this.checkBoxTransparency.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.checkBoxTransparency.Name = "checkBoxTransparency";
-            this.checkBoxTransparency.Size = new System.Drawing.Size(117, 17);
+            this.checkBoxTransparency.Size = new System.Drawing.Size(126, 19);
             this.checkBoxTransparency.TabIndex = 6;
             this.checkBoxTransparency.Text = "Show transparency";
             this.checkBoxTransparency.UseVisualStyleBackColor = true;
@@ -229,13 +240,14 @@ namespace sth1edwv.Controls
             // 
             // TileSetViewer
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.checkBoxTransparency);
             this.Controls.Add(this.splitContainer2);
             this.Controls.Add(this.toolStrip2);
+            this.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.Name = "TileSetViewer";
-            this.Size = new System.Drawing.Size(825, 414);
+            this.Size = new System.Drawing.Size(962, 478);
             this.toolStrip2.ResumeLayout(false);
             this.toolStrip2.PerformLayout();
             this.splitContainer2.Panel1.ResumeLayout(false);
