@@ -17,6 +17,8 @@ namespace sth1edwv.Controls
 
         private const int TileScale = 4;
 
+        public event Action<TileMapData> DataChanged;
+
         public TileMapDataEditor(TileMapData data, TileSet tileSet, Palette palette)
         {
             AutoSize = true;
@@ -56,12 +58,14 @@ namespace sth1edwv.Controls
         {
             _data.Values.RemoveAt(_data.Values.Count - 1);
             Size = PreferredSize;
+            DataChanged?.Invoke(_data);
         }
 
         private void buttonAdd_Click(object sender, EventArgs e)
         {
             _data.Values.Add(0);
             Size = PreferredSize;
+            DataChanged?.Invoke(_data);
         }
 
         private void panel2_MouseClick(object sender, MouseEventArgs e)
@@ -96,17 +100,20 @@ namespace sth1edwv.Controls
                 }
                 _data.Values[x] = (byte)index;
                 Invalidate();
+                DataChanged?.Invoke(_data);
             }
         }
 
         private void udX_ValueChanged(object sender, EventArgs e)
         {
             _data.X = (byte)udX.Value;
+            DataChanged?.Invoke(_data);
         }
 
         private void udY_ValueChanged(object sender, EventArgs e)
         {
             _data.Y = (byte)udY.Value;
+            DataChanged?.Invoke(_data);
         }
     }
 }

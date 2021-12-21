@@ -45,6 +45,11 @@ namespace sth1edwv
                 null,
                 dataGridViewBlocks, 
                 new object[] { true });
+            typeof(DataGridView).InvokeMember("DoubleBuffered", 
+                BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.SetProperty, 
+                null,
+                extraDataLayoutPanel, 
+                new object[] { true });
         }
 
         private void openROMToolStripMenuItem_Click(object sender, EventArgs e)
@@ -661,7 +666,9 @@ namespace sth1edwv
 
                 // Make an editor for it
                 extraDataLayoutPanel.Controls.Add(new Label{Text = asset.Name, AutoSize = true});
-                extraDataLayoutPanel.Controls.Add(new TileMapDataEditor(asset, artItem.TileSet, artItem.Palette));
+                var editor = new TileMapDataEditor(asset, artItem.TileSet, artItem.Palette);
+                editor.DataChanged += _ => UpdateSpace();
+                extraDataLayoutPanel.Controls.Add(editor);
             }
 
             // The tab control steals focus, we give it back

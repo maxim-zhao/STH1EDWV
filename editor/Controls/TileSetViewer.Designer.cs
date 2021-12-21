@@ -178,7 +178,7 @@ namespace sth1edwv.Controls
             this.splitContainer5.Panel2.Controls.Add(this.panel2);
             this.splitContainer5.Panel2.Controls.Add(this.label1);
             this.splitContainer5.Size = new System.Drawing.Size(567, 451);
-            this.splitContainer5.SplitterDistance = 330;
+            this.splitContainer5.SplitterDistance = 328;
             this.splitContainer5.SplitterWidth = 5;
             this.splitContainer5.TabIndex = 1;
             // 
@@ -189,7 +189,7 @@ namespace sth1edwv.Controls
             this.pictureBoxTilePreview.Location = new System.Drawing.Point(0, 0);
             this.pictureBoxTilePreview.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.pictureBoxTilePreview.Name = "pictureBoxTilePreview";
-            this.pictureBoxTilePreview.Size = new System.Drawing.Size(567, 330);
+            this.pictureBoxTilePreview.Size = new System.Drawing.Size(567, 328);
             this.pictureBoxTilePreview.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.pictureBoxTilePreview.TabIndex = 0;
             this.pictureBoxTilePreview.TabStop = false;
@@ -202,7 +202,7 @@ namespace sth1edwv.Controls
             this.panel2.Location = new System.Drawing.Point(0, 15);
             this.panel2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(567, 101);
+            this.panel2.Size = new System.Drawing.Size(567, 103);
             this.panel2.TabIndex = 1;
             // 
             // pictureBoxTileUsedIn
