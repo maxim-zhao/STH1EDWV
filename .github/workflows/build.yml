@@ -24,7 +24,7 @@ jobs:
       shell: cmd
       run: |
         cd editor
-        dotnet publish sth1edwv.sln --configuration Release --output foo /p:Version=0.${{env.BUILD_NUMBER}}+${{github.sha}}
+        dotnet publish sth1edwv.sln --configuration Release --output foo /p:Version=0.${{env.BUILD_NUMBER}}+${{github.sha}} --runtime win-x64 -p:PublishSingleFile=true --no-self-contained
         7z a program.zip .\foo\*
 
     - name: Make artifact
