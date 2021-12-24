@@ -8,9 +8,12 @@ namespace sth1edwv.GameObjects
         public int Size { get; }
         public string Name { get; }
         public int Value { get; set; }
+        public Encodings Encoding { get; }
+        public enum Encodings { Byte, Bcd }
 
-        public RawValue(Memory memory, int offset, int size, string name)
+        public RawValue(Memory memory, int offset, int size, Encodings encoding, string name)
         {
+            Encoding = encoding;
             Size = size;
             Name = name;
             Offset = offset;

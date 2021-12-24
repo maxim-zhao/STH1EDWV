@@ -78,6 +78,7 @@ namespace sth1edwv
                 public List<Point> TileGrouping { get; init; }
                 public int TilesPerRow { get; init; } = 16; // 16 is often the best default
                 public bool Hidden { get; init; }
+                public RawValue.Encodings Encoding { get; set; }
 
                 // These are in the original ROM, not where we loaded from
                 public int OriginalOffset { get; init; }
@@ -281,19 +282,22 @@ namespace sth1edwv
                     "Title screen music", new Game.Asset {
                         OriginalOffset = 0x12d8 + 1, // ld a,$06 ; 0012D8 3E 06 
                         OriginalSize = 1,
-                        Type = Game.Asset.Types.RawValue
+                        Type = Game.Asset.Types.RawValue,
+                        Encoding = RawValue.Encodings.Byte
                     }
                 }, {
                     "Title screen \"PRESS BUTTON\" flash time", new Game.Asset {
                         OriginalOffset = 0x1308 + 1, // cp $40 ; 001308 FE 40 
                         OriginalSize = 1,
-                        Type = Game.Asset.Types.RawValue
+                        Type = Game.Asset.Types.RawValue,
+                        Encoding = RawValue.Encodings.Byte
                     }
                 }, {
                     "Title screen \"PRESS BUTTON\" total time", new Game.Asset {
                         OriginalOffset = 0x12fd + 1, // cp $64 ; 0012FD FE 64 
                         OriginalSize = 1,
-                        Type = Game.Asset.Types.RawValue
+                        Type = Game.Asset.Types.RawValue,
+                        Encoding = RawValue.Encodings.Byte
                     }
                 }, {
                     "Title screen palette", new Game.Asset { 
@@ -303,6 +307,26 @@ namespace sth1edwv
                         FixedSize = 32,
                         References = new List<Game.Reference> {
                             new() {Offset = 0x12cc + 1, Type = Game.Reference.Types.Absolute} // ld hl,$13e1 ; 0012CC 21 E1 13 
+                        }, 
+                        Restrictions = { MaximumOffset = 0x4000 }
+                    }
+                }, {
+                    "Game Over: Continue top", new Game.Asset { 
+                        OriginalOffset = 0x14e6,
+                        OriginalSize = 11,
+                        Type = Game.Asset.Types.TileMapData,
+                        References = new List<Game.Reference> {
+                            new() {Offset = 0x147f + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$14e6 ; 00147F 21 E6 14 
+                        }, 
+                        Restrictions = { MaximumOffset = 0x4000 }
+                    }
+                }, {
+                    "Game Over: Continue bottom", new Game.Asset { 
+                        OriginalOffset = 0x14f1,
+                        OriginalSize = 11,
+                        Type = Game.Asset.Types.TileMapData,
+                        References = new List<Game.Reference> {
+                            new() {Offset = 0x1485 + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$14f1 ; 001485 21 F1 14 
                         }, 
                         Restrictions = { MaximumOffset = 0x4000 }
                     }
@@ -439,6 +463,22 @@ namespace sth1edwv
                         Restrictions = { MaximumOffset = 0x4000 }
                     }
                 }, {
+                    "Starting lives count", new Game.Asset
+                    {
+                        OriginalOffset = 0x1c4e + 1, // ld a,$03 ; 001C4E 3E 03 
+                        OriginalSize = 1,
+                        Type = Game.Asset.Types.RawValue,
+                        Encoding = RawValue.Encodings.Byte
+                    }
+                }, {
+                    "Extra life at n x 10,000 points", new Game.Asset
+                    {
+                        OriginalOffset = 0x1c53 + 1, // ld a,$05 ; 001C53 3E 05 
+                        OriginalSize = 1,
+                        Type = Game.Asset.Types.RawValue,
+                        Encoding = RawValue.Encodings.Bcd
+                    }
+                }, {
                     "Ending palette", new Game.Asset {
                         OriginalOffset = 0x2828,
                         OriginalSize = 32,
@@ -460,6 +500,14 @@ namespace sth1edwv
                             new() {Offset = 0x2702 + 1, Type = Game.Reference.Types.Absolute} // ld hl,$2ad6 ; 002702 21 D6 2A 
                         }, 
                         Restrictions = { MaximumOffset = 0x4000 }
+                    }
+                }, {
+                    "Extra life every n x 10,000 subsequent points", new Game.Asset
+                    {
+                        OriginalOffset = 0x39f6 + 1, // ld a,$05 ; 0039F6 3E 05 
+                        OriginalSize = 1,
+                        Type = Game.Asset.Types.RawValue,
+                        Encoding = RawValue.Encodings.Bcd
                     }
                 }, {
                     "End sign palette", new Game.Asset {
@@ -1008,9 +1056,9 @@ namespace sth1edwv
                 { "Map screen 2", new [] { "Map screen 2 tileset", "Map screen 2 tilemap 1", "Map screen 2 tilemap 2", "Map screen 2 palette", "Map screen 2 sprite tiles", "HUD sprite tiles", "Map screen text: Labyrinth", "Map screen text: Scrap Brain", "Map screen text: Sky Base" } },
                 { "Sonic", new[] { "Sonic (right)", "Sonic (left)", "HUD sprite tiles", "Green Hill palette" } }, // HUD sprites contain the spring jump toes, the ones in the art seem unused...
                 { "Monitors", new [] { "Monitor Art", "HUD sprite tiles", "Green Hill palette"  } }, // Monitor bases are in the HUD sprites
-                { "Title screen", new [] { "Title screen tiles", "Title screen sprites", "Title screen palette", "Title screen tilemap", "Title screen press button text 1", "Title screen press button text 2", "Title screen music", "Title screen \"PRESS BUTTON\" flash time", "Title screen \"PRESS BUTTON\" total time" } },
-                { "Game Over", new [] { "Act Complete tiles", "Game Over palette", "Game Over tilemap" } },
-                { "Act Complete", new [] { "Act Complete tiles", "Act Complete palette", "Act Complete tilemap", "HUD sprite tiles" } },
+                { "Title screen", new [] { "Title screen tiles", "Title screen sprites", "Title screen palette", "Title screen tilemap", "Title screen press button text 1", "Title screen press button text 2", "Title screen music", "Title screen \"PRESS BUTTON\" flash time", "Title screen \"PRESS BUTTON\" total time", "Starting lives count" } },
+                { "Game Over", new [] { "Act Complete tiles", "Game Over palette", "Game Over tilemap", "Game Over: Continue top", "Game Over: Continue bottom" } },
+                { "Act Complete", new [] { "Act Complete tiles", "Act Complete palette", "Act Complete tilemap", "HUD sprite tiles", "Extra life at n x 10,000 points", "Extra life every n x 10,000 subsequent points" } },
                 { "Special Stage Complete", new [] { "Act Complete tiles", "Act Complete palette", "Special Stage Complete tilemap", "HUD sprite tiles" } },
                 { "Ending 1", new [] { "Map screen 1 tileset", "Ending palette", "Ending 1 tilemap" } },
                 { "Ending 2", new [] { "Map screen 1 tileset", "Ending palette", "Ending 2 tilemap", "Ending text: box 1", "Ending text: box 2", "Ending text: box 3", "Ending text: box 4", "Ending text: box 5", "Ending text: box 6", "Ending text: box 7", "Ending text: box 8", "Ending text: Chaos Emerald", "Ending text: Sonic Left", "Ending text: Special Bonus" } },
@@ -1177,7 +1225,7 @@ namespace sth1edwv
                             item.SpriteTileSets.Add(tileSet);
                             break;
                         case Game.Asset.Types.RawValue:
-                            var rawValue = new RawValue(Memory, part.Asset.OriginalOffset, part.Asset.OriginalSize, part.Name);
+                            var rawValue = new RawValue(Memory, part.Asset.OriginalOffset, part.Asset.OriginalSize, part.Asset.Encoding, part.Name);
                             _assetsLookup[asset] = rawValue;
                             item.RawValues.Add(rawValue);
                             break;

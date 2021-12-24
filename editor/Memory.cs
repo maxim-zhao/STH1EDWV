@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 
 namespace sth1edwv
 {
@@ -42,6 +43,34 @@ namespace sth1edwv
                 throw new Exception($"No terminator found for string at {index:X}");
             }
             return String(index, endIndex - index);
+        }
+
+        public static int FromBcd(int bcd)
+        {
+            var result = 0;
+            var multiplier = 1;
+            while (bcd > 0)
+            {
+                result += (bcd & 0xf) * multiplier;
+                bcd >>= 4;
+                multiplier *= 10;
+            }
+            return result;
+        }
+
+        public static int ToBcd(int value)
+        {
+            var result = 0;
+            var multiplier = 1;
+            while (value != 0)
+            {
+                // Get digit from value and add in the right place
+                result += (value % 10) * multiplier;
+                value /= 10;
+                multiplier *= 16;
+            }
+
+            return result;
         }
     }
 }

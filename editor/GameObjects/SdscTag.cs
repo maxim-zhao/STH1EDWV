@@ -25,8 +25,8 @@ namespace sth1edwv.GameObjects
                 throw new Exception("No SDSC header");
             }
 
-            Version = FromBcd(memory[0x7fe4]) + (decimal)FromBcd(memory[0x7fe5]) / 100;
-            Date = new DateTime(FromBcd(memory.Word(0x7fe8)), FromBcd(memory[0x7fe7]), FromBcd(memory[0x7fe6]));
+            Version = Memory.FromBcd(memory[0x7fe4]) + (decimal)Memory.FromBcd(memory[0x7fe5]) / 100;
+            Date = new DateTime(Memory.FromBcd(memory.Word(0x7fe8)), Memory.FromBcd(memory[0x7fe7]), Memory.FromBcd(memory[0x7fe6]));
             Author = ReadString(memory, 0x7fea);
             Title = ReadString(memory, 0x7fec);
             Notes = ReadString(memory, 0x7fee);
@@ -38,36 +38,18 @@ namespace sth1edwv.GameObjects
             return pointer is 0 or 0xffff ? "" : memory.NullTerminatedString(pointer);
         }
 
-        private static int FromBcd(int bcd)
-        {
-            var result = 0;
-            var multiplier = 1;
-            while (bcd > 0)
-            {
-                result += (bcd & 0xf) * multiplier;
-                bcd >>= 4;
-                multiplier *= 10;
-            }
-            return result;
-        }
-
         public int Offset { get; set; }
         public IList<byte> GetData()
         {
             return Encoding.ASCII.GetBytes("SDSC")
-                .Append(ToBcd((int)Version))
-                .Append(ToBcd((int)(Version * 100)))
-                .Append(ToBcd(Date.Day))
-                .Append(ToBcd(Date.Month))
-                .Append(ToBcd(Date.Year))
-                .Append(ToBcd(Date.Year / 100))
+                .Append((byte)Memory.ToBcd((int)Version))
+                .Append((byte)Memory.ToBcd((int)(Version * 100) % 100))
+                .Append((byte)Memory.ToBcd(Date.Day))
+                .Append((byte)Memory.ToBcd(Date.Month))
+                .Append((byte)Memory.ToBcd(Date.Year % 100))
+                .Append((byte)Memory.ToBcd(Date.Year / 100))
                 // Pointers are left empty
                 .ToList();
-        }
-
-        private static byte ToBcd(int value)
-        {
-            return (byte)((value % 10) + ((value / 10) % 10) * 16);
         }
     }
 }
