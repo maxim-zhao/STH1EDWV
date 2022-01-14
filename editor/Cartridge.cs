@@ -78,7 +78,7 @@ namespace sth1edwv
                 public List<Point> TileGrouping { get; init; }
                 public int TilesPerRow { get; init; } = 16; // 16 is often the best default
                 public bool Hidden { get; init; }
-                public RawValue.Encodings Encoding { get; set; }
+                public RawValue.Encodings Encoding { get; init; }
 
                 // These are in the original ROM, not where we loaded from
                 public int OriginalOffset { get; init; }
@@ -300,6 +300,20 @@ namespace sth1edwv
                         Encoding = RawValue.Encodings.Byte
                     }
                 }, {
+                    "Title screen hand X", new Game.Asset {
+                        OriginalOffset = 0x133b + 1, // ld hl,$0080 ; 00133B 21 80 00 
+                        OriginalSize = 1,
+                        Type = Game.Asset.Types.RawValue,
+                        Encoding = RawValue.Encodings.Byte
+                    }
+                }, {
+                    "Title screen hand Y", new Game.Asset {
+                        OriginalOffset = 0x133e + 1, // ld de,$0018 ; 00133E 11 18 00 
+                        OriginalSize = 1,
+                        Type = Game.Asset.Types.RawValue,
+                        Encoding = RawValue.Encodings.Byte
+                    }
+                }, {
                     "Title screen palette", new Game.Asset { 
                         OriginalOffset = 0x13e1,
                         OriginalSize = 32,
@@ -490,6 +504,24 @@ namespace sth1edwv
                         }, 
                         Restrictions = { MaximumOffset = 0x4000 }
                     }
+                }, { "Credits eyebrow X", new Game.Asset { OriginalOffset = 0x289f, OriginalSize = 1, Type = Game.Asset.Types.RawValue, Encoding = RawValue.Encodings.Byte }
+                }, { "Credits eyebrow Y", new Game.Asset { OriginalOffset = 0x28a0, OriginalSize = 1, Type = Game.Asset.Types.RawValue, Encoding = RawValue.Encodings.Byte }
+                }, { "Credits mouth 1 X", new Game.Asset { OriginalOffset = 0x28a8, OriginalSize = 1, Type = Game.Asset.Types.RawValue, Encoding = RawValue.Encodings.Byte }
+                }, { "Credits mouth 1 Y", new Game.Asset { OriginalOffset = 0x28a9, OriginalSize = 1, Type = Game.Asset.Types.RawValue, Encoding = RawValue.Encodings.Byte }
+                }, { "Credits mouth 2 X", new Game.Asset { OriginalOffset = 0x28b1, OriginalSize = 1, Type = Game.Asset.Types.RawValue, Encoding = RawValue.Encodings.Byte }
+                }, { "Credits mouth 2 Y", new Game.Asset { OriginalOffset = 0x28b2, OriginalSize = 1, Type = Game.Asset.Types.RawValue, Encoding = RawValue.Encodings.Byte }
+                }, { "Credits mouth 3 X", new Game.Asset { OriginalOffset = 0x28ba, OriginalSize = 1, Type = Game.Asset.Types.RawValue, Encoding = RawValue.Encodings.Byte }
+                }, { "Credits mouth 3 Y", new Game.Asset { OriginalOffset = 0x28bb, OriginalSize = 1, Type = Game.Asset.Types.RawValue, Encoding = RawValue.Encodings.Byte }
+                }, { "Credits foot 1 X", new Game.Asset { OriginalOffset = 0x28c3, OriginalSize = 1, Type = Game.Asset.Types.RawValue, Encoding = RawValue.Encodings.Byte }
+                }, { "Credits foot 1 Y", new Game.Asset { OriginalOffset = 0x28c4, OriginalSize = 1, Type = Game.Asset.Types.RawValue, Encoding = RawValue.Encodings.Byte }
+                }, { "Credits foot 2 X", new Game.Asset { OriginalOffset = 0x28cc, OriginalSize = 1, Type = Game.Asset.Types.RawValue, Encoding = RawValue.Encodings.Byte }
+                }, { "Credits foot 2 Y", new Game.Asset { OriginalOffset = 0x28cd, OriginalSize = 1, Type = Game.Asset.Types.RawValue, Encoding = RawValue.Encodings.Byte }
+                }, { "Credits arm 1 X", new Game.Asset { OriginalOffset = 0x28d5, OriginalSize = 1, Type = Game.Asset.Types.RawValue, Encoding = RawValue.Encodings.Byte }
+                }, { "Credits arm 1 Y", new Game.Asset { OriginalOffset = 0x28d6, OriginalSize = 1, Type = Game.Asset.Types.RawValue, Encoding = RawValue.Encodings.Byte }
+                }, { "Credits arm 2 X", new Game.Asset { OriginalOffset = 0x28e4, OriginalSize = 1, Type = Game.Asset.Types.RawValue, Encoding = RawValue.Encodings.Byte }
+                }, { "Credits arm 2 Y", new Game.Asset { OriginalOffset = 0x28e5, OriginalSize = 1, Type = Game.Asset.Types.RawValue, Encoding = RawValue.Encodings.Byte }
+                }, { "Credits arm 3 X", new Game.Asset { OriginalOffset = 0x28f3, OriginalSize = 1, Type = Game.Asset.Types.RawValue, Encoding = RawValue.Encodings.Byte }
+                }, { "Credits arm 3 Y", new Game.Asset { OriginalOffset = 0x28f4, OriginalSize = 1, Type = Game.Asset.Types.RawValue, Encoding = RawValue.Encodings.Byte }
                 }, {
                     "Credits palette", new Game.Asset {
                         OriginalOffset = 0x2ad6,
@@ -1056,13 +1088,13 @@ namespace sth1edwv
                 { "Map screen 2", new [] { "Map screen 2 tileset", "Map screen 2 tilemap 1", "Map screen 2 tilemap 2", "Map screen 2 palette", "Map screen 2 sprite tiles", "HUD sprite tiles", "Map screen text: Labyrinth", "Map screen text: Scrap Brain", "Map screen text: Sky Base" } },
                 { "Sonic", new[] { "Sonic (right)", "Sonic (left)", "HUD sprite tiles", "Green Hill palette" } }, // HUD sprites contain the spring jump toes, the ones in the art seem unused...
                 { "Monitors", new [] { "Monitor Art", "HUD sprite tiles", "Green Hill palette"  } }, // Monitor bases are in the HUD sprites
-                { "Title screen", new [] { "Title screen tiles", "Title screen sprites", "Title screen palette", "Title screen tilemap", "Title screen press button text 1", "Title screen press button text 2", "Title screen music", "Title screen \"PRESS BUTTON\" flash time", "Title screen \"PRESS BUTTON\" total time", "Starting lives count" } },
+                { "Title screen", new [] { "Title screen tiles", "Title screen sprites", "Title screen palette", "Title screen tilemap", "Title screen press button text 1", "Title screen press button text 2", "Title screen music", "Title screen \"PRESS BUTTON\" flash time", "Title screen \"PRESS BUTTON\" total time", "Starting lives count", "Title screen hand X", "Title screen hand Y" } },
                 { "Game Over", new [] { "Act Complete tiles", "Game Over palette", "Game Over tilemap", "Game Over: Continue top", "Game Over: Continue bottom" } },
                 { "Act Complete", new [] { "Act Complete tiles", "Act Complete palette", "Act Complete tilemap", "HUD sprite tiles", "Extra life at n x 10,000 points", "Extra life every n x 10,000 subsequent points" } },
                 { "Special Stage Complete", new [] { "Act Complete tiles", "Act Complete palette", "Special Stage Complete tilemap", "HUD sprite tiles" } },
                 { "Ending 1", new [] { "Map screen 1 tileset", "Ending palette", "Ending 1 tilemap" } },
                 { "Ending 2", new [] { "Map screen 1 tileset", "Ending palette", "Ending 2 tilemap", "Ending text: box 1", "Ending text: box 2", "Ending text: box 3", "Ending text: box 4", "Ending text: box 5", "Ending text: box 6", "Ending text: box 7", "Ending text: box 8", "Ending text: Chaos Emerald", "Ending text: Sonic Left", "Ending text: Special Bonus" } },
-                { "Credits", new [] { "Map screen 2 tileset", "Title screen sprites", "Credits tilemap", "Credits palette" } },
+                { "Credits", new [] { "Map screen 2 tileset", "Title screen sprites", "Credits tilemap", "Credits palette",  "Credits eyebrow X", "Credits eyebrow Y", "Credits mouth 1 X", "Credits mouth 1 Y", "Credits mouth 2 X", "Credits mouth 2 Y", "Credits mouth 3 X", "Credits mouth 3 Y", "Credits foot 1 X", "Credits foot 1 Y", "Credits foot 2 X", "Credits foot 2 Y", "Credits arm 1 X", "Credits arm 1 Y", "Credits arm 2 X", "Credits arm 2 Y", "Credits arm 3 X", "Credits arm 3 Y",  } },
                 { "End sign", new [] { "End sign tileset", "End sign palette" } },
                 { "Rings", new [] { "Rings", "Green Hill palette" } },
                 { "Dr. Robotnik", new [] { "Boss sprites 1", "Boss sprites 2", "Boss sprites 3", "Boss sprites palette" } },
