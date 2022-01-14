@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel;
 
-namespace Equin.ApplicationFramework
+namespace sth1edwv.BindingListView
 {
     /// <summary>
     /// Extends <see cref="System.ComponentModel.IEditableObject"/> by providing events to raise during edit state changes.

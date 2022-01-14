@@ -1,9 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Collections;
+using System.Collections.Generic;
 
-namespace Equin.ApplicationFramework
+namespace sth1edwv.BindingListView
 {
     internal class MultiSourceIndexList<T> : List<KeyValuePair<ListItemPair<T>, int>>
     {
@@ -76,7 +74,7 @@ namespace Equin.ApplicationFramework
         /// <summary>
         /// Checks if the list contains a given <see cref="ObjectView&lt;T&gt;"/> key.
         /// </summary>
-        /// <param name="item">The key to search for.</param>
+        /// <param name="key">The key to search for.</param>
         /// <returns>True if the key is contained in the list, otherwise false.</returns>
         public bool ContainsKey(ObjectView<T> key)
         {
@@ -86,16 +84,7 @@ namespace Equin.ApplicationFramework
         /// <summary>
         /// Returns an array of all the <see cref="ObjectView&lt;T&gt;"/> keys in the list.
         /// </summary>
-        public ObjectView<T>[] Keys
-        {
-            get
-            {
-                return ConvertAll<ObjectView<T>>(new Converter<KeyValuePair<ListItemPair<T>, int>, ObjectView<T>>(
-                    delegate(KeyValuePair<ListItemPair<T>, int> kvp)
-                    { return kvp.Key.Item; }
-                )).ToArray();
-            }
-        }
+        public ObjectView<T>[] Keys => ConvertAll(kvp => kvp.Key.Item).ToArray();
 
         /// <summary>
         /// Returns an <see cref="IEnumerator&lt;T&gt;"/> to iterate over all the keys in this list.
@@ -112,29 +101,14 @@ namespace Equin.ApplicationFramework
 
     internal class ListItemPair<T>
     {
-        private IList _list;
-        private ObjectView<T> _item;
-
         public ListItemPair(IList list, ObjectView<T> item)
         {
-            _list = list;
-            _item = item;
+            List = list;
+            Item = item;
         }
 
-        public IList List
-        {
-            get
-            {
-                return _list;
-            }
-        }
+        public IList List { get; }
 
-        public ObjectView<T> Item
-        {
-            get
-            {
-                return _item;
-            }
-        }
+        public ObjectView<T> Item { get; }
     }
 }

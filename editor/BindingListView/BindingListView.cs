@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace Equin.ApplicationFramework
+namespace sth1edwv.BindingListView
 {
     /// <summary>
     /// A searchable, sortable, filterable, data bindable view of a list of objects.
@@ -17,7 +17,6 @@ namespace Equin.ApplicationFramework
         /// </summary>
         /// <param name="list">The list of objects to base the view on.</param>
         public BindingListView(IList list)
-            : base()
         {
             DataSource = list;
         }
@@ -34,7 +33,7 @@ namespace Equin.ApplicationFramework
         {
             get
             {
-                IEnumerator<IList> e = GetSourceLists().GetEnumerator();
+                using IEnumerator<IList> e = GetSourceLists().GetEnumerator();
                 e.MoveNext();
                 return e.Current;
             }
@@ -52,7 +51,7 @@ namespace Equin.ApplicationFramework
 
                 if (!(value is ICollection<T>))
                 {
-                    // list is not a strongy-type collection.
+                    // list is not a strongly-type collection.
                     // Check that items in list are all of type T
                     foreach (object item in value)
                     {
@@ -79,10 +78,8 @@ namespace Equin.ApplicationFramework
             {
                 throw new Exception("BindingListView allows strictly one source list.");
             }
-            else
-            {
-                base.SourceListsChanged(sender, e);
-            }
+
+            base.SourceListsChanged(sender, e);
         }
     }
 }

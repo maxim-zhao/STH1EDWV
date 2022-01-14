@@ -1,22 +1,24 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.ComponentModel;
 using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Globalization;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Diagnostics;
+using System.Text;
+using System.Windows.Forms;
 
-namespace Equin.ApplicationFramework
+namespace sth1edwv.BindingListView
 {
-    public class AggregateBindingListView<T> : Component, IBindingListView, IList, IRaiseItemChangedEvents, ICancelAddNew, ITypedList, IEnumerable<T>
+    public class AggregateBindingListView<T> : Component, IBindingListView, IRaiseItemChangedEvents, ICancelAddNew, ITypedList, IEnumerable<T>
     {
         #region Constructors
 
-        public AggregateBindingListView()
+        protected AggregateBindingListView()
         {
             _sourceLists = new BindingList<IList>();
-            (_sourceLists as IBindingList).ListChanged += new ListChangedEventHandler(SourceListsChanged);
+            ((IBindingList)_sourceLists).ListChanged += SourceListsChanged;
             _savedSourceLists = new List<IList>();
             _sourceIndices = new MultiSourceIndexList<T>();
             // Start with a filter that includes all items.
@@ -26,7 +28,7 @@ namespace Equin.ApplicationFramework
             _objectViewCache = new Dictionary<T,ObjectView<T>>();
         }
 
-        public AggregateBindingListView(IContainer container)
+        protected AggregateBindingListView(IContainer container)
             : this()
         {
             container.Add(this);
@@ -103,10 +105,7 @@ namespace Equin.ApplicationFramework
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public IList SourceLists
         {
-            get
-            {
-                return _sourceLists;
-            }
+            get => _sourceLists;
             set
             {
                 if (value == null)
@@ -134,14 +133,13 @@ namespace Equin.ApplicationFramework
                             }
                         }
                     }
-                    else if (obj is IListSource)
+                    else if (obj is IListSource src)
                     {
-                        IListSource src = obj as IListSource;
                         if (src.ContainsListCollection)
                         {
                             list = src.GetList()[0] as IList;
                         } else {
-                            list = (obj as IListSource).GetList();
+                            list = src.GetList();
                         }
                     }
                     else if (!(obj is ICollection<T>))
@@ -171,7 +169,7 @@ namespace Equin.ApplicationFramework
                 // Un-hook old list changed event.
                 if (bindingList != null && bindingList.SupportsChangeNotification)
                 {
-                    bindingList.ListChanged -= new ListChangedEventHandler(SourceListsChanged);
+                    bindingList.ListChanged -= SourceListsChanged;
                 }
 
                 foreach (object list in _sourceLists)
@@ -179,7 +177,7 @@ namespace Equin.ApplicationFramework
                     IBindingList bl = list as IBindingList;
                     if (bl != null && bl.SupportsChangeNotification)
                     {
-                        bl.ListChanged -= new ListChangedEventHandler(SourceListChanged);
+                        bl.ListChanged -= SourceListChanged;
                     }
                 }
                 
@@ -189,14 +187,14 @@ namespace Equin.ApplicationFramework
                 // Hook new list changed event
                 if (bindingList != null && bindingList.SupportsChangeNotification)
                 {
-                    bindingList.ListChanged += new ListChangedEventHandler(SourceListsChanged);
+                    bindingList.ListChanged += SourceListsChanged;
                 }
                 foreach (object list in _sourceLists)
                 {
                     IBindingList bl = list as IBindingList;
                     if (bl != null && bl.SupportsChangeNotification)
                     {
-                        bl.ListChanged += new ListChangedEventHandler(SourceListChanged);
+                        bl.ListChanged += SourceListChanged;
                     }
                 }
                 
@@ -213,21 +211,12 @@ namespace Equin.ApplicationFramework
         /// </summary>
         /// <param name="index">The item index.</param>
         /// <returns>The ObjectView&lt;T&gt; of the item.</returns>
-        public ObjectView<T> this[int index]
-        {
-            get
-            {
-                return _sourceIndices[index].Key.Item;
-            }
-        }
+        public ObjectView<T> this[int index] => _sourceIndices[index].Key.Item;
 
         [Browsable(false)]
         public string DataMember
         {
-            get
-            {
-                return _dataMember;
-            }
+            get => _dataMember;
             set
             {
                 _dataMember = value;
@@ -256,7 +245,7 @@ namespace Equin.ApplicationFramework
         /// </summary>
         /// <returns>The new object to add to the list.</returns>
         /// <exception cref="System.InvalidOperationException">No new object provided by the AddingNew event handler and <typeparamref name="T"/> has no default public constructor.</exception>
-        protected virtual T OnAddingNew()
+        private T OnAddingNew()
         {
             // We allow users of this class to provide the object to add
             // by raising the AddingNew event.
@@ -265,25 +254,23 @@ namespace Equin.ApplicationFramework
                 AddingNewEventArgs args = new AddingNewEventArgs();
                 AddingNew(this, args);
                 // Check if we were given an object (and it's the correct type)
-                if ((args.NewObject != null) && (args.NewObject is T))
+                if ((args.NewObject != null) && (args.NewObject is T newObject))
                 {
-                    return (T)args.NewObject;
+                    return newObject;
                 }
             }
             // Otherwise, try the default public constructor instead.
             // Use reflection to find it. Note: We're not using the generic new() constraint since
             // we do not want to force the need for a public default constructor when the user
             // can simply handle the AddingNew event called above.
-            System.Reflection.ConstructorInfo ci = typeof(T).GetConstructor(System.Type.EmptyTypes);
+            ConstructorInfo ci = typeof(T).GetConstructor(Type.EmptyTypes);
             if (ci != null)
             {
                 // Invoke the constructor to create the object.
                 return (T)ci.Invoke(null);
             }
-            else
-            {
-                throw new InvalidOperationException("CannotAddNewItem");
-            }
+
+            throw new InvalidOperationException("CannotAddNewItem");
         }
 
         /// <summary>
@@ -372,7 +359,7 @@ namespace Equin.ApplicationFramework
 
                 // If it is not an IBindingList (or not SupportsChangeNotification) 
                 // then we must force the update ourselves.
-                if (!(_newItemsList is IBindingList) || !(_newItemsList as IBindingList).SupportsChangeNotification)
+                if (!(_newItemsList is IBindingList list) || !list.SupportsChangeNotification)
                 {
                     if (!_autoFilterAndSortSuspended)
                     {
@@ -393,10 +380,7 @@ namespace Equin.ApplicationFramework
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public IList NewItemsList
         {
-            get
-            {
-                return _newItemsList;
-            }
+            get => _newItemsList;
             set
             {
                 if (value != null && !_sourceLists.Contains(value))
@@ -426,14 +410,8 @@ namespace Equin.ApplicationFramework
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public ISynchronizeInvoke SynchronizingObject
         {
-            get
-            {
-                return _synchronizingObject;
-            }
-            set
-            {
-                _synchronizingObject = value;
-            }
+            get => _synchronizingObject;
+            set => _synchronizingObject = value;
         }
 
         public void SuspendAutoFilterAndSort()
@@ -530,7 +508,7 @@ namespace Equin.ApplicationFramework
         /// Currently unused. Here in case we want to perform actions when
         /// an item edit begins.
         /// </remarks>
-        protected virtual void BegunItemEdit(object sender, EventArgs e)
+        private void BegunItemEdit(object sender, EventArgs e)
         {
             
         }
@@ -539,7 +517,7 @@ namespace Equin.ApplicationFramework
         /// Currently unused. Here in case we want to perform actions when
         /// an item edit is cancelled.
         /// </remarks>
-        protected virtual void CancelledItemEdit(object sender, EventArgs e)
+        private void CancelledItemEdit(object sender, EventArgs e)
         {
             
         }
@@ -548,7 +526,7 @@ namespace Equin.ApplicationFramework
         /// Handles the <see cref="ObjectView&lt;T&gt;"/> EndedEdit event.
         /// </summary>
         /// <param name="sender">The <see cref="ObjectView&lt;T&gt;"/> that raised the event.</param>
-        protected virtual void EndedItemEdit(object sender, EventArgs e)
+        private void EndedItemEdit(object sender, EventArgs e)
         {
             if (_autoFilterAndSortSuspended) 
             {
@@ -596,10 +574,10 @@ namespace Equin.ApplicationFramework
                     throw new InvalidSourceListException();
                 }
 
-                if (list is IBindingList)
+                if (list is IBindingList bindingList)
                 {
                     // We need to know when the source list changes
-                    (list as IBindingList).ListChanged += new ListChangedEventHandler(SourceListChanged);
+                    bindingList.ListChanged += SourceListChanged;
                 }
                 _savedSourceLists.Add(list);
                 if (!_autoFilterAndSortSuspended)
@@ -610,12 +588,12 @@ namespace Equin.ApplicationFramework
             }
             else if (e.ListChangedType == ListChangedType.ItemDeleted)
             {
-                IList list = _savedSourceLists[e.NewIndex] as IList;
+                IList list = _savedSourceLists[e.NewIndex];
                 if (list != null)
                 {
-                    if (list is IBindingList)
+                    if (list is IBindingList bindingList)
                     {
-                        (list as IBindingList).ListChanged -= new ListChangedEventHandler(SourceListChanged);
+                        bindingList.ListChanged -= SourceListChanged;
                     }
                     _savedSourceLists.RemoveAt(e.NewIndex);
                     if (!_autoFilterAndSortSuspended)
@@ -781,7 +759,7 @@ namespace Equin.ApplicationFramework
         /// Raises the ListChanged event with the given event arguments.
         /// </summary>
         /// <param name="e">The ListChangedEventArgs to raise the event with.</param>
-        protected virtual void OnListChanged(ListChangedEventArgs e)
+        protected void OnListChanged(ListChangedEventArgs e)
         {
             if (ListChanged != null)
             {
@@ -834,30 +812,21 @@ namespace Equin.ApplicationFramework
                 throw new ArgumentNullException("includeItem", "IncludeDelegateCannotBeNull");
             }
 
-            Filter = AggregateBindingListView<T>.CreateItemFilter(includeItem);
+            Filter = CreateItemFilter(includeItem);
         }
 
         /// <summary>
         /// Gets if this view supports filtering of items. Always returns true.
         /// </summary>
-        bool IBindingListView.SupportsFiltering
-        {
-            get { return true; }
-        }
+        bool IBindingListView.SupportsFiltering => true;
 
         /// <remarks>Explicitly implemented to expose the stronger Filter property instead.</remarks>
         string IBindingListView.Filter
         {
-            get
-            {
-                return Filter.ToString();
-            }
-            set
-            {
-                throw new NotSupportedException("Cannot set filter from string expression.");
-                //TODO: Re-instate this line once we have an expression filter
-                //Filter = new ExpressionItemFilter<T>(value);
-            }
+            get => Filter.ToString();
+            set => throw new NotSupportedException("Cannot set filter from string expression.");
+            //TODO: Re-instate this line once we have an expression filter
+            //Filter = new ExpressionItemFilter<T>(value);
         }
 
         /// <summary>
@@ -865,10 +834,7 @@ namespace Equin.ApplicationFramework
         /// </summary>
         public IItemFilter<T> Filter
         {
-            get
-            {
-                return _filter;
-            }
+            get => _filter;
             set
             {
                 // Do not allow a null filter. Instead, use the "include all items" filter.
@@ -953,18 +919,12 @@ namespace Equin.ApplicationFramework
         /// <summary>
         /// Gets if this view supports sorting. Always returns true.
         /// </summary>
-        bool IBindingList.SupportsSorting
-        {
-            get { return true; }
-        }
+        bool IBindingList.SupportsSorting => true;
 
         /// <summary>
         /// Gets if this view supports advanced sorting. Always returns true.
         /// </summary>
-        bool IBindingListView.SupportsAdvancedSorting
-        {
-            get { return true; }
-        }
+        bool IBindingListView.SupportsAdvancedSorting => true;
 
         /// <summary>
         /// Sorts the view by a single property in a given direction.
@@ -977,7 +937,7 @@ namespace Equin.ApplicationFramework
             // Apply sort by setting the current sort descriptions
             // to be a collection containing just one SortDescription.
             SortDescriptions = new ListSortDescriptionCollection(
-                new ListSortDescription[] {
+                new[] {
                     new ListSortDescription(property, direction)});
         }
 
@@ -1035,7 +995,7 @@ namespace Equin.ApplicationFramework
                     string dir = sort.Substring(pos + 1).Trim();
                     // Check what kind of direction is specified.
                     // (Ignoring case and culture.)
-                    if (string.Compare(dir, SortDescendingModifier, true, System.Globalization.CultureInfo.InvariantCulture) == 0)
+                    if (string.Compare(dir, SortDescendingModifier, true, CultureInfo.InvariantCulture) == 0)
                     {
                         direction = ListSortDirection.Descending;
                     }
@@ -1096,14 +1056,9 @@ namespace Equin.ApplicationFramework
         /// Gets if the view is currently sorted.
         /// </summary>
         [Browsable(false)]
-        public bool IsSorted
-        {
-            get
-            {
-                // To be sorted there must be some sorts applied.
-                return (SortDescriptions.Count > 0);
-            }
-        }
+        public bool IsSorted =>
+            // To be sorted there must be some sorts applied.
+            (SortDescriptions.Count > 0);
 
         /// <summary>
         /// Gets or sets the string representation of the sort currently applied to the view.
@@ -1115,7 +1070,7 @@ namespace Equin.ApplicationFramework
                 if (IsSorted)
                 {
                     // Build a string of the properties being sorted by
-                    System.Text.StringBuilder sb = new System.Text.StringBuilder();
+                    StringBuilder sb = new StringBuilder();
                     foreach (ListSortDescription sort in SortDescriptions)
                     {
                         sb.Append(sort.PropertyDescriptor.Name);
@@ -1134,10 +1089,7 @@ namespace Equin.ApplicationFramework
                 }
                 return string.Empty;
             }
-            set
-            {
-                ApplySort(value);
-            }
+            set => ApplySort(value);
         }
 
         private bool ShouldSerializeSort()
@@ -1158,12 +1110,10 @@ namespace Equin.ApplicationFramework
                 {
                     return SortDescriptions[0].SortDirection;
                 }
-                else
-                {
-                    // We don't really want to throw exceptions.
-                    // Calling code should have checked IsSorted to know the true situation.
-                    return ListSortDirection.Ascending;
-                }
+
+                // We don't really want to throw exceptions.
+                // Calling code should have checked IsSorted to know the true situation.
+                return ListSortDirection.Ascending;
             }
         }
 
@@ -1180,12 +1130,10 @@ namespace Equin.ApplicationFramework
                 {
                     return SortDescriptions[0].PropertyDescriptor;
                 }
-                else
-                {
-                    // We don't really want to throw exceptions.
-                    // Calling code should have checked IsSorted to know the true situation.
-                    return null;
-                }
+
+                // We don't really want to throw exceptions.
+                // Calling code should have checked IsSorted to know the true situation.
+                return null;
             }
         }
 
@@ -1195,10 +1143,7 @@ namespace Equin.ApplicationFramework
         [Browsable(false)]
         public ListSortDescriptionCollection SortDescriptions
         {
-            get
-            {
-                return _sorts;
-            }
+            get => _sorts;
             private set
             {
                 _sorts = value;
@@ -1360,57 +1305,52 @@ namespace Equin.ApplicationFramework
                     {
                         return BuildValueTypeComparison(pi, direction);
                     }
-                    else
-                    {
-                        GetPropertyDelegate getProperty = BuildGetPropertyMethod(pi);
-                        return delegate(T x, T y)
-                        {
-                            int result;
-                            object value1 = getProperty(x);
-                            object value2 = getProperty(y);
-                            if (value1 != null && value2 != null)
-                            {
-                                result = (value1 as IComparable).CompareTo(value2);
-                            }
-                            else if (value1 == null && value2 != null)
-                            {
-                                result = -1;
-                            }
-                            else if (value1 != null && value2 == null)
-                            {
-                                result = 1;
-                            }
-                            else
-                            {
-                                result = 0;
-                            }
 
-                            if (direction == ListSortDirection.Descending)
-                            {
-                                result *= -1;
-                            }
-                            return result;
-                        };
-                    }
-                }
-                else if (pi.PropertyType.IsGenericType && pi.PropertyType.GetGenericTypeDefinition().Equals(typeof(Nullable<>)))
-                {
-                    return BuildNullableComparison(pi, direction);
-                }
-                else
-                {
-                    return delegate(T o1, T o2)
+                    GetPropertyDelegate getProperty = BuildGetPropertyMethod(pi);
+                    return delegate(T x, T y)
                     {
-                        if (o1.Equals(o2))
+                        int result;
+                        object value1 = getProperty(x);
+                        object value2 = getProperty(y);
+                        if (value1 != null && value2 != null)
                         {
-                            return 0;
+                            result = (value1 as IComparable).CompareTo(value2);
+                        }
+                        else if (value1 == null && value2 != null)
+                        {
+                            result = -1;
+                        }
+                        else if (value1 != null && value2 == null)
+                        {
+                            result = 1;
                         }
                         else
                         {
-                            return o1.ToString().CompareTo(o2.ToString());
+                            result = 0;
                         }
+
+                        if (direction == ListSortDirection.Descending)
+                        {
+                            result *= -1;
+                        }
+                        return result;
                     };
                 }
+
+                if (pi.PropertyType.IsGenericType && pi.PropertyType.GetGenericTypeDefinition().Equals(typeof(Nullable<>)))
+                {
+                    return BuildNullableComparison(pi, direction);
+                }
+
+                return delegate(T o1, T o2)
+                {
+                    if (o1.Equals(o2))
+                    {
+                        return 0;
+                    }
+
+                    return o1.ToString().CompareTo(o2.ToString());
+                };
             }
 
             private delegate object GetPropertyDelegate(T obj);
@@ -1420,7 +1360,7 @@ namespace Equin.ApplicationFramework
                 MethodInfo getMethod = pi.GetGetMethod();
                 Debug.Assert(getMethod != null);
 
-                DynamicMethod dm = new DynamicMethod("__blw_get_" + pi.Name, typeof(object), new Type[] { typeof(T) }, typeof(T), true);
+                DynamicMethod dm = new DynamicMethod("__blw_get_" + pi.Name, typeof(object), new[] { typeof(T) }, typeof(T), true);
                 ILGenerator il = dm.GetILGenerator();
 
                 il.Emit(OpCodes.Ldarg_0);
@@ -1438,7 +1378,7 @@ namespace Equin.ApplicationFramework
                 MethodInfo getMethod = pi.GetGetMethod();
                 Debug.Assert(getMethod != null);
 
-                DynamicMethod dm = new DynamicMethod("Get" + pi.Name, typeof(int), new Type[] { typeof(T), typeof(T) }, typeof(T), true);
+                DynamicMethod dm = new DynamicMethod("Get" + pi.Name, typeof(int), new[] { typeof(T), typeof(T) }, typeof(T), true);
                 ILGenerator il = dm.GetILGenerator();
 
                 // Get the value of the first object's property.
@@ -1474,7 +1414,7 @@ namespace Equin.ApplicationFramework
                 MethodInfo getMethod = pi.GetGetMethod();
                 Debug.Assert(getMethod != null);
 
-                DynamicMethod dm = new DynamicMethod("Get" + pi.Name, typeof(int), new Type[] { typeof(T), typeof(T) }, typeof(T), true);
+                DynamicMethod dm = new DynamicMethod("Get" + pi.Name, typeof(int), new[] { typeof(T), typeof(T) }, typeof(T), true);
                 ILGenerator il = dm.GetILGenerator();
 
                 // Get the value of the first object's property.
@@ -1516,7 +1456,7 @@ namespace Equin.ApplicationFramework
 
                 //Type nullableType = typeof(Nullable<>).MakeGenericType(pi.PropertyType.GetGenericArguments()[0]);
 
-                DynamicMethod dm = new DynamicMethod("Get" + pi.Name, typeof(int), new Type[] { typeof(T), typeof(T) }, typeof(T), true);
+                DynamicMethod dm = new DynamicMethod("Get" + pi.Name, typeof(int), new[] { typeof(T), typeof(T) }, typeof(T), true);
                 ILGenerator il = dm.GetILGenerator();
 
                 // Get the value of the first object's property.
@@ -1583,10 +1523,7 @@ namespace Equin.ApplicationFramework
         /// <summary>
         /// Gets if this view supports searching using the Find method. Always returns true.
         /// </summary>
-        bool IBindingList.SupportsSearching
-        {
-            get { return true; }
-        }
+        bool IBindingList.SupportsSearching => true;
 
         /// <summary>
         /// Returns the index of the first item in the view who's property equals the given value.
@@ -1625,10 +1562,8 @@ namespace Equin.ApplicationFramework
             {
                 return Find(pd, key);
             }
-            else
-            {
-                throw new ArgumentException($"PropertyNotFound: {propertyName} {typeof(T).FullName}", "propertyName");
-            }
+
+            throw new ArgumentException($"PropertyNotFound: {propertyName} {typeof(T).FullName}", "propertyName");
         }
 
         #endregion
@@ -1638,15 +1573,12 @@ namespace Equin.ApplicationFramework
         /// <summary>
         /// Gets if this view raises the ListChanged event. Always returns true.
         /// </summary>
-        bool IBindingList.SupportsChangeNotification
-        {
-            get { return true; }
-        }
+        bool IBindingList.SupportsChangeNotification => true;
 
         /// <remarks>Explicitly implemented so the type safe AddNew method is exposed instead.</remarks>
         object IBindingList.AddNew()
         {
-            return this.AddNew();
+            return AddNew();
         }
 
         /// <summary>
@@ -1659,9 +1591,9 @@ namespace Equin.ApplicationFramework
             {
                 foreach (object list in SourceLists)
                 {
-                    if (list is IBindingList)
+                    if (list is IBindingList bindingList)
                     {
-                        if (!(list as IBindingList).AllowEdit)
+                        if (!bindingList.AllowEdit)
                         {
                             return false;
                         }
@@ -1681,10 +1613,10 @@ namespace Equin.ApplicationFramework
             {
                 if (_newItemsList != null)
                 {
-                    if (_newItemsList is IBindingList)
+                    if (_newItemsList is IBindingList list)
                     {
                         // Respect what the binding list says.
-                        return (_newItemsList as IBindingList).AllowNew;
+                        return list.AllowNew;
                     }
                     // _newItemsList is a IList, so we can call Add()
                     // it may fail at runtime - but that is the callee's problem
@@ -1704,9 +1636,9 @@ namespace Equin.ApplicationFramework
             {
                 foreach (object list in SourceLists)
                 {
-                    if (list is IBindingList)
+                    if (list is IBindingList bindingList)
                     {
-                        if (!(list as IBindingList).AllowRemove)
+                        if (!bindingList.AllowRemove)
                         {
                             return false;
                         }
@@ -1742,10 +1674,7 @@ namespace Equin.ApplicationFramework
         /// Gets if this view raises the ListChanged event when an item changes. Always returns true.
         /// </summary>
         [Browsable(false)]
-        public bool RaisesItemChangedEvents
-        {
-            get { return true;  }
-        }
+        public bool RaisesItemChangedEvents => true;
 
         #endregion
 
@@ -1788,18 +1717,17 @@ namespace Equin.ApplicationFramework
         bool IList.Contains(object item)
         {
             // See if the source indices contain the item
-            if (item is ObjectView<T>)
+            if (item is ObjectView<T> view)
             {
-                return _sourceIndices.ContainsKey((ObjectView<T>)item);
+                return _sourceIndices.ContainsKey(view);
             }
-            else if (item is T)
+
+            if (item is T item1)
             {
-                return _sourceIndices.ContainsItem((T)item);
+                return _sourceIndices.ContainsItem(item1);
             }
-            else
-            {
-                return false;
-            }
+
+            return false;
         }
 
         /// <summary>
@@ -1809,13 +1737,14 @@ namespace Equin.ApplicationFramework
         /// <returns>The index of the item, or -1 if not found.</returns>
         int IList.IndexOf(object item)
         {
-            if (item is ObjectView<T>)
+            if (item is ObjectView<T> view)
             {
-                return _sourceIndices.IndexOfKey(item as ObjectView<T>);
+                return _sourceIndices.IndexOfKey(view);
             }
-            else if (item is T)
+
+            if (item is T item1)
             {
-                return _sourceIndices.IndexOfItem((T)item);
+                return _sourceIndices.IndexOfItem(item1);
             }
             return -1;
         }
@@ -1841,9 +1770,9 @@ namespace Equin.ApplicationFramework
             {
                 foreach (object list in SourceLists)
                 {
-                    if (list is IBindingList)
+                    if (list is IBindingList bindingList)
                     {
-                        if (!(list as IBindingList).IsReadOnly)
+                        if (!bindingList.IsReadOnly)
                         {
                             return false;
                         }
@@ -1861,13 +1790,7 @@ namespace Equin.ApplicationFramework
         /// Always returns <code>false</code> because the view can change size when
         /// source lists are added.
         /// </summary>
-        bool IList.IsFixedSize
-        {
-            get
-            {
-                return false;
-            }
-        }
+        bool IList.IsFixedSize => false;
 
         /// <summary>
         /// Removes the given item from the view and underlying source list.
@@ -1891,7 +1814,7 @@ namespace Equin.ApplicationFramework
             if (sourceIndex > -1)
             {
                 sourceList.RemoveAt(sourceIndex);
-                if (!(sourceList is IBindingList) || !(sourceList as IBindingList).SupportsChangeNotification)
+                if (!(sourceList is IBindingList list) || !list.SupportsChangeNotification)
                 {
                     FilterAndSort();
                     OnListChanged(ListChangedType.Reset, -1);
@@ -1915,17 +1838,12 @@ namespace Equin.ApplicationFramework
         /// </exception>
         object IList.this[int index]
         {
-            get
-            {
-                return this[index];
-            }
-            set
-            {
+            get => this[index];
+            set => throw
                 // The interface requires we supply a setter
                 // But we don't want external code modifying the view
                 // in this manner.
-                throw new NotSupportedException("CannotSetItem");
-            }
+                new NotSupportedException("CannotSetItem");
         }
 
         #endregion
@@ -1945,28 +1863,19 @@ namespace Equin.ApplicationFramework
         /// <summary>
         /// Gets a value indicating whether access to the <see cref="System.Collections.ICollection" /> is synchronized (thread safe).
         /// </summary>
-        bool ICollection.IsSynchronized
-        {
-            get { return false; }
-        }
+        bool ICollection.IsSynchronized => false;
 
         /// <summary>
         /// Not supported.
         /// </summary>
-        object ICollection.SyncRoot
-        {
-            get { throw new NotSupportedException("SyncAccessNotSupported"); }
-        }
+        object ICollection.SyncRoot => throw new NotSupportedException("SyncAccessNotSupported");
 
         /// <summary>
         /// Gets the number of items currently in the view. This does not include those items
         /// excluded by the current filter.
         /// </summary>
         [Browsable(false)]
-        public int Count
-        {
-            get { return _sourceIndices.Count; }
-        }
+        public int Count => _sourceIndices.Count;
 
         #endregion
 
@@ -2012,7 +1921,7 @@ namespace Equin.ApplicationFramework
             else
             {
                 // Get the properties ourself.
-                originalProps = System.Windows.Forms.ListBindingHelper.GetListItemProperties(typeof(T), listAccessors);
+                originalProps = ListBindingHelper.GetListItemProperties(typeof(T), listAccessors);
             }
 
             if (listAccessors != null && listAccessors.Length > 0)
@@ -2033,17 +1942,17 @@ namespace Equin.ApplicationFramework
             return new PropertyDescriptorCollection(newProps.ToArray());
         }
 
-        protected internal bool ShouldProvideView(PropertyDescriptor property)
+        internal bool ShouldProvideView(PropertyDescriptor property)
         {
             return ProvidedViewPropertyDescriptor.CanProvideViewOf(property);
         }
 
-        protected internal string GetProvidedViewName(PropertyDescriptor sourceListProperty)
+        internal string GetProvidedViewName(PropertyDescriptor sourceListProperty)
         {
             return sourceListProperty.Name + "View";
         }
 
-        protected internal object CreateProvidedView(ObjectView<T> @object, PropertyDescriptor sourceListProperty)
+        internal object CreateProvidedView(ObjectView<T> @object, PropertyDescriptor sourceListProperty)
         {
             object list = sourceListProperty.GetValue(@object);
             Type viewType = GetProvidedViewType(sourceListProperty);
@@ -2137,9 +2046,9 @@ namespace Equin.ApplicationFramework
         /// <param name="objectView">The <see cref="ObjectView&lt;T&gt;"/> to listen to.</param>
         private void HookEditableObjectEvents(ObjectView<T> editableObject)
         {
-            editableObject.EditBegun += new EventHandler(BegunItemEdit);
-            editableObject.EditCancelled += new EventHandler(CancelledItemEdit);
-            editableObject.EditEnded += new EventHandler(EndedItemEdit);
+            editableObject.EditBegun += BegunItemEdit;
+            editableObject.EditCancelled += CancelledItemEdit;
+            editableObject.EditEnded += EndedItemEdit;
         }
 
         /// <summary>
@@ -2149,9 +2058,9 @@ namespace Equin.ApplicationFramework
         /// <param name="objectView">The <see cref="ObjectView&lt;T&gt;"/> to stop listening to.</param>
         private void UnHookEditableObjectEvents(ObjectView<T> editableObject)
         {
-            editableObject.EditBegun -= new EventHandler(BegunItemEdit);
-            editableObject.EditCancelled -= new EventHandler(CancelledItemEdit);
-            editableObject.EditEnded -= new EventHandler(EndedItemEdit);
+            editableObject.EditBegun -= BegunItemEdit;
+            editableObject.EditCancelled -= CancelledItemEdit;
+            editableObject.EditEnded -= EndedItemEdit;
         }
 
         /// <summary>
@@ -2160,7 +2069,7 @@ namespace Equin.ApplicationFramework
         /// <param name="objectView">The <see cref="ObjectView&lt;T&gt;"/> to listen to.</param>
         private void HookPropertyChangedEvent(ObjectView<T> editableObject)
         {
-            editableObject.PropertyChanged += new PropertyChangedEventHandler(ItemPropertyChanged);
+            editableObject.PropertyChanged += ItemPropertyChanged;
         }
 
         /// <summary>
@@ -2169,7 +2078,7 @@ namespace Equin.ApplicationFramework
         /// <param name="objectView">The <see cref="ObjectView&lt;T&gt;"/> to stop listening to.</param>
         private void UnHookPropertyChangedEvent(ObjectView<T> editableObject)
         {
-            editableObject.PropertyChanged -= new PropertyChangedEventHandler(ItemPropertyChanged);
+            editableObject.PropertyChanged -= ItemPropertyChanged;
         }
 
         private void BuildSavedList()
@@ -2202,12 +2111,11 @@ namespace Equin.ApplicationFramework
                         yield return null;
                     }
                 }
-                else if (obj is IListSource)
+                else if (obj is IListSource src)
                 {
-                    IListSource src = obj as IListSource;
                     if (src.ContainsListCollection)
                     {
-                        IList list = src.GetList() as IList;
+                        IList list = src.GetList();
                         if (list != null && list.Count > 0)
                         {
                             list = list[0] as IList;

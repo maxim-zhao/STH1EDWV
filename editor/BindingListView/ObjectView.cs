@@ -1,14 +1,14 @@
 using System;
-using System.ComponentModel;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
-using System.Reflection;
 
-namespace Equin.ApplicationFramework
+namespace sth1edwv.BindingListView
 {
     /// <summary>
     /// Serves a wrapper for items being viewed in a <see cref="BindingListView&lt;T&gt;"/>.
-    /// This class implements <see cref="INotifyEditableObject"/> so will raise the necessary events during 
+    /// This class implements <see><cref>INotifyEditableObject</cref></see>
+    /// so will raise the necessary events during 
     /// the item edit life-cycle.
     /// </summary>
     /// <remarks>
@@ -20,17 +20,21 @@ namespace Equin.ApplicationFramework
     public class ObjectView<T> : INotifyingEditableObject, IDataErrorInfo, INotifyPropertyChanged, ICustomTypeDescriptor, IProvideViews
     {
         /// <summary>
-        /// Creates a new <see cref="ObjectView&ltT&gt;"/> wrapper for a <typeparamref name="T"/> object.
+        /// Creates a new <see>
+        ///     <cref>ObjectView&amp;ltT&amp;gt;</cref>
+        /// </see>
+        /// wrapper for a <typeparamref name="T"/> object.
         /// </summary>
         /// <param name="object">The <typeparamref name="T"/> object being wrapped.</param>
+        /// <param name="parent"></param>
         public ObjectView(T @object, AggregateBindingListView<T> parent)
         {
             _parent = parent;
 
             Object = @object;
-            if (Object is INotifyPropertyChanged)
+            if (Object is INotifyPropertyChanged changed)
             {
-                ((INotifyPropertyChanged)Object).PropertyChanged += new PropertyChangedEventHandler(ObjectPropertyChanged);
+                changed.PropertyChanged += ObjectPropertyChanged;
             }
 
             if (typeof(ICustomTypeDescriptor).IsAssignableFrom(typeof(T)))
@@ -74,7 +78,7 @@ namespace Equin.ApplicationFramework
         /// </summary>
         public T Object
         {
-            get { return _object; }
+            get => _object;
             private set
             {
                 if (value == null)
@@ -111,14 +115,13 @@ namespace Equin.ApplicationFramework
             {
                 return Object.Equals(obj);
             }
-            else if (obj is ObjectView<T>)
+
+            if (obj is ObjectView<T> view)
             {
-                return Object.Equals((obj as ObjectView<T>).Object);
+                return Object.Equals(view.Object);
             }
-            else
-            {
-                return base.Equals(obj);
-            }
+
+            return base.Equals(obj);
         }
 
         public override int GetHashCode()
@@ -218,11 +221,11 @@ namespace Equin.ApplicationFramework
 
                 // If possible call the object's BeginEdit() method
                 // to let it do what ever it needs e.g. save state
-                if (Object is IEditableObject)
+                if (Object is IEditableObject editableObject)
                 {
-                    ((IEditableObject)Object).BeginEdit();
+                    editableObject.BeginEdit();
                 }
-                // Raise the EditBegun event.                
+                // Raise the EditBegun event.
                 OnEditBegun();
             }
         }
@@ -234,9 +237,9 @@ namespace Equin.ApplicationFramework
             {
                 // If possible call the object's CancelEdit() method
                 // to let it do what ever it needs e.g. rollback state
-                if (Object is IEditableObject)
+                if (Object is IEditableObject editableObject)
                 {
-                    ((IEditableObject)Object).CancelEdit();
+                    editableObject.CancelEdit();
                 }
                 // Raise the EditCancelled event.
                 OnEditCancelled();
@@ -252,9 +255,9 @@ namespace Equin.ApplicationFramework
             {
                 // If possible call the object's EndEdit() method
                 // to let it do what ever it needs e.g. commit state
-                if (Object is IEditableObject)
+                if (Object is IEditableObject editableObject)
                 {
-                    ((IEditableObject)Object).EndEdit();
+                    editableObject.EndEdit();
                 }
                 // Raise the EditEnded event.
                 OnEditEnded();
@@ -274,9 +277,9 @@ namespace Equin.ApplicationFramework
         {
             get
             {
-                if (Object is IDataErrorInfo)
+                if (Object is IDataErrorInfo info)
                 {
-                    return ((IDataErrorInfo)Object).Error;
+                    return info.Error;
                 }
                 return string.Empty;
             }
@@ -286,9 +289,9 @@ namespace Equin.ApplicationFramework
         {
             get
             {
-                if (Object is IDataErrorInfo)
+                if (Object is IDataErrorInfo info)
                 {
-                    return ((IDataErrorInfo)Object)[columnName];
+                    return info[columnName];
                 }
                 return string.Empty;
             }
@@ -319,10 +322,8 @@ namespace Equin.ApplicationFramework
             {
                 return _customTypeDescriptor.GetAttributes();
             }
-            else
-            {
-                return TypeDescriptor.GetAttributes(Object);
-            }
+
+            return TypeDescriptor.GetAttributes(Object);
         }
 
         string ICustomTypeDescriptor.GetClassName()
@@ -331,10 +332,8 @@ namespace Equin.ApplicationFramework
             {
                 return _customTypeDescriptor.GetClassName();
             }
-            else
-            {
-                return typeof(T).FullName;
-            }
+
+            return typeof(T).FullName;
         }
 
         string ICustomTypeDescriptor.GetComponentName()
@@ -343,10 +342,8 @@ namespace Equin.ApplicationFramework
             {
                 return _customTypeDescriptor.GetComponentName();
             }
-            else
-            {
-                return TypeDescriptor.GetFullComponentName(Object);
-            }
+
+            return TypeDescriptor.GetFullComponentName(Object);
         }
 
         TypeConverter ICustomTypeDescriptor.GetConverter()
@@ -355,10 +352,8 @@ namespace Equin.ApplicationFramework
             {
                 return _customTypeDescriptor.GetConverter();
             }
-            else
-            {
-                return TypeDescriptor.GetConverter(Object);
-            }
+
+            return TypeDescriptor.GetConverter(Object);
         }
 
         EventDescriptor ICustomTypeDescriptor.GetDefaultEvent()
@@ -367,10 +362,8 @@ namespace Equin.ApplicationFramework
             {
                 return _customTypeDescriptor.GetDefaultEvent();
             }
-            else
-            {
-                return TypeDescriptor.GetDefaultEvent(Object);
-            }
+
+            return TypeDescriptor.GetDefaultEvent(Object);
         }
 
         PropertyDescriptor ICustomTypeDescriptor.GetDefaultProperty()
@@ -379,10 +372,8 @@ namespace Equin.ApplicationFramework
             {
                 return _customTypeDescriptor.GetDefaultProperty();
             }
-            else
-            {
-                return TypeDescriptor.GetDefaultProperty(Object);
-            }
+
+            return TypeDescriptor.GetDefaultProperty(Object);
         }
 
         object ICustomTypeDescriptor.GetEditor(Type editorBaseType)
@@ -391,10 +382,8 @@ namespace Equin.ApplicationFramework
             {
                 return _customTypeDescriptor.GetEditor(editorBaseType);
             }
-            else
-            {
-                return null;
-            }
+
+            return null;
         }
 
         EventDescriptorCollection ICustomTypeDescriptor.GetEvents(Attribute[] attributes)
@@ -403,10 +392,8 @@ namespace Equin.ApplicationFramework
             {
                 return _customTypeDescriptor.GetEvents();
             }
-            else
-            {
-                return TypeDescriptor.GetEvents(Object, attributes);
-            }
+
+            return TypeDescriptor.GetEvents(Object, attributes);
         }
 
         EventDescriptorCollection ICustomTypeDescriptor.GetEvents()
@@ -439,10 +426,8 @@ namespace Equin.ApplicationFramework
             {
                 return _customTypeDescriptor.GetPropertyOwner(pd);
             }
-            else
-            {
-                return Object;
-            }
+
+            return Object;
         }
 
         #endregion

@@ -1,48 +1,38 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 
-namespace Equin.ApplicationFramework
+namespace sth1edwv.BindingListView
 {
     class ProvidedViewPropertyDescriptor : PropertyDescriptor
     {
         public ProvidedViewPropertyDescriptor(string name, Type propertyType)
             : base(name, null)
         {
-            _propertyType = propertyType;
+            PropertyType = propertyType;
         }
-
-        private Type _propertyType;
 
         public override bool CanResetValue(object component)
         {
             return false;
         }
 
-        public override Type ComponentType
-        {
-            get { return typeof(IProvideViews); }
-        }
+        public override Type ComponentType => typeof(IProvideViews);
 
         public override object GetValue(object component)
         {
-            if (component is IProvideViews)
+            if (component is IProvideViews views)
             {
-                return (component as IProvideViews).GetProvidedView(Name);
+                return views.GetProvidedView(Name);
             }
 
-            throw new ArgumentException("Type of component is not valid.", "component");
+            throw new ArgumentException("Type of component is not valid.", nameof(component));
         }
 
-        public override bool IsReadOnly
-        {
-            get { return true; }
-        }
+        public override bool IsReadOnly => true;
 
-        public override Type PropertyType
-        {
-            get { return _propertyType; }
-        }
+        public override Type PropertyType { get; }
 
         public override void ResetValue(object component)
         {
@@ -65,15 +55,7 @@ namespace Equin.ApplicationFramework
         /// </summary>
         public static bool CanProvideViewOf(PropertyDescriptor prop)
         {
-            Type propType = prop.PropertyType;
-            foreach (Type interfaceType in propType.GetInterfaces())
-            {
-                if (interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition().Equals(typeof(IList<>)))
-                {
-                    return true;
-                }
-            }
-            return false;
+            return prop.PropertyType.GetInterfaces().Any(interfaceType => interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == typeof(IList<>));
         }
     }
 }

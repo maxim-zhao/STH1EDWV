@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Equin.ApplicationFramework
+namespace sth1edwv.BindingListView
 {
     /// <summary>
     /// Defines a general method to test it an item should be included in a <see cref="BindingListView&lt;T&gt;"/>.
@@ -59,7 +57,7 @@ namespace Equin.ApplicationFramework
     }
 
     /// <summary>
-    /// A filter that uses a user-defined <see cref="Predicate&lt;T&gt;"/> to test items for inclusion in <see cref="BindingListView&lt;T&gt;"/>.
+    /// A filter that uses a user-defined <see cref="BindingListView{T}"/> to test items for inclusion in <see cref="Predicate{T}"/>.
     /// </summary>
     public class PredicateItemFilter<T> : IItemFilter<T>
     {

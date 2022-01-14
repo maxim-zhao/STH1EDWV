@@ -1,8 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Runtime.Serialization;
 
-namespace Equin.ApplicationFramework
+namespace sth1edwv.BindingListView
 {
     [Serializable]
     public class InvalidSourceListException : Exception
@@ -19,7 +18,7 @@ namespace Equin.ApplicationFramework
 
         }
 
-        public InvalidSourceListException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context)
+        public InvalidSourceListException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
 
