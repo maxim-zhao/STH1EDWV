@@ -37,7 +37,25 @@ namespace sth1edwv
 
             public class Reference
             {
-                public int Offset { get; set; }
+                protected bool Equals(Reference other)
+                {
+                    return Offset == other.Offset && Type == other.Type && Delta == other.Delta;
+                }
+
+                public override bool Equals(object obj)
+                {
+                    if (ReferenceEquals(null, obj)) return false;
+                    if (ReferenceEquals(this, obj)) return true;
+                    if (obj.GetType() != this.GetType()) return false;
+                    return Equals((Reference)obj);
+                }
+
+                public override int GetHashCode()
+                {
+                    return HashCode.Combine(Offset, (int)Type, Delta);
+                }
+
+                public int Offset { get; init; }
                 public enum Types
                 {
                     Absolute,
@@ -46,8 +64,8 @@ namespace sth1edwv
                     Size,
                     Size8
                 }
-                public Types Type { get; set; }
-                public int Delta { get; set; }
+                public Types Type { get; init; }
+                public int Delta { get; init; }
                 public override string ToString()
                 {
                     return $"{Type}@{Offset:X} ({Delta:X})";
@@ -138,9 +156,21 @@ namespace sth1edwv
                 }
             }
 
-            public Dictionary<string, Asset> Assets { get; set; }
+            // Here we have a list of assets in the original ROM, each holding all its references. All of these can be "cleared"...
+            public Dictionary<string, Asset> Assets { get; init; }
 
-            public Dictionary<string, IEnumerable<string>> AssetGroups { get; set; }
+            // And we link them into groups here. This lets us display things together and discard unused things.
+            public Dictionary<string, IEnumerable<string>> AssetGroups { get; init; }
+
+            // HOWEVER: this means all sharing of assets is fixed. We want to instead define "grouped assets" with distinct references.
+            // Thus each "asset group" is a collection of the assets referenced and the references in this scope.
+            // Assets may be shared between asset groups, or not used at all.
+            public class AssetGroupItem
+            {
+                public List<Reference> References { get; init; }
+                public string AssetName { get; init; }
+            }
+            public Dictionary<string, List<AssetGroupItem>> AssetGroups2 = new();
         }
 
         private static readonly Game Sonic1MasterSystem = new()
@@ -624,6 +654,7 @@ namespace sth1edwv
                         Type = Game.Asset.Types.Palette,
                         FixedSize = 16,
                         References = new List<Game.Reference> {
+                            // One reference in each boss loader. Capsule depends on these.
                             new() {Offset = 0x703C + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$731c ; 00703C 21 1C 73
                             new() {Offset = 0x807F + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$731c ; 00807F 21 1C 73
                             new() {Offset = 0x84C7 + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$731c ; 0084C7 21 1C 73
@@ -968,12 +999,16 @@ namespace sth1edwv
                         TileGrouping = TileSet.Groupings.Sprite,
                         References = new List<Game.Reference>
                         {
+                            // Map screen 1
                             new() {Offset = 0x0C9F + 1, Type = Game.Reference.Types.Slot1, Delta = -0x4000}, // ld hl,$b92e ; 000C9F 21 2E B9 
                             new() {Offset = 0x0CA5 + 1, Type = Game.Reference.Types.PageNumber},             // ld a,$09    ; 000CA5 3E 09 
+                            // Map screen 2
                             new() {Offset = 0x0D01 + 1, Type = Game.Reference.Types.Slot1, Delta = -0x4000}, // ld hl,$b92e ; 000D01 21 2E B9 
                             new() {Offset = 0x0D07 + 1, Type = Game.Reference.Types.PageNumber},             // ld a,$09    ; 000D07 3E 09 
+                            // Act Complete
                             new() {Offset = 0x1575 + 1, Type = Game.Reference.Types.Slot1, Delta = -0x4000}, // ld hl,$b92e ; 001575 21 2E B9 
                             new() {Offset = 0x157B + 1, Type = Game.Reference.Types.PageNumber},             // ld a,$09    ; 00157B 3E 09 
+                            // Game levels
                             new() {Offset = 0x2172 + 1, Type = Game.Reference.Types.Slot1, Delta = -0x4000}, // ld hl,$b92e ; 002172 21 2E B9 
                             new() {Offset = 0x2178 + 1, Type = Game.Reference.Types.PageNumber}              // ld a,$09    ; 002178 3E 09 
                         },
@@ -1100,6 +1135,435 @@ namespace sth1edwv
                 { "Dr. Robotnik", new [] { "Boss sprites 1", "Boss sprites 2", "Boss sprites 3", "Boss sprites palette" } },
                 { "Capsule", new [] { "Capsule sprites", "Boss sprites palette" } }
             },
+            AssetGroups2 = new Dictionary<string, List<Game.AssetGroupItem>>
+            {
+                { "Sonic", new() {
+                    new() {
+                        AssetName = "Sonic (right)", 
+                        References = new() {
+                            new() { Offset = 0x4c84 + 1, Type = Game.Reference.Types.Slot1 }, // ld bc,$4000 ; 004C84 01 00 40 
+                            new() { Offset = 0x012d + 1, Type = Game.Reference.Types.PageNumber }, // ld a,$08 ; 00012D 3E 08 
+                            new() { Offset = 0x0135 + 1, Type = Game.Reference.Types.PageNumber, Delta = 1 }, // ld a,$09 ; 000135 3E 09 
+                            // We put this one at the end so it won't be used for reading but will be written.
+                            // This allows us to make sure the left-facing art pointer is in the right place while removing the padding.
+                            // We want this sprite set plus the left-facing ones to be in the same 32KB window, and to have the two pointers
+                            // relative to the same base. This isn't currently explicitly handled.
+                            new() { Offset = 0x4c8d + 1, Type = Game.Reference.Types.Slot1, Delta = 39 * 24 * 32 * 3/8}, // ld bc,$7000 ; 004C8D 01 00 70
+                            new() { Offset = 0x4E49 + 1, Type = Game.Reference.Types.Slot1, Delta = 39 * 24 * 32 * 3/8}  // ld bc,$7000 ; 004E49 01 00 70 ; Needed for dropped rings
+                    }}, new() {
+                        AssetName = "Sonic (left)",
+                        References = new()
+                        {
+                            new() { Offset = 0x4c8d + 1, Type = Game.Reference.Types.Slot1 }, // ld bc,$7000 ; 004C8D 01 00 70
+                            new() { Offset = 0x012d + 1, Type = Game.Reference.Types.PageNumber }, // ld a,$08 ; 00012D 3E 08 
+                            new() { Offset = 0x0135 + 1, Type = Game.Reference.Types.PageNumber, Delta = 1 } // ld a,$09 ; 000135 3E 09 
+                    }}, new() {
+                        AssetName = "HUD sprite tiles", // HUD sprites contain the spring jump toes, the ones in the art are unused...
+                        References = new()
+                        {
+                            // Level loader
+                            new() {Offset = 0x2172 + 1, Type = Game.Reference.Types.Slot1, Delta = -0x4000}, // ld hl,$b92e ; 002172 21 2E B9 
+                            new() {Offset = 0x2178 + 1, Type = Game.Reference.Types.PageNumber}              // ld a,$09    ; 002178 3E 09 
+                        }
+                    }, new() {
+                        AssetName = "Green Hill palette"
+                        // No explicit references, Sonic takes the level sprite palette
+                    }
+                } }, 
+                { "Map screen 1", new() {
+                    new() {
+                        AssetName = "Map screen 1 tileset", 
+                        References = new() {
+                            new() { Offset = 0x0c89 + 1, Type = Game.Reference.Types.Slot1, Delta = -0x4000 }, // ld hl,$0000 ; 000C89 21 00 00
+                            new() { Offset = 0x0c8f + 1, Type = Game.Reference.Types.PageNumber }, // ld a,$0c    ; 000C8F 3E 0C 
+                    }},
+                    new() { 
+                        AssetName = "Map screen 1 tilemap 1", 
+                        References = new()
+                        {
+                            new() {Offset = 0x0caa + 1, Type = Game.Reference.Types.PageNumber}, // ld a,$05    ; 000CAA 3E 05 
+                            new() {Offset = 0x0cb2 + 1, Type = Game.Reference.Types.Slot1},      // ld hl,$627e ; 000CB2 21 7E 62
+                            new() {Offset = 0x0cb5 + 1, Type = Game.Reference.Types.Size}        // ld bc,$0178 ; 000CB5 01 78 01
+                    }},
+                    new() { 
+                        AssetName = "Map screen 1 tilemap 2", 
+                        References = new() {
+                            new() {Offset = 0x0caa + 1, Type = Game.Reference.Types.PageNumber}, // We duplicate this to read it in
+                            new() {Offset = 0x0cc3 + 1, Type = Game.Reference.Types.Slot1}, // ld hl,$63f6 ; 000CC3 21 F6 63 
+                            new() {Offset = 0x0cc6 + 1, Type = Game.Reference.Types.Size}   // ld bc,$0145 ; 000CC6 01 45 01 
+                    }},
+                    new() { 
+                        AssetName = "Map screen 1 palette", 
+                        References = new() {
+                            new() {Offset = 0x0cd4 + 1, Type = Game.Reference.Types.Absolute} // ld hl,$0f0e ; 000CD4 21 0E 0F 
+                    }},
+                    new() { 
+                        AssetName = "Map screen 1 sprite tiles", 
+                        References = new() {
+                            new() {Offset = 0x0c94 + 1, Type = Game.Reference.Types.Slot1, Delta = -0x4000}, // ld hl,$526b ; 000C94 21 6B 52 
+                            new() {Offset = 0x0c9a + 1, Type = Game.Reference.Types.PageNumber}              // ld a,$09    ; 000C9A 3E 09 
+                    }},
+                    new() { AssetName = "HUD sprite tiles", References = new()
+                    {
+                        new() {Offset = 0x0C9F + 1, Type = Game.Reference.Types.Slot1, Delta = -0x4000}, // ld hl,$b92e ; 000C9F 21 2E B9 
+                        new() {Offset = 0x0CA5 + 1, Type = Game.Reference.Types.PageNumber},             // ld a,$09    ; 000CA5 3E 09 
+                    }},
+                    new() { AssetName = "Map screen text: Green Hill", References = new()
+                    {
+                        // TODO: these references are per level and could be split up
+                        new() {Offset = 0x1209, Type = Game.Reference.Types.Absolute},
+                        new() {Offset = 0x120b, Type = Game.Reference.Types.Absolute},
+                        new() {Offset = 0x120d, Type = Game.Reference.Types.Absolute},
+                    }},
+                    new() { AssetName = "Map screen text: Bridge", References = new()
+                    {
+                        new() {Offset = 0x120f, Type = Game.Reference.Types.Absolute},
+                        new() {Offset = 0x1211, Type = Game.Reference.Types.Absolute},
+                        new() {Offset = 0x1213, Type = Game.Reference.Types.Absolute},
+                    }},
+                    new() { AssetName = "Map screen text: Jungle", References = new()
+                    {
+                        new() {Offset = 0x1215, Type = Game.Reference.Types.Absolute},
+                        new() {Offset = 0x1217, Type = Game.Reference.Types.Absolute},
+                        new() {Offset = 0x1219, Type = Game.Reference.Types.Absolute},
+                    }}
+                } }, // HUD sprites only used for life counter
+                { "Map screen 2", new() {
+                    new() { AssetName = "Map screen 2 tileset", References = new()
+                    {
+                        new() {Offset = 0x0ceb+1, Type = Game.Reference.Types.Slot1, Delta = -0x4000}, // ld hl,$1801 ; 000CEB 21 01 18 
+                        new() {Offset = 0x0cf1+1, Type = Game.Reference.Types.PageNumber},             // ld a,$0c    ; 000CF1 3E 0C 
+                    }}, 
+                    new() { AssetName = "Map screen 2 tilemap 1", References = new() {
+                        new() {Offset = 0x0d0c + 1, Type = Game.Reference.Types.PageNumber}, // ld a,$05     ; 000D0C 3E 05 
+                        new() {Offset = 0x0d14 + 1, Type = Game.Reference.Types.Slot1},      // ld hl,$653b  ; 000D14 21 3B 65
+                        new() {Offset = 0x0d17 + 1, Type = Game.Reference.Types.Size}        // ld bc,$0170  ; 000D17 01 70 01
+                    }}, 
+                    new() { AssetName = "Map screen 2 tilemap 2", References = new() {
+                        new() {Offset = 0x0d0c + 1, Type = Game.Reference.Types.PageNumber}, // Same as above
+                        new() {Offset = 0x0d25 + 1, Type = Game.Reference.Types.Slot1}, // ld hl,$66ab ; 000D25 21 AB 66 
+                        new() {Offset = 0x0d28 + 1, Type = Game.Reference.Types.Size}   // ld bc,$0153 ; 000D28 01 53 01 
+                    }}, 
+                    new() { AssetName = "Map screen 2 palette", References = new() {
+                        new() {Offset = 0x0d36 + 1, Type = Game.Reference.Types.Absolute} // ld hl,$0f2e ; 000D36 21 2E 0F 
+                    }}, 
+                    new() { AssetName = "Map screen 2 sprite tiles", References = new() {
+                        new() {Offset = 0x0cf6 + 1, Type = Game.Reference.Types.Slot1, Delta = -0x4000}, // ld hl,$5942 ; 000CF6 21 42 59 
+                        new() {Offset = 0x0cfc + 1, Type = Game.Reference.Types.PageNumber}              // ld a,$09    ; 000CFC 3E 09 
+                    }}, 
+                    new() { AssetName = "HUD sprite tiles", References = new() { // Used for life counter only
+                        new() {Offset = 0x0D01 + 1, Type = Game.Reference.Types.Slot1, Delta = -0x4000}, // ld hl,$b92e ; 000D01 21 2E B9 
+                        new() {Offset = 0x0D07 + 1, Type = Game.Reference.Types.PageNumber},             // ld a,$09    ; 000D07 3E 09 
+                    }}, 
+                    new() { AssetName = "Map screen text: Labyrinth", References = new() {
+                        // TODO: these references are per level and could be split up
+                        new() {Offset = 0x121b, Type = Game.Reference.Types.Absolute},
+                        new() {Offset = 0x121d, Type = Game.Reference.Types.Absolute},
+                        new() {Offset = 0x121f, Type = Game.Reference.Types.Absolute},
+                    }}, 
+                    new() { AssetName = "Map screen text: Scrap Brain", References = new() {
+                        new() {Offset = 0x1221, Type = Game.Reference.Types.Absolute},
+                        new() {Offset = 0x1223, Type = Game.Reference.Types.Absolute},
+                        new() {Offset = 0x1225, Type = Game.Reference.Types.Absolute},
+                    }}, 
+                    new() { AssetName = "Map screen text: Sky Base", References = new() {
+                        new() {Offset = 0x1227, Type = Game.Reference.Types.Absolute},
+                        new() {Offset = 0x1229, Type = Game.Reference.Types.Absolute},
+                        new() {Offset = 0x122b, Type = Game.Reference.Types.Absolute},
+                    }}
+                } },
+                { "Monitors", new() {
+                    new() { AssetName = "Monitor Art", References = new List<Game.Reference> {
+                            new() { Offset = 0x5B31 + 1, Type = Game.Reference.Types.Slot1 }, // ld hl, $5180 ; 005B31 21 80 51 
+                            new() { Offset = 0x5F09 + 1, Type = Game.Reference.Types.Slot1, Delta = 0x5400 - 0x5180 }, // ld hl, $5400 ; 005F09 21 00 54
+                            new() { Offset = 0xBF50 + 1, Type = Game.Reference.Types.Slot1, Delta = 0x5400 - 0x5180 }, // ld hl, $5400 ; 00BF50 21 00 54
+                            new() { Offset = 0x5BFF + 1, Type = Game.Reference.Types.Slot1, Delta = 0x5200 - 0x5180 }, // ld hl, $5200 ; 005BFF 21 00 52
+                            new() { Offset = 0x5C6D + 1, Type = Game.Reference.Types.Slot1, Delta = 0x5280 - 0x5180 }, // ld hl, $5280 ; 005C6D 21 80 52
+                            new() { Offset = 0x5CA7 + 1, Type = Game.Reference.Types.Slot1, Delta = 0x5180 - 0x5180 }, // ld hl, $5100 ; 005CA7 21 80 51
+                            new() { Offset = 0x5CB2 + 1, Type = Game.Reference.Types.Slot1, Delta = 0x5280 - 0x5180 }, // ld hl, $5200 ; 005CB2 21 80 52
+                            new() { Offset = 0x5CF9 + 1, Type = Game.Reference.Types.Slot1, Delta = 0x5300 - 0x5180 }, // ld hl, $5300 ; 005CF9 21 00 53
+                            new() { Offset = 0x5D29 + 1, Type = Game.Reference.Types.Slot1, Delta = 0x5380 - 0x5180 }, // ld hl, $5380 ; 005D29 21 80 53
+                            new() { Offset = 0x5D7A + 1, Type = Game.Reference.Types.Slot1, Delta = 0x5480 - 0x5180 }, // ld hl, $5480 ; 005D7A 21 80 54
+                            new() { Offset = 0x5DA2 + 1, Type = Game.Reference.Types.Slot1, Delta = 0x5500 - 0x5180 }, // ld hl, $5500 ; 005DA2 21 00 55
+                            new() { Offset = 0x0c1e + 1, Type = Game.Reference.Types.PageNumber } // ld a,$05 ; 000C1E 3E 05 
+                        }
+                    }, 
+                    new() { AssetName = "HUD sprite tiles"}, // Monitor bases are in the HUD sprites, no references here (?)
+                    new() { AssetName = "Green Hill palette"} // Arbitrary choice of palette, no references here
+                } },
+                { "Title screen", new() {
+                    new() { AssetName = "Title screen tiles", References = new() {
+                        new() {Offset = 0x1296 + 1, Type = Game.Reference.Types.Slot1, Delta = -0x4000}, // ld hl,$2000 ; 001296 21 00 20 
+                        new() {Offset = 0x129c + 1, Type = Game.Reference.Types.PageNumber}              // ld a,$09    ; 00129C 3E 09 
+                    }}, 
+                    new() { AssetName = "Title screen sprites", References = new() {
+                        new() {Offset = 0x12a1 + 1, Type = Game.Reference.Types.Slot1, Delta = -0x4000}, // ld hl,$4b0a ; 0012A1 21 0A 4B 
+                        new() {Offset = 0x12a7 + 1, Type = Game.Reference.Types.PageNumber},             // ld a,$09    ; 0012A7 3E 09 
+                    }}, 
+                    new() { AssetName = "Title screen palette", References = new() {
+                        new() {Offset = 0x12cc + 1, Type = Game.Reference.Types.Absolute} // ld hl,$13e1 ; 0012CC 21 E1 13 
+                    }}, 
+                    new() { AssetName = "Title screen tilemap", References = new() {
+                            new() {Offset = 0x12ac + 1, Type = Game.Reference.Types.PageNumber}, // ld a,$05    ; 0012AC 3E 05 
+                            new() {Offset = 0x12b4 + 1, Type = Game.Reference.Types.Slot1},      // ld hl,$6000 ; 0012B4 21 00 60
+                            new() {Offset = 0x12ba + 1, Type = Game.Reference.Types.Size}        // ld bc,$012e ; 0012BA 01 2E 01
+                    }}, 
+                    new() { AssetName = "Title screen press button text 1", References = new() {
+                        new() {Offset = 0x1305 + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$1352 ; 001305 21 52 13 
+                    }}, 
+                    new() { AssetName = "Title screen press button text 2", References = new() {
+                        new() {Offset = 0x130c + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$1362 ; 00130C 21 62 13
+                    }}, 
+                    new() { AssetName = "Title screen music" }, 
+                    new() { AssetName = "Title screen \"PRESS BUTTON\" flash time" }, 
+                    new() { AssetName = "Title screen \"PRESS BUTTON\" total time" }, 
+                    new() { AssetName = "Starting lives count" }, 
+                    new() { AssetName = "Title screen hand X" }, 
+                    new() { AssetName = "Title screen hand Y" }
+                } },
+                { "Game Over", new() {
+                    new() { AssetName = "Act Complete tiles", References = new()
+                    {
+                        new() {Offset = 0x1411 + 1, Type = Game.Reference.Types.Slot1, Delta = -0x4000}, // ld hl,$351f ; 001411 21 1F 35 
+                        new() {Offset = 0x1417 + 1, Type = Game.Reference.Types.PageNumber},             // ld a,$09    ; 001417 3E 09 
+                    }}, 
+                    new() { AssetName = "Game Over palette", References = new()
+                    {
+                        new() {Offset = 0x143c + 1, Type = Game.Reference.Types.Absolute} // ld hl,$14fc ; 00143C 21 FC 14 
+                    }}, 
+                    new() { AssetName = "Game Over tilemap", References = new()
+                    {
+                        new() {Offset = 0x141c + 1, Type = Game.Reference.Types.PageNumber}, // ld a,$05    ; 00141C 3E 05 
+                        new() {Offset = 0x1424 + 1, Type = Game.Reference.Types.Slot1},      // ld hl,$67fe ; 001424 21 FE 67
+                        new() {Offset = 0x1427 + 1, Type = Game.Reference.Types.Size}        // ld bc,$0032 ; 001427 01 32 00
+                    }}, 
+                    new() { AssetName = "Game Over: Continue top", References = new()
+                    {
+                        new() {Offset = 0x1485 + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$14f1 ; 001485 21 F1 14 
+                    }}, 
+                    new() { AssetName = "Game Over: Continue bottom", References =  new()
+                    {
+                        new() {Offset = 0x147f + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$14e6 ; 00147F 21 E6 14 
+                    }}
+                }}, { "Act/Special Stage Complete", new()
+                {
+                    new() { AssetName = "Act Complete tiles", References = new()
+                    {
+                        new() {Offset = 0x1580 + 1, Type = Game.Reference.Types.Slot1, Delta = -0x4000}, // ld hl,$351f ; 001580 21 1F 35 
+                        new() {Offset = 0x1586 + 1, Type = Game.Reference.Types.PageNumber}              // ld a,$09    ; 001586 3E 09 
+                    }}, 
+                    new() { AssetName = "Act Complete palette", References = new()
+                    {
+                        new() {Offset = 0x1604 + 1, Type = Game.Reference.Types.Absolute} // ld hl,$1b8d ; 001604 21 8D 1B 
+                    }}, 
+                    new() { AssetName = "Act Complete tilemap", References = new()
+                    {
+                        new() {Offset = 0x158B + 1, Type = Game.Reference.Types.PageNumber}, // ld a,$05    ; 00158B 3E 05 
+                        new() {Offset = 0x1593 + 1, Type = Game.Reference.Types.Slot1},      // ld hl,$612e ; 001593 21 2E 61
+                        new() {Offset = 0x1596 + 1, Type = Game.Reference.Types.Size}        // ld bc,$00bb ; 001596 01 BB 00
+                    }},
+                    new() { AssetName = "Special Stage Complete tilemap", References = new()
+                    {
+                        new() {Offset = 0x158B + 1, Type = Game.Reference.Types.PageNumber}, // ld a,$05    ; 00158B 3E 05 // Shared with Act Complete tilemap
+                        new() {Offset = 0x15A3 + 1, Type = Game.Reference.Types.Slot1},      // ld hl,$61e9 ; 0015A3 21 E9 61 
+                        new() {Offset = 0x15A6 + 1, Type = Game.Reference.Types.Size}        // ld bc,$0095 ; 0015A6 01 95 00 
+                    }}, 
+                    new() { AssetName = "HUD sprite tiles", References = new()
+                    {
+                        new() {Offset = 0x1575 + 1, Type = Game.Reference.Types.Slot1, Delta = -0x4000}, // ld hl,$b92e ; 001575 21 2E B9 
+                        new() {Offset = 0x157B + 1, Type = Game.Reference.Types.PageNumber},             // ld a,$09    ; 00157B 3E 09 
+                    }},
+                    new() { AssetName = "Extra life at n x 10,000 points"},
+                    new() { AssetName = "Extra life every n x 10,000 subsequent points" },
+                }}, { "Ending", new() {
+                    new() { AssetName = "Map screen 1 tileset", References =  new() {
+                        new() {Offset = 0x25a9+1, Type = Game.Reference.Types.Slot1, Delta = -0x4000}, // ld hl,$0000 ; 0025A9 21 00 00
+                        new() {Offset = 0x25af+1, Type = Game.Reference.Types.PageNumber}              // ld a,$0c    ; 0025AF 3E 0C 
+                    }}, 
+                    new() { AssetName = "Ending palette", References =  new() {
+                        new() { Offset = 0x25a1 + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$2828 ; 0025A1 21 28 28 // Palette load
+                        new() { Offset = 0x268d + 1, Type = Game.Reference.Types.Absolute}  // ld hl,$2828 ; 00268D 21 28 28 // Fade out
+                    }}, 
+                    new() { AssetName = "Ending 1 tilemap", References = new() {
+                        new() {Offset = 0x25B4 + 1, Type = Game.Reference.Types.PageNumber}, // ld a,$05    ; 0025B4 3E 05 
+                        new() {Offset = 0x25BC + 1, Type = Game.Reference.Types.Slot1},      // ld hl,$6830 ; 0025BC 21 30 68
+                        new() {Offset = 0x25BF + 1, Type = Game.Reference.Types.Size}        // ld bc,$0179 ; 0025BF 01 79 01
+                    }},
+                    new() { AssetName = "Ending 2 tilemap", References = new() {
+                        new() {Offset = 0x2675 + 1, Type = Game.Reference.Types.PageNumber}, // ld a,$05    ; 002675 3E 05 
+                        new() {Offset = 0x267D + 1, Type = Game.Reference.Types.Slot1},      // ld hl,$69a9 ; 00267D 21 A9 69
+                        new() {Offset = 0x2680 + 1, Type = Game.Reference.Types.Size}        // ld bc,$0145 ; 002680 01 45 01
+                    }}, 
+                    new() { AssetName = "Ending text: box 1", References = new() {
+                        new() {Offset = 0x1785 + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$1907 ; 001785 21 07 19 
+                    }}, 
+                    new() { AssetName = "Ending text: box 2", References = new() {
+                        new() {Offset = 0x178B + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$191c ; 00178B 21 1C 19 
+                    }}, 
+                    new() { AssetName = "Ending text: box 3", References = new() {
+                        new() {Offset = 0x1791 + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$1931 ; 001791 21 31 19 
+                    }}, 
+                    new() { AssetName = "Ending text: box 4", References = new() {
+                        new() {Offset = 0x1797 + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$1946 ; 001797 21 46 19 
+                    }}, 
+                    new() { AssetName = "Ending text: box 5", References = new() {
+                        new() {Offset = 0x179D + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$1953 ; 00179D 21 53 19
+                    }}, 
+                    new() { AssetName = "Ending text: box 6", References = new() {
+                        new() {Offset = 0x17A3 + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$1960 ; 0017A3 21 60 19 
+                    }}, 
+                    new() { AssetName = "Ending text: box 7", References = new() {
+                        new() {Offset = 0x17A9 + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$196d ; 0017A9 21 6D 19
+                    }}, 
+                    new() { AssetName = "Ending text: box 8", References = new() {
+                        new() {Offset = 0x1823 + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$197a ; 001823 21 7A 19 
+                    }}, 
+                    new() { AssetName = "Ending text: Chaos Emerald", References = new() {
+                        new() {Offset = 0x17af + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$197e ; 0017AF 21 7E 19 
+                    }}, 
+                    new() { AssetName = "Ending text: Sonic Left", References = new() {
+                        new() {Offset = 0x17e8 + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$198e ; 0017E8 21 8E 19 
+                    }}, 
+                    new() { AssetName = "Ending text: Special Bonus", References = new() {
+                        new() {Offset = 0x181d + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$199e ; 00181D 21 9E 19 
+                    }} 
+                } }, { "Credits", new() {
+                    new() { AssetName = "Map screen 2 tileset", References = new() {
+                        new() {Offset = 0x26ab+1, Type = Game.Reference.Types.Slot1, Delta = -0x4000}, // ld hl,$1801 ; 0026AB 21 01 18
+                        new() {Offset = 0x26b1+1, Type = Game.Reference.Types.PageNumber}              // ld a,$0c    ; 0026B1 3E 0C 
+                    }},
+                    new() { AssetName = "Title screen sprites", References = new() {
+                        new() {Offset = 0x26B6 + 1, Type = Game.Reference.Types.Slot1, Delta = -0x4000}, // ld hl,$4b0a ; 0026B6 21 0A 4B 
+                        new() {Offset = 0x26BC + 1, Type = Game.Reference.Types.PageNumber}              // ld a,$09    ; 0026BC 3E 09 
+                    }},
+                    new() { AssetName = "Credits tilemap", References = new() {
+                        new() {Offset = 0x26C1 + 1, Type = Game.Reference.Types.PageNumber}, // ld a,$05    ; 0026C1 3E 05 
+                        new() {Offset = 0x26C9 + 1, Type = Game.Reference.Types.Slot1},      // ld hl,$6c61 ; 0026C9 21 61 6C
+                        new() {Offset = 0x26CC + 1, Type = Game.Reference.Types.Size}        // ld bc,$0189 ; 0026CC 01 89 01
+                    }},
+                    new() { AssetName = "Credits palette", References = new() {
+                        new() {Offset = 0x2702 + 1, Type = Game.Reference.Types.Absolute} // ld hl,$2ad6 ; 002702 21 D6 2A 
+                    }},
+                    new() { AssetName = "Credits eyebrow X"},
+                    new() { AssetName = "Credits eyebrow Y"},
+                    new() { AssetName = "Credits mouth 1 X"},
+                    new() { AssetName = "Credits mouth 1 Y"},
+                    new() { AssetName = "Credits mouth 2 X"},
+                    new() { AssetName = "Credits mouth 2 Y"},
+                    new() { AssetName = "Credits mouth 3 X"},
+                    new() { AssetName = "Credits mouth 3 Y"},
+                    new() { AssetName = "Credits foot 1 X"},
+                    new() { AssetName = "Credits foot 1 Y"},
+                    new() { AssetName = "Credits foot 2 X"},
+                    new() { AssetName = "Credits foot 2 Y"},
+                    new() { AssetName = "Credits arm 1 X"},
+                    new() { AssetName = "Credits arm 1 Y"},
+                    new() { AssetName = "Credits arm 2 X"},
+                    new() { AssetName = "Credits arm 2 Y"},
+                    new() { AssetName = "Credits arm 3 X"},
+                    new() { AssetName = "Credits arm 3 Y"}
+                }}, { "End sign", new() {
+                    new() { AssetName = "End sign tileset", References =  new() {
+                        new() { Offset = 0x5f2d + 1, Type = Game.Reference.Types.Slot1, Delta = -0x4000 }, // ld hl,$4294 ; 005F2D 21 94 42 // This is actually into page 10
+                        new() { Offset = 0x5f33 + 1, Type = Game.Reference.Types.PageNumber } // ld a,$09    ; 005F33 3E 09 
+                    }}, 
+                    new() { AssetName = "End sign palette", References =  new() {
+                        new() { Offset = 0x5F38 + 1, Type = Game.Reference.Types.Absolute } // ld hl,$626c ; 005F38 21 6C 62
+                    }}
+                }}, { "Rings", new()
+                {
+                    new(){AssetName = "Rings", References = new() {
+                        new() {Offset = 0x23AD + 1, Type = Game.Reference.Types.Slot1},      // ld de,$7cf0 ; 0023AD 11 F0 7C 
+                        new() {Offset = 0x1D55 + 1, Type = Game.Reference.Types.PageNumber}, // ld a,$0b ; 001D55 3E 0B 
+                        new() {Offset = 0x1DB5 + 1, Type = Game.Reference.Types.PageNumber}, // ld a,$0b ; 001DB5 3E 0B 
+                        new() {Offset = 0x1eb1 + 1, Type = Game.Reference.Types.PageNumber}  // ld a,$0b ; 001eb1 3E 0B 
+                    }}, new() {AssetName = "Green Hill palette"} // No references here
+                } },
+                // TODO: join Dr. Robotniks to relevant stages?
+                { "Dr. Robotnik #1", new() {
+                    new() {
+                        AssetName = "Boss sprites 1", References = new() {
+                            new() {Offset = 0x7031 + 1, Type = Game.Reference.Types.Slot1, Delta = -0x4000}, // ld hl,$aeb1 ; 007031 21 B1 AE 
+                            new() {Offset = 0x7037 + 1, Type = Game.Reference.Types.PageNumber},             // ld a,$09    ; 007037 3E 09 
+                        }
+                    }, new() {
+                        AssetName = "Boss sprites palette", References = new() {
+                            new() {Offset = 0x703C + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$731c ; 00703C 21 1C 73
+                        }
+                    }
+                } },
+                { "Dr. Robotnik #2", new() {
+                    new() {
+                        AssetName = "Boss sprites 1", References = new() {
+                            new() {Offset = 0x8074 + 1, Type = Game.Reference.Types.Slot1, Delta = -0x4000}, // ld hl,$aeb1 ; 008074 21 B1 AE 
+                            new() {Offset = 0x807A + 1, Type = Game.Reference.Types.PageNumber}              // ld a,$09    ; 00807A 3E 09 
+                        }
+                    }, new() {
+                        AssetName = "Boss sprites palette", References = new() {
+                            new() {Offset = 0x807F + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$731c ; 00807F 21 1C 73
+                        }
+                    }
+                } },
+                { "Dr. Robotnik #3", new() {
+                    new() {
+                        AssetName = "Boss sprites 2", References = new() {
+                            new() {Offset = 0x84BC + 1, Type = Game.Reference.Types.Slot1, Delta = -0x4000}, // ld hl,$e508 ; 0084BC 21 08 E5 
+                            new() {Offset = 0x84C2 + 1, Type = Game.Reference.Types.PageNumber},             // ld a,$0c    ; 0084C2 3E 0C 
+                        }
+                    }, new() {
+                        AssetName = "Boss sprites palette", References = new() {
+                            new() {Offset = 0x84C7 + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$731c ; 0084C7 21 1C 73
+                        }
+                    }
+                } },
+                { "Dr. Robotnik #4", new() {
+                    new() {
+                        AssetName = "Boss sprites 2", References = new() {
+                            new() {Offset = 0x9291 + 1, Type = Game.Reference.Types.Slot1, Delta = -0x4000}, // ld hl,$e508 ; 009291 21 08 E5 
+                            new() {Offset = 0x9297 + 1, Type = Game.Reference.Types.PageNumber}              // ld a,$0c    ; 009297 3E 0C 
+                        }
+                    }, new() {
+                        AssetName = "Boss sprites palette", References = new() {
+                            new() {Offset = 0x929C + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$731c ; 00929C 21 1C 73
+                        }
+                    }
+                } },
+                { "Dr. Robotnik #5", new() {
+                    new() {
+                        AssetName = "Boss sprites 3", References = new() {
+                            new() {Offset = 0xA816 + 1, Type = Game.Reference.Types.Slot1, Delta = -0x4000}, // ld hl,$ef3f ; 00A816 21 3F EF 
+                            new() {Offset = 0xA81C + 1, Type = Game.Reference.Types.PageNumber},             // ld a,$0c    ; 00A81C 3E 0C 
+                        }
+                    }, new() {
+                        AssetName = "Boss sprites palette", References = new() {
+                            new() {Offset = 0xA821 + 1, Type = Game.Reference.Types.Absolute}, // ld hl,$731c ; 00A821 21 1C 73
+                        }
+                    }
+                } },
+                { "Dr. Robotnik #6", new() {
+                    new() {
+                        AssetName = "Boss sprites 3", References = new() {
+                            new() {Offset = 0xBB94 + 1, Type = Game.Reference.Types.Slot1, Delta = -0x4000}, // ld hl,$ef3f ; 00BB94 21 3F EF 
+                            new() {Offset = 0xBB9A + 1, Type = Game.Reference.Types.PageNumber}              // ld a,$0c    ; 00BB9A 3E 0C 
+                        }
+                    }, new() {
+                        AssetName = "Boss sprites palette", References = new() {
+                            new() {Offset = 0xBE07 + 1, Type = Game.Reference.Types.Absolute}  // ld hl,$731c ; 00BE07 21 1C 73
+                        }
+                    }
+                } },
+                { "Capsule", new() {
+                        new() {
+                            AssetName = "Capsule sprites", References =  new() {
+                                new() { Offset = 0x7916 + 1, Type = Game.Reference.Types.Slot1, Delta = -0x4000 }, // ld hl,$da28 ; 007916 21 28 DA 
+                                new() { Offset = 0x791C + 1, Type = Game.Reference.Types.PageNumber }              // ld a,$0c    ; 00791C 3E 0C 
+                            }
+                        }, new() {
+                            AssetName = "Boss sprites palette" // Dependent on palette left over from boss
+                        }
+                    }
+                }
+            },
             Levels = new List<Game.LevelHeader>
             {
                 new() { Name = "Green Hill Act 1", Offset = 0x15580 + 0x4a },
@@ -1197,14 +1661,16 @@ namespace sth1edwv
 
             if (!Sonic1MasterSystem.AssetGroups.ContainsKey("All palettes"))
             {
-                Sonic1MasterSystem.AssetGroups.Add("All palettes", Sonic1MasterSystem.Assets.Keys
-                    .Where(x => x.Contains("palette"))); // TODO something better with these. Maybe have the level loader write the palette tables?
+                Sonic1MasterSystem.AssetGroups.Add("All palettes", Sonic1MasterSystem.Assets
+                    .Where(x => x.Value.Type == Game.Asset.Types.Palette)
+                    .Select(x => x.Key)); // TODO something better with these. Maybe have the level loader write the palette tables?
             }
 
-            foreach (var kvp in Sonic1MasterSystem.AssetGroups)
+            // TODO change this to AssetGroups2
+            foreach (var (name, assets) in Sonic1MasterSystem.AssetGroups)
             {
-                var item = new ArtItem{Name = kvp.Key};
-                foreach (var part in kvp.Value.Select(x => new { Name = x, Asset = Sonic1MasterSystem.Assets[x]}))
+                var item = new ArtItem{Name = name};
+                foreach (var part in assets.Select(x => new { Name = x, Asset = Sonic1MasterSystem.Assets[x]}))
                 {
                     var asset = part.Asset;
                     item.Assets.Add(asset);
@@ -1390,6 +1856,8 @@ namespace sth1edwv
             // We work through the data types...
 
             // We start from the asset groups here so we don't pick up any unused or blank parts
+            // TODO change this to AssetGroups2
+            // TODO We also need to change the way references to the asset are found as they are no longer static per asset (we may split shared references)
             var assetsToPack = new HashSet<AssetToPack>(
                 Sonic1MasterSystem.AssetGroups.Values
                     .SelectMany(x => x) // Flatten all the groups
