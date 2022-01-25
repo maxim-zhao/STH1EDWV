@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
 using System.Windows.Forms;
+// ReSharper disable All
 
 namespace sth1edwv.BindingListView
 {
@@ -60,7 +61,7 @@ namespace sth1edwv.BindingListView
         /// </summary>
         private ListSortDescriptionCollection _sorts;
         /// <summary>
-        /// The <see cref="System.Collection.Generic.IComparer">IComparer</see> used to compare items when sorting.
+        /// The <see cref="System.Collections.Generic.IComparer">IComparer</see> used to compare items when sorting.
         /// </summary>
         private IComparer<KeyValuePair<ListItemPair<T>, int>> _comparer;
         /// <summary>
@@ -526,6 +527,7 @@ namespace sth1edwv.BindingListView
         /// Handles the <see cref="ObjectView&lt;T&gt;"/> EndedEdit event.
         /// </summary>
         /// <param name="sender">The <see cref="ObjectView&lt;T&gt;"/> that raised the event.</param>
+        /// <param name="e"></param>
         private void EndedItemEdit(object sender, EventArgs e)
         {
             if (_autoFilterAndSortSuspended) 
@@ -735,6 +737,7 @@ namespace sth1edwv.BindingListView
         /// Event handler for when an item in the view changes.
         /// </summary>
         /// <param name="sender">The item that changed.</param>
+        /// <param name="e"></param>
         private void ItemPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             // The changed item may not actually be present in the view
@@ -825,7 +828,6 @@ namespace sth1edwv.BindingListView
         {
             get => Filter.ToString();
             set => throw new NotSupportedException("Cannot set filter from string expression.");
-            //TODO: Re-instate this line once we have an expression filter
             //Filter = new ExpressionItemFilter<T>(value);
         }
 
@@ -1548,7 +1550,7 @@ namespace sth1edwv.BindingListView
         /// Returns the index of the first item in the view who's property equals the given value.
         /// -1 is returned if no item is found.
         /// </summary>
-        /// <param name="property">The property name of each item to check.</param>
+        /// <param name="propertyName">The property name of each item to check.</param>
         /// <param name="key">The value being sought.</param>
         /// <returns>The index of the item, or -1 if not found.</returns>
         /// <remarks>
@@ -1833,7 +1835,7 @@ namespace sth1edwv.BindingListView
         /// </summary>
         /// <param name="index">The index of the item to retrieve.</param>
         /// <returns>An <see cref="ObjectView&lt;T&gt;"/> object.</returns>
-        /// <exception cref="System.NotSupportException">
+        /// <exception cref="System.NotSupportedException">
         /// Cannot set an item in the view.
         /// </exception>
         object IList.this[int index]
@@ -2043,7 +2045,7 @@ namespace sth1edwv.BindingListView
         /// Attaches event handlers to the given <see cref="ObjectView&lt;T&gt;"/>'s 
         /// edit life cycle notification events.
         /// </summary>
-        /// <param name="objectView">The <see cref="ObjectView&lt;T&gt;"/> to listen to.</param>
+        /// <param name="editableObject">The <see cref="ObjectView&lt;T&gt;"/> to listen to.</param>
         private void HookEditableObjectEvents(ObjectView<T> editableObject)
         {
             editableObject.EditBegun += BegunItemEdit;
@@ -2055,7 +2057,7 @@ namespace sth1edwv.BindingListView
         /// Detaches event handlers from the given <see cref="ObjectView&lt;T&gt;"/>'s 
         /// edit life cycle notification events.
         /// </summary>
-        /// <param name="objectView">The <see cref="ObjectView&lt;T&gt;"/> to stop listening to.</param>
+        /// <param name="editableObject">The <see cref="ObjectView&lt;T&gt;"/> to stop listening to.</param>
         private void UnHookEditableObjectEvents(ObjectView<T> editableObject)
         {
             editableObject.EditBegun -= BegunItemEdit;
@@ -2066,7 +2068,7 @@ namespace sth1edwv.BindingListView
         /// <summary>
         /// Attaches an event handler to the <see cref="ObjectView&lt;T&gt;"/>'s PropertyChanged event.
         /// </summary>
-        /// <param name="objectView">The <see cref="ObjectView&lt;T&gt;"/> to listen to.</param>
+        /// <param name="editableObject">The <see cref="ObjectView&lt;T&gt;"/> to listen to.</param>
         private void HookPropertyChangedEvent(ObjectView<T> editableObject)
         {
             editableObject.PropertyChanged += ItemPropertyChanged;
@@ -2075,7 +2077,7 @@ namespace sth1edwv.BindingListView
         /// <summary>
         /// Detaches the event handler from the <see cref="ObjectView&lt;T&gt;"/>'s PropertyChanged event.
         /// </summary>
-        /// <param name="objectView">The <see cref="ObjectView&lt;T&gt;"/> to stop listening to.</param>
+        /// <param name="editableObject">The <see cref="ObjectView&lt;T&gt;"/> to stop listening to.</param>
         private void UnHookPropertyChangedEvent(ObjectView<T> editableObject)
         {
             editableObject.PropertyChanged -= ItemPropertyChanged;

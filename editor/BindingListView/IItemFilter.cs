@@ -6,7 +6,7 @@ namespace sth1edwv.BindingListView
     /// Defines a general method to test it an item should be included in a <see cref="BindingListView&lt;T&gt;"/>.
     /// </summary>
     /// <typeparam name="T">The type of item to be filtered.</typeparam>
-    public interface IItemFilter<T>
+    public interface IItemFilter<in T>
     {
         /// <summary>
         /// Tests if the item should be included.
@@ -41,17 +41,7 @@ namespace sth1edwv.BindingListView
         /// <summary>
         /// Gets the singleton instance of <see cref="IncludeAllItemFilter&lt;T&gt;"/>.
         /// </summary>
-        public static IncludeAllItemFilter<T> Instance
-        {
-            get
-            {
-                if (_instance == null)
-                {
-                    _instance = new IncludeAllItemFilter<T>();
-                }
-                return _instance;
-            }
-        }
+        public static IncludeAllItemFilter<T> Instance => _instance ??= new IncludeAllItemFilter<T>();
 
         #endregion
     }
@@ -86,12 +76,12 @@ namespace sth1edwv.BindingListView
             }
             else
             {
-                throw new ArgumentNullException("includeDelegate", "IncludeDelegateCannotBeNull");
+                throw new ArgumentNullException(nameof(includeDelegate), "IncludeDelegateCannotBeNull");
             }
         }
 
-        private Predicate<T> _includeDelegate;
-        private string _name;
+        private readonly Predicate<T> _includeDelegate;
+        private readonly string _name;
         private readonly string defaultName = "(predicate filter)";
 
         public bool Include(T item)
@@ -104,38 +94,4 @@ namespace sth1edwv.BindingListView
             return _name;
         }
     }
-
-    // TODO: Implement this class
-    /*
-    public class ExpressionItemFilter<T> : IItemFilter<T>
-    {
-        public ExpressionItemFilter(string expression)
-        {
-            // TODO: Parse expression into predicate
-        }
-
-        public bool Include(T item)
-        {
-            // TODO: use expression...
-            return true;
-        }
-    }
-    */
-
-    // TODO: Implement this class
-    /*
-    public class CSharpItemFilter<T> : IItemFilter<T>
-    {
-        public CSharpItemFilter(string filterSourceCode)
-        {
-            
-        }
-
-        public bool Include(T item)
-        {
-            // TODO: implement this method...
-            return true;
-        }
-    }
-    */
 }
