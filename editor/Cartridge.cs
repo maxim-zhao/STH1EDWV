@@ -1689,11 +1689,13 @@ namespace sth1edwv
                         case Game.Asset.Types.Palette:
                             _assetsLookup[asset] = item.Palette = GetPalette(offset, asset.FixedSize / 16);
                             item.PaletteEditable = !asset.Hidden; // Hidden only applies to palettes for now...
+                            // TODO we don't handle multiple palettes here yet
                             break;
                         case Game.Asset.Types.ForegroundTileMap:
                             // We assume these are set first
                             _assetsLookup[asset] = item.TileMap = new TileMap(Memory, offset, asset.GetLength(Memory));
                             item.TileMap.SetAllForeground();
+                            // TODO we don't support editing foreground/background yet
                             break;
                         case Game.Asset.Types.TileMap:
                         {
@@ -1861,7 +1863,7 @@ namespace sth1edwv
             var assetsToPack = new HashSet<AssetToPack>(
                 Sonic1MasterSystem.AssetGroups.Values
                     .SelectMany(x => x) // Flatten all the groups
-                    .Distinct() // Remove duplicates
+                    .Distinct() // Remove duplicates (by reference)
                     .Select(x => new AssetToPack(x, Sonic1MasterSystem.Assets[x], _assetsLookup[Sonic1MasterSystem.Assets[x]], _assetsLookup[Sonic1MasterSystem.Assets[x]].GetData())) // Select the asset name, details and serialized data
                     .Where(x => x.Asset.OriginalOffset != 0)); // Exclude any not yet configured with a source location
 

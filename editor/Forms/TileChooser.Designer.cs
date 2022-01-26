@@ -32,33 +32,36 @@ namespace sth1edwv.Forms
         /// </summary>
         private void InitializeComponent()
         {
-            this.tilePicker1 = new ItemPicker();
+            this.tilePicker1 = new sth1edwv.Controls.ItemPicker();
             this.SuspendLayout();
             // 
             // tilePicker1
             // 
             this.tilePicker1.FixedItemsPerRow = true;
             this.tilePicker1.ItemsPerRow = 16;
-            this.tilePicker1.Location = new System.Drawing.Point(3, 3);
+            this.tilePicker1.Location = new System.Drawing.Point(4, 3);
+            this.tilePicker1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.tilePicker1.Name = "tilePicker1";
             this.tilePicker1.Scaling = 1;
             this.tilePicker1.SelectedIndex = -1;
-            this.tilePicker1.Size = new System.Drawing.Size(522, 524);
+            this.tilePicker1.ShowTransparency = false;
+            this.tilePicker1.Size = new System.Drawing.Size(609, 605);
             this.tilePicker1.TabIndex = 1;
-            this.tilePicker1.SelectionChanged += new System.EventHandler<IDrawableBlock>(this.tilePicker1_SelectionChanged);
+            this.tilePicker1.SelectionChanged += new System.EventHandler<sth1edwv.GameObjects.IDrawableBlock>(this.tilePicker1_SelectionChanged);
             // 
             // TileChooser
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.AutoSize = true;
-            this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.ClientSize = new System.Drawing.Size(527, 527);
+            this.ClientSize = new System.Drawing.Size(615, 608);
             this.Controls.Add(this.tilePicker1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
+            this.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "TileChooser";
+            this.ShowIcon = false;
+            this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Tile Chooser";
             this.ResumeLayout(false);

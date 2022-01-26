@@ -8,7 +8,7 @@ namespace sth1edwv
         public TileSet TileSet { get; set; }
         public Palette Palette { get; set; }
         public bool PaletteEditable { get; set; }
-        public string Name { get; set; }
+        public string Name { get; init; }
         public TileMap TileMap { get; set; }
         public List<TileSet> SpriteTileSets { get; } = new();
         public List<TileMapData> TileMapData { get; } = new();
