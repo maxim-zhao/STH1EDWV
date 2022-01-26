@@ -56,36 +56,9 @@ namespace sth1edwv.GameObjects
                     {
                         // Mask off high bits
                         index &= 0xff;
-                        // TODO: this is kind of repetitive, similar code everywhere I am drawing tiles into images
                         if (index < tileSet.Tiles.Count)
                         {
-                            var tile = tileSet.Tiles[index];
-                            var sourceImage = tile.GetImage(palette);
-                            var sourceData = sourceImage.LockBits(
-                                new Rectangle(0, 0, 8, 8),
-                                ImageLockMode.ReadOnly,
-                                PixelFormat.Format8bppIndexed);
-                            try
-                            {
-                                var rowData = new byte[8];
-                                for (var row = 0; row < 8; ++row)
-                                {
-                                    Marshal.Copy(
-                                        sourceData.Scan0 + row * sourceData.Stride,
-                                        rowData,
-                                        0,
-                                        8);
-                                    Marshal.Copy(
-                                        rowData,
-                                        0,
-                                        data.Scan0 + (row + y) * data.Stride + x,
-                                        8);
-                                }
-                            }
-                            finally
-                            {
-                                sourceImage.UnlockBits(sourceData);
-                            }
+                            tileSet.Tiles[index].Draw8Bpp(data, x, y);
                         }
                     }
                 }

@@ -109,5 +109,18 @@ namespace sth1edwv.GameObjects
         {
             return _data.SequenceEqual(buffer);
         }
+
+        public void Draw8Bpp(BitmapData destination, int x, int y)
+        {
+            // We use our data array directly...
+            for (var row = 0; row < 8; ++row)
+            {
+                Marshal.Copy(
+                    _data,
+                    row*8,
+                    destination.Scan0 + (row + y) * destination.Stride + x,
+                    8);
+            }
+        }
     }
 }

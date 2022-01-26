@@ -46,7 +46,7 @@ namespace sth1edwv.GameObjects
                 block.GlobalUsageCount = 0;
             }
 
-            // TODO: consider level bounds?
+            // We do not consider level bounds?
             foreach (var index in levels
                 .Where(l => l.BlockMapping == this)
                 .Select(l => l.Floor)

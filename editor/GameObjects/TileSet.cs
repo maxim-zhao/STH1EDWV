@@ -234,27 +234,7 @@ namespace sth1edwv.GameObjects
                 var x = index % columns * blockWidth;
                 var y = index / columns * blockHeight;
                 ++index;
-                // We copy the data from the source image one row at a time
-                var sourceImage = tile.GetImage(palette);
-                var sourceData = sourceImage.LockBits(
-                    new Rectangle(0, 0, blockWidth, blockHeight),
-                    ImageLockMode.ReadOnly,
-                    PixelFormat.Format8bppIndexed);
-                var rowData = new byte[blockWidth];
-                for (var row = 0; row < blockHeight; ++row)
-                {
-                    Marshal.Copy(
-                        sourceData.Scan0 + row * sourceData.Stride,
-                        rowData, 
-                        0, 
-                        blockWidth);
-                    Marshal.Copy(
-                        rowData, 
-                        0, 
-                        data.Scan0 + (row + y) * data.Stride + x,
-                        blockWidth);
-                }
-                sourceImage.UnlockBits(sourceData);
+                tile.Draw8Bpp(data, x, y);
             }
             image.UnlockBits(data);
             return image; // Caller disposes
