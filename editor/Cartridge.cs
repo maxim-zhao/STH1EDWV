@@ -1615,6 +1615,7 @@ namespace sth1edwv
         private readonly Dictionary<int, Palette> _palettes = new();
         private readonly Dictionary<Game.Asset, IDataItem> _assetsLookup = new();
         private readonly Dictionary<int, LevelObjectSet> _levelObjects = new();
+        private readonly List<MusicTrack> _music = new();
 
         public Cartridge(string path, Action<string> logger)
         {
@@ -1627,6 +1628,7 @@ namespace sth1edwv
 
             ReadAssets();
             ReadLevels();
+            ReadMusic();
             ReadSdscTag();
 
             // Apply rings to level tile sets
@@ -1640,6 +1642,19 @@ namespace sth1edwv
             }
 
             _logger($"Load complete in {sw.Elapsed}");
+        }
+
+        private void ReadMusic()
+        {
+            _logger("Loading music...");
+
+            // Music pointers start at $c716, there are 20 of them.
+            // They are relative to $8000, because the game maps the music code/data to slot 1.
+            for (var i = 0; i < 0x14; ++i)
+            {
+                var pointer = Memory.Word(0xc716 + i * 2) + 0x8000;
+                _music.Add(new MusicTrack(Memory, pointer));
+            }
         }
 
         private void ReadSdscTag()
