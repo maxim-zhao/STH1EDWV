@@ -29,11 +29,11 @@ namespace sth1edwv.GameObjects
             return new List<byte> { (byte)Type, (byte)X, (byte)Y };
         }
 
-        public TreeNode ToNode()
+        public override string ToString()
         {
             var name = NamesById.TryGetValue(Type, out var obj) ? obj.Name : "UNKNOWN";
 
-            return new TreeNode($"({X}, {Y}) 0x{Type:X2} = {name}") { Tag = this };
+            return $"({X}, {Y}) 0x{Type:X2} = {name}";
         }
 
         public class NamedObject

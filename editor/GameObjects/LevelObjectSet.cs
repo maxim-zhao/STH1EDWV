@@ -22,13 +22,6 @@ namespace sth1edwv.GameObjects
                 .ToList();
         }
 
-        public TreeNode ToNode()
-        {
-            var result = new TreeNode("Objects");
-            result.Nodes.AddRange(_objects.Select(x => x.ToNode()).ToArray());
-            return result;
-        }
-
         public override string ToString()
         {
             return $"{_objects.Count} objects @ {Offset:X}";
