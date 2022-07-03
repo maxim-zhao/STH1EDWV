@@ -1,14 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace sth1edwv
 {
-    internal class MusicTrack
+    public class MusicTrack
     {
         private readonly List<Channel> _channels = new();
+        private readonly int _offset;
 
         public MusicTrack(Memory memory, int offset)
         {
+            _offset = offset;
             // The start is five relative pointers. The fifth is always 0 - it represents SFX in the music engine.
             for (var i = 0; i < 4; ++i)
             {
@@ -18,78 +22,94 @@ namespace sth1edwv
             }
         }
 
+        public override string ToString()
+        {
+            return $"{_offset:X}";
+        }
+
         private class Channel
         {
-            private readonly List<IChannelData> _data = new();
+            public List<IChannelData> Data { get; } = new();
 
             public Channel(Memory memory, int offset)
             {
-                while (true)
+                bool hasEnded = false;
+                while (!hasEnded)
                 {
                     var b = memory[offset++];
                     switch (b)
                     {
                         case 0x80:
-                            _data.Add(new TempoControl(memory, ref offset));
+                            Data.Add(new TempoControl(memory, ref offset));
                             break;
                         case 0x81:
-                            _data.Add(new Attenuation(memory, ref offset));
+                            Data.Add(new Attenuation(memory, ref offset));
                             break;
                         case 0x82:
-                            _data.Add(new Envelope(memory, ref offset));
+                            Data.Add(new Envelope(memory, ref offset));
                             break;
                         case 0x83:
-                            _data.Add(new Modulation(memory, ref offset));
+                            Data.Add(new Modulation(memory, ref offset));
                             break;
                         case 0x84:
-                            _data.Add(new Detune(memory, ref offset));
+                            Data.Add(new Detune(memory, ref offset));
                             break;
                         case 0x85:
-                            _data.Add(new Dummy(memory, ref offset));
-                            offset += 2;
+                            Data.Add(new Dummy(memory, ref offset));
                             break;
                         case 0x86:
-                            _data.Add(new LoopStart());
+                            Data.Add(new LoopStart());
                             break;
                         case 0x87:
-                            _data.Add(new LoopEnd(memory, ref offset));
+                            Data.Add(new LoopEnd(memory, ref offset));
                             break;
                         case 0x88:
-                            _data.Add(new MasterLoopPoint());
+                            Data.Add(new MasterLoopPoint());
                             break;
                         case 0x89:
-                            _data.Add(new NoiseMode(memory, ref offset));
+                            Data.Add(new NoiseMode(memory, ref offset));
                             break;
                         case 0x8a:
-                            _data.Add(new NoteLength(memory, ref offset));
+                            Data.Add(new NoteLength(memory, ref offset));
                             break;
                         case 0x8b:
-                            _data.Add(new VolumeUp());
+                            Data.Add(new VolumeUp());
                             break;
                         case 0x8c:
-                            _data.Add(new VolumeDown());
+                            Data.Add(new VolumeDown());
                             break;
                         case 0x8d:
-                            _data.Add(new Hold());
+                            Data.Add(new Hold());
                             break;
                         case 0xfe:
-                            _data.Add(new EndOfSfx());
+                            Data.Add(new EndOfSfx());
+                            hasEnded = true;
                             break;
                         case 0xff:
-                            _data.Add(new EndOfMusic());
+                            Data.Add(new EndOfMusic());
+                            hasEnded = true;
                             break;
                         case >= 0x00 and < 0x70:
-                            _data.Add(new ToneNote(b, memory, ref offset));
+                            Data.Add(new ToneNote(b, memory, ref offset));
                             break;
                         case >= 0x70 and < 0x7f:
-                            _data.Add(new NoiseNote(b, memory, ref offset));
+                            Data.Add(new NoiseNote(b, memory, ref offset));
                             break;
                         case 0x7f:
-                            _data.Add(new Rest(b, memory, ref offset));
+                            Data.Add(new Rest(b, memory, ref offset));
                             break;
                     }
                 }
             }
+        }
+
+        public string AsJson()
+        {
+            return JsonConvert.SerializeObject(this._channels, Formatting.Indented, new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.Auto,
+                Converters = new List<JsonConverter> { new StringEnumConverter()}
+            });
         }
     }
 
@@ -346,19 +366,21 @@ namespace sth1edwv
 
     internal class TempoControl: IChannelData
     {
-        public byte Divider { get; set; }
-        public byte Multiplier { get; set; }
+        public ushort Divider { get; set; }
+        public ushort Multiplier { get; set; }
 
         public TempoControl(Memory memory, ref int offset)
         {
-            Divider = memory[offset++];
-            Multiplier = memory[offset++];
+            Divider = memory.Word(offset);
+            offset += 2;
+            Multiplier = memory.Word(offset);
+            offset += 2;
         }
 
         public override string ToString()
         {
             return $"Tempo scale: {Multiplier}/{Divider} = {120.0 * Multiplier / Divider} BPM";
-        }
+        }   
 
     }
 }

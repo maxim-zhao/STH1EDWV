@@ -46,7 +46,7 @@ namespace sth1edwv
             this.openROMToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveROMToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.quickTestToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.tabPage5 = new System.Windows.Forms.TabPage();
+            this.tabLevels = new System.Windows.Forms.TabPage();
             this.splitContainer6 = new System.Windows.Forms.SplitContainer();
             this.listBoxLevels = new System.Windows.Forms.ListBox();
             this.tabControlLevel = new System.Windows.Forms.TabControl();
@@ -99,7 +99,7 @@ namespace sth1edwv
             this.buttonResizeFloor = new System.Windows.Forms.ToolStripButton();
             this.SharingButton = new System.Windows.Forms.ToolStripButton();
             this.tabControl1 = new System.Windows.Forms.TabControl();
-            this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.tabPageOtherArt = new System.Windows.Forms.TabPage();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
             this.listBoxArt = new System.Windows.Forms.ListBox();
             this.tabControlArt = new System.Windows.Forms.TabControl();
@@ -113,7 +113,11 @@ namespace sth1edwv
             this.tabPageArtPalette = new System.Windows.Forms.TabPage();
             this.tabPageExtraData = new System.Windows.Forms.TabPage();
             this.extraDataLayoutPanel = new System.Windows.Forms.FlowLayoutPanel();
-            this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.tabPageMusic = new System.Windows.Forms.TabPage();
+            this.splitContainer2 = new System.Windows.Forms.SplitContainer();
+            this.listBoxMusic = new System.Windows.Forms.ListBox();
+            this.textBoxMusic = new System.Windows.Forms.TextBox();
+            this.tabPageSDSCTag = new System.Windows.Forms.TabPage();
             this.udSDSCVersion = new System.Windows.Forms.NumericUpDown();
             this.label5 = new System.Windows.Forms.Label();
             this.dateTimePickerSDSCDate = new System.Windows.Forms.DateTimePicker();
@@ -124,12 +128,12 @@ namespace sth1edwv
             this.textBoxSDSCTitle = new System.Windows.Forms.TextBox();
             this.textBoxSDSCNotes = new System.Windows.Forms.TextBox();
             this.textBoxSDSCAuthor = new System.Windows.Forms.TextBox();
-            this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.tabPageLog = new System.Windows.Forms.TabPage();
             this.logTextBox = new System.Windows.Forms.TextBox();
             this.spaceVisualizer1 = new sth1edwv.Controls.SpaceVisualizer();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.menuStrip1.SuspendLayout();
-            this.tabPage5.SuspendLayout();
+            this.tabLevels.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer6)).BeginInit();
             this.splitContainer6.Panel1.SuspendLayout();
             this.splitContainer6.Panel2.SuspendLayout();
@@ -155,7 +159,7 @@ namespace sth1edwv
             this.levelEditorContextMenu.SuspendLayout();
             this.toolStripLayout.SuspendLayout();
             this.tabControl1.SuspendLayout();
-            this.tabPage1.SuspendLayout();
+            this.tabPageOtherArt.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).BeginInit();
             this.splitContainer3.Panel1.SuspendLayout();
             this.splitContainer3.Panel2.SuspendLayout();
@@ -166,9 +170,14 @@ namespace sth1edwv
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxArtLayout)).BeginInit();
             this.tabPageArtTiles.SuspendLayout();
             this.tabPageExtraData.SuspendLayout();
-            this.tabPage3.SuspendLayout();
+            this.tabPageMusic.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
+            this.splitContainer2.Panel1.SuspendLayout();
+            this.splitContainer2.Panel2.SuspendLayout();
+            this.splitContainer2.SuspendLayout();
+            this.tabPageSDSCTag.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.udSDSCVersion)).BeginInit();
-            this.tabPage2.SuspendLayout();
+            this.tabPageLog.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -220,16 +229,16 @@ namespace sth1edwv
             this.quickTestToolStripMenuItem.Text = "Quick test";
             this.quickTestToolStripMenuItem.Click += new System.EventHandler(this.quickTestToolStripMenuItem_Click);
             // 
-            // tabPage5
+            // tabLevels
             // 
-            this.tabPage5.Controls.Add(this.splitContainer6);
-            this.tabPage5.Location = new System.Drawing.Point(4, 22);
-            this.tabPage5.Name = "tabPage5";
-            this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage5.Size = new System.Drawing.Size(1323, 530);
-            this.tabPage5.TabIndex = 5;
-            this.tabPage5.Text = "Levels";
-            this.tabPage5.UseVisualStyleBackColor = true;
+            this.tabLevels.Controls.Add(this.splitContainer6);
+            this.tabLevels.Location = new System.Drawing.Point(4, 22);
+            this.tabLevels.Name = "tabLevels";
+            this.tabLevels.Padding = new System.Windows.Forms.Padding(3);
+            this.tabLevels.Size = new System.Drawing.Size(1323, 530);
+            this.tabLevels.TabIndex = 5;
+            this.tabLevels.Text = "Levels";
+            this.tabLevels.UseVisualStyleBackColor = true;
             // 
             // splitContainer6
             // 
@@ -489,7 +498,6 @@ namespace sth1edwv
             // 
             // panel1
             // 
-            this.panel1.AutoScroll = true;
             this.panel1.Controls.Add(this.splitContainer7);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel1.Location = new System.Drawing.Point(3, 49);
@@ -557,27 +565,27 @@ namespace sth1edwv
             this.addObjectToolStripMenuItem,
             this.deleteObjectToolStripMenuItem});
             this.levelEditorContextMenu.Name = "levelEditorContextMenu";
-            this.levelEditorContextMenu.Size = new System.Drawing.Size(181, 120);
+            this.levelEditorContextMenu.Size = new System.Drawing.Size(144, 98);
             this.levelEditorContextMenu.Opening += new System.ComponentModel.CancelEventHandler(this.levelEditorContextMenu_Opening);
             // 
             // selectBlockToolStripMenuItem
             // 
             this.selectBlockToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("selectBlockToolStripMenuItem.Image")));
             this.selectBlockToolStripMenuItem.Name = "selectBlockToolStripMenuItem";
-            this.selectBlockToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.selectBlockToolStripMenuItem.Size = new System.Drawing.Size(143, 22);
             this.selectBlockToolStripMenuItem.Text = "Select block";
             this.selectBlockToolStripMenuItem.Click += new System.EventHandler(this.selectBlockToolStripMenuItem_Click);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(177, 6);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(140, 6);
             // 
             // editObjectToolStripMenuItem
             // 
             this.editObjectToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("editObjectToolStripMenuItem.Image")));
             this.editObjectToolStripMenuItem.Name = "editObjectToolStripMenuItem";
-            this.editObjectToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.editObjectToolStripMenuItem.Size = new System.Drawing.Size(143, 22);
             this.editObjectToolStripMenuItem.Text = "Edit object...";
             this.editObjectToolStripMenuItem.Click += new System.EventHandler(this.editObjectToolStripMenuItem_Click);
             // 
@@ -585,7 +593,7 @@ namespace sth1edwv
             // 
             this.addObjectToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("addObjectToolStripMenuItem.Image")));
             this.addObjectToolStripMenuItem.Name = "addObjectToolStripMenuItem";
-            this.addObjectToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.addObjectToolStripMenuItem.Size = new System.Drawing.Size(143, 22);
             this.addObjectToolStripMenuItem.Text = "Add object...";
             this.addObjectToolStripMenuItem.Click += new System.EventHandler(this.addObjectToolStripMenuItem_Click);
             // 
@@ -593,7 +601,7 @@ namespace sth1edwv
             // 
             this.deleteObjectToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("deleteObjectToolStripMenuItem.Image")));
             this.deleteObjectToolStripMenuItem.Name = "deleteObjectToolStripMenuItem";
-            this.deleteObjectToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.deleteObjectToolStripMenuItem.Size = new System.Drawing.Size(143, 22);
             this.deleteObjectToolStripMenuItem.Text = "Delete object";
             this.deleteObjectToolStripMenuItem.Click += new System.EventHandler(this.deleteObjectToolStripMenuItem_Click);
             // 
@@ -784,10 +792,11 @@ namespace sth1edwv
             // 
             // tabControl1
             // 
-            this.tabControl1.Controls.Add(this.tabPage5);
-            this.tabControl1.Controls.Add(this.tabPage1);
-            this.tabControl1.Controls.Add(this.tabPage3);
-            this.tabControl1.Controls.Add(this.tabPage2);
+            this.tabControl1.Controls.Add(this.tabLevels);
+            this.tabControl1.Controls.Add(this.tabPageOtherArt);
+            this.tabControl1.Controls.Add(this.tabPageMusic);
+            this.tabControl1.Controls.Add(this.tabPageSDSCTag);
+            this.tabControl1.Controls.Add(this.tabPageLog);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
             this.tabControl1.Name = "tabControl1";
@@ -795,16 +804,16 @@ namespace sth1edwv
             this.tabControl1.Size = new System.Drawing.Size(1331, 556);
             this.tabControl1.TabIndex = 1;
             // 
-            // tabPage1
+            // tabPageOtherArt
             // 
-            this.tabPage1.Controls.Add(this.splitContainer3);
-            this.tabPage1.Location = new System.Drawing.Point(4, 24);
-            this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(1323, 528);
-            this.tabPage1.TabIndex = 9;
-            this.tabPage1.Text = "Other art";
-            this.tabPage1.UseVisualStyleBackColor = true;
+            this.tabPageOtherArt.Controls.Add(this.splitContainer3);
+            this.tabPageOtherArt.Location = new System.Drawing.Point(4, 24);
+            this.tabPageOtherArt.Name = "tabPageOtherArt";
+            this.tabPageOtherArt.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPageOtherArt.Size = new System.Drawing.Size(1323, 528);
+            this.tabPageOtherArt.TabIndex = 9;
+            this.tabPageOtherArt.Text = "Other art";
+            this.tabPageOtherArt.UseVisualStyleBackColor = true;
             // 
             // splitContainer3
             // 
@@ -951,25 +960,73 @@ namespace sth1edwv
             this.extraDataLayoutPanel.TabIndex = 0;
             this.extraDataLayoutPanel.WrapContents = false;
             // 
-            // tabPage3
+            // tabPageMusic
             // 
-            this.tabPage3.Controls.Add(this.udSDSCVersion);
-            this.tabPage3.Controls.Add(this.label5);
-            this.tabPage3.Controls.Add(this.dateTimePickerSDSCDate);
-            this.tabPage3.Controls.Add(this.label4);
-            this.tabPage3.Controls.Add(this.label3);
-            this.tabPage3.Controls.Add(this.label2);
-            this.tabPage3.Controls.Add(this.label1);
-            this.tabPage3.Controls.Add(this.textBoxSDSCTitle);
-            this.tabPage3.Controls.Add(this.textBoxSDSCNotes);
-            this.tabPage3.Controls.Add(this.textBoxSDSCAuthor);
-            this.tabPage3.Location = new System.Drawing.Point(4, 24);
-            this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage3.Size = new System.Drawing.Size(1323, 528);
-            this.tabPage3.TabIndex = 11;
-            this.tabPage3.Text = "SDSC tag";
-            this.tabPage3.UseVisualStyleBackColor = true;
+            this.tabPageMusic.Controls.Add(this.splitContainer2);
+            this.tabPageMusic.Location = new System.Drawing.Point(4, 22);
+            this.tabPageMusic.Name = "tabPageMusic";
+            this.tabPageMusic.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPageMusic.Size = new System.Drawing.Size(1323, 530);
+            this.tabPageMusic.TabIndex = 12;
+            this.tabPageMusic.Text = "Music";
+            this.tabPageMusic.UseVisualStyleBackColor = true;
+            // 
+            // splitContainer2
+            // 
+            this.splitContainer2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer2.Location = new System.Drawing.Point(3, 3);
+            this.splitContainer2.Name = "splitContainer2";
+            // 
+            // splitContainer2.Panel1
+            // 
+            this.splitContainer2.Panel1.Controls.Add(this.listBoxMusic);
+            // 
+            // splitContainer2.Panel2
+            // 
+            this.splitContainer2.Panel2.Controls.Add(this.textBoxMusic);
+            this.splitContainer2.Size = new System.Drawing.Size(1317, 524);
+            this.splitContainer2.SplitterDistance = 261;
+            this.splitContainer2.TabIndex = 2;
+            // 
+            // listBoxMusic
+            // 
+            this.listBoxMusic.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listBoxMusic.FormattingEnabled = true;
+            this.listBoxMusic.Location = new System.Drawing.Point(0, 0);
+            this.listBoxMusic.Name = "listBoxMusic";
+            this.listBoxMusic.Size = new System.Drawing.Size(261, 524);
+            this.listBoxMusic.TabIndex = 0;
+            this.listBoxMusic.SelectedIndexChanged += new System.EventHandler(this.listBoxMusic_SelectedIndexChanged);
+            // 
+            // textBoxMusic
+            // 
+            this.textBoxMusic.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.textBoxMusic.Location = new System.Drawing.Point(0, 0);
+            this.textBoxMusic.Multiline = true;
+            this.textBoxMusic.Name = "textBoxMusic";
+            this.textBoxMusic.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.textBoxMusic.Size = new System.Drawing.Size(1052, 524);
+            this.textBoxMusic.TabIndex = 0;
+            // 
+            // tabPageSDSCTag
+            // 
+            this.tabPageSDSCTag.Controls.Add(this.udSDSCVersion);
+            this.tabPageSDSCTag.Controls.Add(this.label5);
+            this.tabPageSDSCTag.Controls.Add(this.dateTimePickerSDSCDate);
+            this.tabPageSDSCTag.Controls.Add(this.label4);
+            this.tabPageSDSCTag.Controls.Add(this.label3);
+            this.tabPageSDSCTag.Controls.Add(this.label2);
+            this.tabPageSDSCTag.Controls.Add(this.label1);
+            this.tabPageSDSCTag.Controls.Add(this.textBoxSDSCTitle);
+            this.tabPageSDSCTag.Controls.Add(this.textBoxSDSCNotes);
+            this.tabPageSDSCTag.Controls.Add(this.textBoxSDSCAuthor);
+            this.tabPageSDSCTag.Location = new System.Drawing.Point(4, 24);
+            this.tabPageSDSCTag.Name = "tabPageSDSCTag";
+            this.tabPageSDSCTag.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPageSDSCTag.Size = new System.Drawing.Size(1323, 528);
+            this.tabPageSDSCTag.TabIndex = 11;
+            this.tabPageSDSCTag.Text = "SDSC tag";
+            this.tabPageSDSCTag.UseVisualStyleBackColor = true;
             // 
             // udSDSCVersion
             // 
@@ -1068,16 +1125,16 @@ namespace sth1edwv
             this.textBoxSDSCAuthor.TabIndex = 3;
             this.textBoxSDSCAuthor.TextChanged += new System.EventHandler(this.textBoxSDSCTitle_TextChanged);
             // 
-            // tabPage2
+            // tabPageLog
             // 
-            this.tabPage2.Controls.Add(this.logTextBox);
-            this.tabPage2.Location = new System.Drawing.Point(4, 24);
-            this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(1323, 528);
-            this.tabPage2.TabIndex = 10;
-            this.tabPage2.Text = "Log";
-            this.tabPage2.UseVisualStyleBackColor = true;
+            this.tabPageLog.Controls.Add(this.logTextBox);
+            this.tabPageLog.Location = new System.Drawing.Point(4, 24);
+            this.tabPageLog.Name = "tabPageLog";
+            this.tabPageLog.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPageLog.Size = new System.Drawing.Size(1323, 528);
+            this.tabPageLog.TabIndex = 10;
+            this.tabPageLog.Text = "Log";
+            this.tabPageLog.UseVisualStyleBackColor = true;
             // 
             // logTextBox
             // 
@@ -1133,7 +1190,7 @@ namespace sth1edwv
             this.Load += new System.EventHandler(this.Form1_Load);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
-            this.tabPage5.ResumeLayout(false);
+            this.tabLevels.ResumeLayout(false);
             this.splitContainer6.Panel1.ResumeLayout(false);
             this.splitContainer6.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer6)).EndInit();
@@ -1163,7 +1220,7 @@ namespace sth1edwv
             this.toolStripLayout.ResumeLayout(false);
             this.toolStripLayout.PerformLayout();
             this.tabControl1.ResumeLayout(false);
-            this.tabPage1.ResumeLayout(false);
+            this.tabPageOtherArt.ResumeLayout(false);
             this.splitContainer3.Panel1.ResumeLayout(false);
             this.splitContainer3.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).EndInit();
@@ -1177,11 +1234,17 @@ namespace sth1edwv
             this.tabPageArtTiles.ResumeLayout(false);
             this.tabPageExtraData.ResumeLayout(false);
             this.tabPageExtraData.PerformLayout();
-            this.tabPage3.ResumeLayout(false);
-            this.tabPage3.PerformLayout();
+            this.tabPageMusic.ResumeLayout(false);
+            this.splitContainer2.Panel1.ResumeLayout(false);
+            this.splitContainer2.Panel2.ResumeLayout(false);
+            this.splitContainer2.Panel2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
+            this.splitContainer2.ResumeLayout(false);
+            this.tabPageSDSCTag.ResumeLayout(false);
+            this.tabPageSDSCTag.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.udSDSCVersion)).EndInit();
-            this.tabPage2.ResumeLayout(false);
-            this.tabPage2.PerformLayout();
+            this.tabPageLog.ResumeLayout(false);
+            this.tabPageLog.PerformLayout();
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
@@ -1198,7 +1261,7 @@ namespace sth1edwv
         private ToolStripMenuItem openROMToolStripMenuItem;
         private ToolStripMenuItem saveROMToolStripMenuItem;
         private ToolStripMenuItem quickTestToolStripMenuItem;
-        private TabPage tabPage5;
+        private TabPage tabLevels;
         private SplitContainer splitContainer6;
         private ListBox listBoxLevels;
         private TabControl tabControlLevel;
@@ -1248,7 +1311,7 @@ namespace sth1edwv
         private ContextMenuStrip levelEditorContextMenu;
         private ToolStripMenuItem selectBlockToolStripMenuItem;
         private ToolStripMenuItem editObjectToolStripMenuItem;
-        private TabPage tabPage1;
+        private TabPage tabPageOtherArt;
         private TileSetViewer otherArtTileSetViewer;
         private SplitContainer splitContainer3;
         private ListBox listBoxArt;
@@ -1256,7 +1319,7 @@ namespace sth1edwv
         private TabPage tabPageArtTiles;
         private TabPage tabPageArtLayout;
         private PictureBox pictureBoxArtLayout;
-        private TabPage tabPage2;
+        private TabPage tabPageLog;
         private TextBox logTextBox;
         private ToolStrip toolStrip2;
         private ToolStripButton buttonSaveScreen;
@@ -1266,7 +1329,7 @@ namespace sth1edwv
         private ToolStripMenuItem deleteObjectToolStripMenuItem;
         private ToolStripSeparator toolStripMenuItem1;
         private SplitContainer splitContainer1;
-        private TabPage tabPage3;
+        private TabPage tabPageSDSCTag;
         private TextBox textBoxSDSCNotes;
         private Label label3;
         private TextBox textBoxSDSCAuthor;
@@ -1280,6 +1343,10 @@ namespace sth1edwv
         private TabPage tabPageExtraData;
         private TabPage tabPageArtPalette;
         private FlowLayoutPanel extraDataLayoutPanel;
+        private TabPage tabPageMusic;
+        private SplitContainer splitContainer2;
+        private ListBox listBoxMusic;
+        private TextBox textBoxMusic;
     }
 }
 

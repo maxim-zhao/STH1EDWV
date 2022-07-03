@@ -16,9 +16,7 @@
   </PropertyGroup>
   <!-- Fix for not running if built on 6.0.2: see https://github.com/dotnet/core/issues/7176 -->
   <ItemGroup>
-    <FrameworkReference
-      Update="Microsoft.WindowsDesktop.App;Microsoft.WindowsDesktop.App.WPF;Microsoft.WindowsDesktop.App.WindowsForms"
-      TargetingPackVersion="6.0.0" />
+    <FrameworkReference Update="Microsoft.WindowsDesktop.App;Microsoft.WindowsDesktop.App.WPF;Microsoft.WindowsDesktop.App.WindowsForms" TargetingPackVersion="6.0.0" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <Optimize>True</Optimize>
@@ -110,5 +108,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Resources\icon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 </Project>

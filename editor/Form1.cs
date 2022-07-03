@@ -77,6 +77,8 @@ namespace sth1edwv
             listBoxArt.Items.Clear();
             listBoxArt.Items.AddRange(_cartridge.Art.ToArray<object>());
             listBoxArt.Sorted = true;
+            listBoxMusic.Items.Clear();
+            listBoxMusic.Items.AddRange(_cartridge.Music.ToArray<object>());
 
             if (_cartridge.SdscTag != null)
             {
@@ -902,6 +904,16 @@ namespace sth1edwv
         {
             // Disable object items if no object is selected
             editObjectToolStripMenuItem.Enabled = deleteObjectToolStripMenuItem.Enabled = getClickedLevelObject() != null;
+        }
+
+        private void listBoxMusic_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (listBoxMusic.SelectedItem is not MusicTrack musicTrack)
+            {
+                return;
+            }
+
+            textBoxMusic.Text = musicTrack.AsJson();
         }
     }
 }

@@ -1608,6 +1608,7 @@ namespace sth1edwv
         public List<ArtItem> Art { get; } = new();
         public FreeSpace LastFreeSpace { get; private set; }
         public SdscTag SdscTag { get; set; }
+        public List<MusicTrack> Music { get; } = new();
 
         private readonly Dictionary<int, TileSet> _tileSets = new();
         private readonly Dictionary<int, Floor> _floors = new();
@@ -1615,7 +1616,6 @@ namespace sth1edwv
         private readonly Dictionary<int, Palette> _palettes = new();
         private readonly Dictionary<Game.Asset, IDataItem> _assetsLookup = new();
         private readonly Dictionary<int, LevelObjectSet> _levelObjects = new();
-        private readonly List<MusicTrack> _music = new();
 
         public Cartridge(string path, Action<string> logger)
         {
@@ -1653,7 +1653,7 @@ namespace sth1edwv
             for (var i = 0; i < 0x14; ++i)
             {
                 var pointer = Memory.Word(0xc716 + i * 2) + 0x8000;
-                _music.Add(new MusicTrack(Memory, pointer));
+                Music.Add(new MusicTrack(Memory, pointer));
             }
         }
 
