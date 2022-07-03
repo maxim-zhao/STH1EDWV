@@ -326,30 +326,6 @@ namespace sth1edwv.GameObjects
             return _label;
         }
 
-        public TreeNode ToNode()
-        {
-            var uncompressedSize = FloorWidth * FloorHeight;
-            var result = new TreeNode("Header")
-            {
-                Nodes =
-                {
-                    new TreeNode($"Floor Size           = {FloorWidth} x {FloorHeight} ({uncompressedSize}B)"),
-                    new TreeNode($"Floor Data           = @0x{_floorAddress:X} Size: {_floorSize}B ({(double)(uncompressedSize - _floorSize) / uncompressedSize:P})"),
-                    new TreeNode($"Level Limits         = ({RightEdgeFactor}, {BottomEdgeFactor})"),
-                    new TreeNode($"Level Offset         = ({LeftPixels}, {TopPixels})"),
-                    new TreeNode($"Extended Height      = {ExtraHeight}"),
-                    new TreeNode($"Offset Art           = 0x{_offsetArt:X8}"),
-                    new TreeNode($"Offset Object Layout = 0x{_offsetObjectLayout:X8}"),
-                    new TreeNode($"Initial Palette      = {_initPalette}"),
-                    new TreeNode($"Cycles Palette       = {_paletteCycleIndex}"),
-                    new TreeNode($"Palette cycles       = {_paletteCycleCount}"),
-                    Objects.ToNode()
-                }
-            };
-            result.Expand();
-            return result;
-        }
-
         public IList<byte> GetData()
         {
             using var stream = new MemoryStream();

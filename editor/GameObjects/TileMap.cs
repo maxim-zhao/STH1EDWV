@@ -25,10 +25,16 @@ namespace sth1edwv.GameObjects
             {
                 _data[i] |= 0x1000;
             }
+            HasForeground = true;
         }
 
         public void OverlayWith(TileMap other)
         {
+            // Extend data if smaller (should not happen)
+            if (other._data.Count > _data.Count)
+            {
+                _data.AddRange(Enumerable.Repeat((ushort)0, other._data.Count - _data.Count));
+            }
             for (var i = 0; i < _data.Count; i++)
             {
                 if (other._data[i] != 0xff)
@@ -40,9 +46,10 @@ namespace sth1edwv.GameObjects
 
         public Bitmap GetImage(TileSet tileSet, Palette palette)
         {
-            var image = new Bitmap(256, 192, PixelFormat.Format8bppIndexed);
-            // We work in 8bpp again...
-            image.Palette = palette.ImagePalette;
+            var image = new Bitmap(256, 192, PixelFormat.Format8bppIndexed)
+            {
+                Palette = palette.ImagePalette
+            };
             var data = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.WriteOnly, PixelFormat.Format8bppIndexed);
             try
             {
@@ -79,10 +86,11 @@ namespace sth1edwv.GameObjects
         public int Offset { get; set; }
         public int ForegroundTileMapSize { get; private set; }
         public int BackgroundTileMapSize { get; private set; }
+        public bool HasForeground { get; private set; }
 
         public IList<byte> GetData()
         {
-            if (!_data.Any(x => x > 0xff))
+            if (!HasForeground)
             {
                 // Single tilemap mode
                 var tileMap = Compression.CompressRle(_data.Select(x => (byte)x).ToArray());

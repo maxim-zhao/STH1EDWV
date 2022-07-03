@@ -34,18 +34,7 @@ namespace sth1edwv.GameObjects
                 new Rectangle(0, 0, 8, Height),
                 ImageLockMode.WriteOnly,
                 PixelFormat.Format8bppIndexed);
-            int offset = 0;
-            foreach (var point in _grouping)
-            {
-                for (var row = 0; row < 8; ++row)
-                {
-                    // Copy indices one row at a time
-                    Marshal.Copy(_data, offset + row * 8, data.Scan0 + (point.Y + row) * data.Stride + point.X, 8);
-                }
-
-                offset += 8 * 8;
-            }
-
+            Draw8Bpp(data, 0, 0);
             image.UnlockBits(data);
             _images.Add(palette, image);
             return image;
@@ -81,16 +70,18 @@ namespace sth1edwv.GameObjects
 
         public void SetData(byte[] data)
         {
-            // The incoming data is a rectangle. We want to "wind" it back to the game data format.
+            // The incoming data is a rectangle. We want to "unwind" it back to the game data format.
             var index = 0;
             foreach (var point in _grouping)
             {
-                // We copy the data at the given point to the given index's position in the data
+                var sourceOffset = point.Y * Width + point.X;
+                var destinationOffset = index * 8 * 8;
+                // We copy the 8x8 square of data at the given point to the given index's position in the data
                 for (int row = 0; row < 8; ++row)
                 {
-                    var sourceOffset = (row + point.Y) * Width + point.X;
-                    var destinationOffset = index * 64 + row * 8;
                     Array.Copy(data, sourceOffset, _data, destinationOffset, 8);
+                    sourceOffset += Width;
+                    destinationOffset += 8;
                 }
 
                 ++index;
@@ -112,14 +103,23 @@ namespace sth1edwv.GameObjects
 
         public void Draw8Bpp(BitmapData destination, int x, int y)
         {
-            // We use our data array directly...
-            for (var row = 0; row < 8; ++row)
+            // We draw it in 8x8 chunks...
+            var index = 0;
+            foreach (var point in _grouping)
             {
-                Marshal.Copy(
-                    _data,
-                    row*8,
-                    destination.Scan0 + (row + y) * destination.Stride + x,
-                    8);
+                var sourceOffset = index * 8 * 8;
+                var destOffset = (y + point.Y) * destination.Stride + x + point.X;
+                for (var row = 0; row < 8; ++row)
+                {
+                    Marshal.Copy(
+                        _data,
+                        sourceOffset,
+                        destination.Scan0 + destOffset,
+                        8);
+                    sourceOffset += 8;
+                    destOffset += destination.Stride;
+                }
+                ++index;
             }
         }
     }

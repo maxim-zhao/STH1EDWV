@@ -110,8 +110,6 @@ namespace sth1edwv
             tileSetViewer.SetData(level?.TileSet, level?.TilePalette, GetTileUsedInBlocks);
             spriteTileSetViewer.SetData(level?.SpriteTileSet, level?.SpritePalette, null, true);
 
-            LoadLevelData();
-
             foreach (Control control in PalettesLayout.Controls)
             {
                 control.Dispose();
@@ -162,19 +160,6 @@ namespace sth1edwv
             return level.BlockMapping.Blocks
                 .Where(block => block.TileIndices.Contains((byte)index))
                 .ToList();
-        }
-
-        private void LoadLevelData()
-        {
-            treeViewLevelData.Nodes.Clear();
-            if (listBoxLevels.SelectedItem is not Level level)
-            {
-                return;
-            }
-            var t = new TreeNode($"{level}");
-            t.Nodes.Add(level.ToNode());
-            t.Expand();
-            treeViewLevelData.Nodes.Add(t);
         }
 
         private void LevelRenderModeChanged(object sender, EventArgs e)
@@ -283,33 +268,6 @@ namespace sth1edwv
                 {
                     MessageBox.Show(this, $"There was an error while saving:\n\n{ex.Message}");
                 }
-            }
-        }
-
-        private void TreeViewLevelDataItemSelected(object sender, TreeViewEventArgs e)
-        {
-            var node = treeViewLevelData.SelectedNode;
-            if (node.Tag is not LevelObject levelObject)
-            {
-                return;
-            }
-
-            using var chooser = new ObjectEditor(levelObject);
-            if (chooser.ShowDialog(this) != DialogResult.OK)
-            {
-                return;
-            }
-            levelObject.X = Convert.ToByte(chooser.textBoxX.Text);
-            levelObject.Y = Convert.ToByte(chooser.textBoxY.Text);
-            levelObject.Type = Convert.ToByte(chooser.textBoxType.Text);
-
-            // Refresh the level data
-            LoadLevelData();
-
-            // And the level map may be different
-            if (floorEditor1.WithObjects)
-            {
-                floorEditor1.Invalidate();
             }
         }
 
@@ -552,17 +510,22 @@ namespace sth1edwv
             layoutBlockChooser.SelectedIndex = level.Floor.BlockIndices[floorEditor1.LastClickedBlockIndex];
         }
 
-        private void editObjectToolStripMenuItem_Click(object sender, EventArgs e)
+        private LevelObject getClickedLevelObject()
         {
             if (listBoxLevels.SelectedItem is not Level level)
             {
-                return;
+                return null;
             }
             var index = floorEditor1.LastClickedBlockIndex;
             var x = index % level.FloorWidth;
             var y = index / level.FloorWidth;
             // See if we have an object here
-            var levelObject = level.Objects.FirstOrDefault(o => o.X == x && o.Y == y);
+            return level.Objects.FirstOrDefault(o => o.X == x && o.Y == y);
+        }
+
+        private void editObjectToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var levelObject = getClickedLevelObject();
             if (levelObject != null)
             {
                 using var editor = new ObjectEditor(levelObject);
@@ -571,9 +534,6 @@ namespace sth1edwv
                     levelObject.X = editor.X;
                     levelObject.Y = editor.Y;
                     levelObject.Type = editor.Type;
-
-                    // Refresh the level data
-                    LoadLevelData();
 
                     // And the level map may be different
                     if (floorEditor1.WithObjects)
@@ -894,9 +854,6 @@ namespace sth1edwv
 
                 level.Objects.Add(levelObject);
 
-                // Refresh the level data
-                LoadLevelData();
-
                 // And the level map
                 if (floorEditor1.WithObjects)
                 {
@@ -909,22 +866,11 @@ namespace sth1edwv
 
         private void deleteObjectToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (listBoxLevels.SelectedItem is not Level level)
-            {
-                return;
-            }
-            var index = floorEditor1.LastClickedBlockIndex;
-            var x = index % level.FloorWidth;
-            var y = index / level.FloorWidth;
-            // See if we have an object here
-            var levelObject = level.Objects.FirstOrDefault(o => o.X == x && o.Y == y);
-            if (levelObject != null)
+            var levelObject = getClickedLevelObject();
+            if (levelObject != null && listBoxLevels.SelectedItem is Level level)
             {
                 level.Objects.Remove(levelObject);
             }
-
-            // Refresh the level data
-            LoadLevelData();
 
             // And the level map
             if (floorEditor1.WithObjects)
@@ -950,6 +896,12 @@ namespace sth1edwv
                 Version = udSDSCVersion.Value
             };
             UpdateSpace();
+        }
+
+        private void levelEditorContextMenu_Opening(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            // Disable object items if no object is selected
+            editObjectToolStripMenuItem.Enabled = deleteObjectToolStripMenuItem.Enabled = getClickedLevelObject() != null;
         }
     }
 }
