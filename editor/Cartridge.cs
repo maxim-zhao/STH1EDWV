@@ -1653,7 +1653,7 @@ namespace sth1edwv
             for (var i = 0; i < 0x14; ++i)
             {
                 var pointer = Memory.Word(0xc716 + i * 2) + 0x8000;
-                Music.Add(new MusicTrack(Memory, pointer));
+                Music.Add(new MusicTrack(Memory, pointer, i));
             }
         }
 
