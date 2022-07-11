@@ -6,6 +6,7 @@ using Newtonsoft.Json.Converters;
 
 namespace sth1edwv
 {
+    /*
     public class FlattenedMusicTrack
     {
         public int Offset { get; }
@@ -21,23 +22,23 @@ namespace sth1edwv
             A, ASharp, B, C, CSharp, D, DSharp, E, F, FSharp, G, GSharp
         }
 
-        public class Empty : IEvent
+        public record Empty : IEvent
         {
             // Nothing
         }
 
-        public class PlayNote: IEvent
+        public record PlayNote: IEvent
         {
             public Notes Note { get; set; }
             public int Octave { get; set; }
         }
 
-        public class KeyUp : IEvent
+        public record KeyUp : IEvent
         {
             // Nothing
         }
 
-        public class OtherEvent : IEvent
+        public record OtherEvent : IEvent
         {
             public IChannelData ChannelData { get; set; }
         }
@@ -57,11 +58,18 @@ namespace sth1edwv
             Events = data.Channels.Select(x => x.AsFlattenedEnumerable().ToList()).ToList();
         }
     }
-
-    public class MusicTrack
+    */
+    public class MusicTrack: IDataItem
     {
         public List<Channel> Channels { get; } = new();
-        public int Offset { get; }
+        public int Offset { get; set; }
+
+        public IList<byte> GetData()
+        {
+            // TODO this when it's time to save
+            throw new NotImplementedException();
+        }
+
         public int Index { get; }
 
         public MusicTrack(Memory memory, int offset, int index)
@@ -74,41 +82,73 @@ namespace sth1edwv
                 var relativeOffset = memory.Word(offset + i * 2);
                 if (relativeOffset == 0)
                 {
-                    Channels.Add(new Channel(null, 0));
+                    Channels.Add(new Channel(null, 0, 0));
                 }
                 else
                 {
                     var channelOffset = offset + relativeOffset;
-                    Channels.Add(new Channel(memory, channelOffset));
+                    Channels.Add(new Channel(memory, channelOffset, Offset));
                 }
             }
         }
 
         public override string ToString()
         {
-            return $"{Index} @ {Offset:X}, {Channels.Count(x => x.Data.Any())} channels";
+            return $"{Index} @ {Offset:X}, {Channels.Count(x => x.Data.Any())} channels, " + 
+                   $"[{string.Join(", ", Channels.Select(x => x.Data.Count))}] commands, " +
+                   $"[{string.Join(", ", Channels.Select(x => x.Data.OfType<Duration>().Sum(d => d.Length)))}] lengths";
         }
 
         public class Channel
         {
             public List<IChannelData> Data { get; } = new();
 
-            public Channel(Memory memory, int offset)
+            public Channel(Memory memory, int offset, int loopBase)
             {
                 if (offset != 0)
                 {
-                    LoadData(memory, offset);
+                    LoadData(memory, offset, loopBase);
                 }
             }
 
-            private void LoadData(Memory memory, int offset)
+            private void LoadData(Memory memory, int offset, int loopBase)
             {
-                bool hasEnded = false;
-                while (!hasEnded)
+                // We parse the data, following loops rather than emitting data for them.
+                var  loopCounters = new Stack<int>();
+                // We also embed all the note lengths, no defaults.
+                var defaultNoteLength = (byte)0;
+
+                var haveReachedEnd = false;
+                while (!haveReachedEnd)
                 {
                     var b = memory[offset++];
                     switch (b)
                     {
+                        case >= 0x00 and < 0x70:
+                        {
+                            var note = new ToneNote(b, memory, ref offset);
+                            if (note.Length == 0)
+                            {
+                                note.Length = defaultNoteLength;
+                            }
+
+                            Data.Add(note);
+                            break;
+                        }
+                        case >= 0x70 and < 0x7f:
+                        {
+                            var note = new NoiseNote(b, memory, ref offset);
+                            if (note.Length == 0)
+                            {
+                                note.Length = defaultNoteLength;
+                            }
+
+                            Data.Add(note);
+                            break;
+                        }
+                        case 0x7f:
+                            Data.Add(new Rest(memory, ref offset));
+                            break;
                         case 0x80:
                             Data.Add(new TempoControl(memory, ref offset));
                             break;
@@ -125,13 +165,30 @@ namespace sth1edwv
                             Data.Add(new Detune(memory, ref offset));
                             break;
                         case 0x85:
-                            Data.Add(new Dummy(memory, ref offset));
+                            // We drop these
+                            var _ = new Dummy(memory, ref offset);
                             break;
                         case 0x86:
-                            Data.Add(new LoopStart());
+                            // Loop start
+                            loopCounters.Push(0);
                             break;
                         case 0x87:
-                            Data.Add(new LoopEnd(memory, ref offset));
+                            var loopCounter = loopCounters.Pop();
+                            ++loopCounter;
+                            var loopEnd = new LoopEnd(memory, ref offset);
+                            if (loopEnd.RepeatCount != loopCounter)
+                            {
+                                // Loop back
+                                offset = loopBase + loopEnd.LoopBackPoint;
+                                // Sanity check
+                                if (memory[offset - 1] != 0x86)
+                                {
+                                    throw new Exception("Bad loop back");
+                                }
+                                loopCounters.Push(loopCounter);
+                            }
+
+                            // Else we are done with it
                             break;
                         case 0x88:
                             Data.Add(new MasterLoopPoint());
@@ -140,7 +197,7 @@ namespace sth1edwv
                             Data.Add(new NoiseMode(memory, ref offset));
                             break;
                         case 0x8a:
-                            Data.Add(new NoteLength(memory, ref offset));
+                            defaultNoteLength = new DefaultNoteLength(memory, ref offset).Value;
                             break;
                         case 0x8b:
                             Data.Add(new VolumeUp());
@@ -152,26 +209,16 @@ namespace sth1edwv
                             Data.Add(new Hold());
                             break;
                         case 0xfe:
-                            Data.Add(new EndOfSfx());
-                            hasEnded = true;
-                            break;
                         case 0xff:
-                            Data.Add(new EndOfMusic());
-                            hasEnded = true;
+                            haveReachedEnd = true;
                             break;
-                        case >= 0x00 and < 0x70:
-                            Data.Add(new ToneNote(b, memory, ref offset));
-                            break;
-                        case >= 0x70 and < 0x7f:
-                            Data.Add(new NoiseNote(b, memory, ref offset));
-                            break;
-                        case 0x7f:
-                            Data.Add(new Rest(memory, ref offset));
-                            break;
+                        default:
+                            throw new Exception($"Invalid data {b:02X} at offset {offset - 1:05X}");
                     }
                 }
             }
 
+            /*
             public IEnumerable<FlattenedMusicTrack.IEvent> AsFlattenedEnumerable()
             {
                 var currentNoteLength = 0;
@@ -299,8 +346,9 @@ namespace sth1edwv
                             break;
                     }
                 }
-            }
+            } */
         }
+
 
         public string AsJson()
         {
@@ -312,14 +360,12 @@ namespace sth1edwv
         }
     }
 
-    internal class Rest : IChannelData
+    internal class Rest : Duration, IChannelData
     {
         public Rest(Memory memory, ref int offset)
         {
             Length = memory[offset++];
         }
-
-        public byte Length { get; set; }
 
         public override string ToString()
         {
@@ -327,7 +373,7 @@ namespace sth1edwv
         }
     }
 
-    internal class NoiseNote : IChannelData
+    internal class NoiseNote : Duration, IChannelData
     {
         public enum Drums { BassDrum, SnareDrum, Invalid }
         public NoiseNote(byte data, Memory memory, ref int offset)
@@ -342,7 +388,6 @@ namespace sth1edwv
         }
 
         public Drums Drum { get; set; }
-        public byte Length { get; set; }
 
         public override string ToString()
         {
@@ -351,7 +396,12 @@ namespace sth1edwv
 
     }
 
-    internal class ToneNote : IChannelData
+    internal class Duration
+    {
+        public byte Length { get; set; }
+    }
+
+    internal class ToneNote : Duration, IChannelData
     {
         public enum Values { C, CSharp, D, DSharp, E, F, FSharp, G, GSharp, A, ASharp, B, LowA, LowASharp, LowB, Error }
         public ToneNote(byte data, Memory memory, ref int offset)
@@ -364,8 +414,6 @@ namespace sth1edwv
         public int Octave { get; set; }
 
         public Values NoteNumber { get; set; }
-
-        public byte Length { get; set; }
 
         public override string ToString()
         {
@@ -413,9 +461,9 @@ namespace sth1edwv
         }
     }
 
-    internal class NoteLength : Dummy
+    internal class DefaultNoteLength : Dummy
     {
-        public NoteLength(Memory memory, ref int offset): base(memory, ref offset) {}
+        public DefaultNoteLength(Memory memory, ref int offset): base(memory, ref offset) {}
 
         public override string ToString()
         {

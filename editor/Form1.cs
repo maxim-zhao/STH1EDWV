@@ -914,11 +914,7 @@ namespace sth1edwv
                 return;
             }
 
-            //textBoxMusic.Text = musicTrack.AsJson();
-
-            var flattened = new FlattenedMusicTrack(_cartridge.Memory, musicTrack.Offset, musicTrack.Index);
-            textBoxMusic.Text =
-                JsonConvert.SerializeObject(flattened.Events[0]);
+            textBoxMusic.Text = musicTrack.AsJson();
         }
     }
 }

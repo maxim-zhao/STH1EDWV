@@ -37,7 +37,7 @@ namespace sth1edwv
 
             public class Reference
             {
-                protected bool Equals(Reference other)
+                private bool Equals(Reference other)
                 {
                     return Offset == other.Offset && Type == other.Type && Delta == other.Delta;
                 }
@@ -87,7 +87,9 @@ namespace sth1edwv
                     return $"{Type} from {OriginalOffset:X} ({OriginalSize}B)";
                 }
 
-                public enum Types { TileSet, Palette, TileMap, SpriteTileSet, ForegroundTileMap, Unused, Misc, TileMapData, RawValue }
+                public enum Types { TileSet, Palette, TileMap, SpriteTileSet, ForegroundTileMap, Unused, Misc, TileMapData, RawValue,
+                    Music
+                }
                 public Types Type { get; init; }
                 public List<Reference> References { get; init; }
                 public LocationRestriction Restrictions { get; init; } = new(); // Default to defaults...
@@ -666,7 +668,104 @@ namespace sth1edwv
                     }
                 }, {
                     "Unused space bank 2", new Game.Asset { OriginalOffset = 0x07fdb, OriginalSize = 0x15, Type = Game.Asset.Types.Unused }
+                },
+                /*{
+                    "Green Hill music", new Game.Asset { OriginalOffset = 0x0c7d0, OriginalSize = 0xCD0A - 0xc7d0, Type = Game.Asset.Types.Music, References = new List<Game.Reference> {
+                        new() {Offset = 0xC716 + 2 * 0x00, Type = Game.Reference.Types.Slot1}, // Music index 0
+                        new() {Offset = 0xC716 + 2 * 0x0f, Type = Game.Reference.Types.Slot1}, // and 0xf
+                        new() {Offset = 0xC716 + 2 * 0x11, Type = Game.Reference.Types.Slot1}, // and 0x11
+                        new() {Offset = 0xC716 + 2 * 0x12, Type = Game.Reference.Types.Slot1}, // and 0x12
+                        new() {Offset = 0x02da, Type = Game.Reference.Types.PageNumber}
+                    } }
                 }, {
+                    "Marble Zone music", new Game.Asset { OriginalOffset = 0xCD0A, OriginalSize = 0xD24A - 0xCD0A, Type = Game.Asset.Types.Music } // No references
+                }, {
+                    "Jungle Zone music", new Game.Asset { OriginalOffset = 0xD24A, OriginalSize = 0x0CD0A - 0xD24A, Type = Game.Asset.Types.Music, References = new List<Game.Reference> { 
+                        new() {Offset = 0xC716 + 2 * 0x02, Type = Game.Reference.Types.Slot1}, 
+                        new() {Offset = 0x02da, Type = Game.Reference.Types.PageNumber}
+                    } }
+                }, {
+                    "Bridge Zone music", new Game.Asset { OriginalOffset = 0xD74A, OriginalSize = 0xDB4F - 0xD74A, Type = Game.Asset.Types.Music, References = new List<Game.Reference>
+                    {
+                        new() {Offset = 0xC716 + 2 * 0x01, Type = Game.Reference.Types.Slot1}, 
+                        new() {Offset = 0x02da, Type = Game.Reference.Types.PageNumber}
+                    } }
+                }, {
+                    "Scrap Brain Zone music", new Game.Asset { OriginalOffset = 0xDB4F, OriginalSize = 0xE1A7 - 0xDB4F, Type = Game.Asset.Types.Music, References = new List<Game.Reference>
+                    {
+                        new() {Offset = 0xC716 + 2 * 0x04, Type = Game.Reference.Types.Slot1}, 
+                        new() {Offset = 0x02da, Type = Game.Reference.Types.PageNumber}
+                    } }
+                }, {
+                    "Sky Base Zone music", new Game.Asset { OriginalOffset = 0xE1A7, OriginalSize = 0xE4C3 - 0xE1A7, Type = Game.Asset.Types.Music, References = new List<Game.Reference>
+                    {
+                        new() {Offset = 0xC716 + 2 * 0x05, Type = Game.Reference.Types.Slot1}, 
+                        new() {Offset = 0x02da, Type = Game.Reference.Types.PageNumber}
+                    } }
+                }, {
+                    "Title Screen music", new Game.Asset { OriginalOffset = 0xE4C3, OriginalSize = 0xE63C - 0xE4C3, Type = Game.Asset.Types.Music, References = new List<Game.Reference>
+                    {
+                        new() {Offset = 0xC716 + 2 * 0x06, Type = Game.Reference.Types.Slot1}, 
+                        new() {Offset = 0x02da, Type = Game.Reference.Types.PageNumber}
+                    } }
+                }, {
+                    "Map Screen music", new Game.Asset { OriginalOffset = 0xE63C, OriginalSize = 0xE704 - 0xE63C, Type = Game.Asset.Types.Music, References = new List<Game.Reference> { new() {Offset = 0xC716 + 2 * 0x07, Type = Game.Reference.Types.Slot1} } }
+                }, {
+                    "Invincibility music", new Game.Asset { OriginalOffset = 0xE704, OriginalSize = 0xE8B4 - 0xE704, Type = Game.Asset.Types.Music, References = new List<Game.Reference>
+                    {
+                        new() {Offset = 0xC716 + 2 * 0x08, Type = Game.Reference.Types.Slot1}, 
+                        new() {Offset = 0x02da, Type = Game.Reference.Types.PageNumber}
+                    } }
+                }, {
+                    "Act Complete music", new Game.Asset { OriginalOffset = 0xE8B4, OriginalSize = 0xE991 - 0xE8B4, Type = Game.Asset.Types.Music, References = new List<Game.Reference>
+                    {
+                        new() {Offset = 0xC716 + 2 * 0x09, Type = Game.Reference.Types.Slot1}, 
+                        new() {Offset = 0x02da, Type = Game.Reference.Types.PageNumber}
+                    } }
+                }, {
+                    "Death music", new Game.Asset { OriginalOffset = 0xE991, OriginalSize = 0xEAC0 - 0xE991, Type = Game.Asset.Types.Music, References = new List<Game.Reference>
+                    {
+                        new() {Offset = 0xC716 + 2 * 0x0a, Type = Game.Reference.Types.Slot1}, 
+                        new() {Offset = 0x02da, Type = Game.Reference.Types.PageNumber}
+                    } }
+                }, {
+                    "Boss music", new Game.Asset { OriginalOffset = 0xEAC0, OriginalSize = 0xED54 - 0xEAC0, Type = Game.Asset.Types.Music, References = new List<Game.Reference> {
+                        new() {Offset = 0xC716 + 2 * 0x0b, Type = Game.Reference.Types.Slot1},
+                        new() {Offset = 0xC716 + 2 * 0x0c, Type = Game.Reference.Types.Slot1},
+                        new() {Offset = 0xC716 + 2 * 0x0d, Type = Game.Reference.Types.Slot1}, 
+                        new() {Offset = 0x02da, Type = Game.Reference.Types.PageNumber}
+                    } }
+                }, {
+                    "Ending music", new Game.Asset { OriginalOffset = 0xED54, OriginalSize = 0xF12C - 0xED54, Type = Game.Asset.Types.Music, References = new List<Game.Reference>
+                    {
+                        new() {Offset = 0xC716 + 2 * 0x0e, Type = Game.Reference.Types.Slot1}, 
+                        new() {Offset = 0x02da, Type = Game.Reference.Types.PageNumber}
+                    } }
+                }, {
+                    "Special Stage music", new Game.Asset { OriginalOffset = 0xF12C, OriginalSize = 0xF60C - 0xF12C, Type = Game.Asset.Types.Music, References = new List<Game.Reference>
+                    {
+                        new() {Offset = 0xC716 + 2 * 0x10, Type = Game.Reference.Types.Slot1}, 
+                        new() {Offset = 0x02da, Type = Game.Reference.Types.PageNumber}
+                    } }
+                }, {
+                    "Labyrinth music", new Game.Asset { OriginalOffset = 0xF60C, OriginalSize = 0xF98C - 0xF60C, Type = Game.Asset.Types.Music, References = new List<Game.Reference>
+                    {
+                        new() {Offset = 0xC716 + 2 * 0x03, Type = Game.Reference.Types.Slot1}, 
+                        new() {Offset = 0x02da, Type = Game.Reference.Types.PageNumber}
+                    } }
+                }, {
+                    "All Emeralds music", new Game.Asset { OriginalOffset = 0xF98C, OriginalSize = 0xFA26 - 0xF98C, Type = Game.Asset.Types.Music, References = new List<Game.Reference>
+                    {
+                        new() {Offset = 0xC716 + 2 * 0x13, Type = Game.Reference.Types.Slot1}, 
+                        new() {Offset = 0x02da, Type = Game.Reference.Types.PageNumber}
+                    } }
+                }, {
+                    "Emerald music", new Game.Asset { OriginalOffset = 0xFA26, OriginalSize = 0xFB27 - 0xFA26, Type = Game.Asset.Types.Music, References = new List<Game.Reference>
+                    {
+                        new() {Offset = 0xC716 + 2 * 0x14, Type = Game.Reference.Types.Slot1}, 
+                        new() {Offset = 0x02da, Type = Game.Reference.Types.PageNumber}
+                    } }
+                }, /* Next space is SFX */ {
                     "Unused space bank 3", new Game.Asset { OriginalOffset = 0x0ffb1, OriginalSize = 0x4f, Type = Game.Asset.Types.Unused }
                 }, {
                     "Monitor Art", new Game.Asset { 
@@ -1133,7 +1232,7 @@ namespace sth1edwv
                 { "End sign", new [] { "End sign tileset", "End sign palette" } },
                 { "Rings", new [] { "Rings", "Green Hill palette" } },
                 { "Dr. Robotnik", new [] { "Boss sprites 1", "Boss sprites 2", "Boss sprites 3", "Boss sprites palette" } },
-                { "Capsule", new [] { "Capsule sprites", "Boss sprites palette" } }
+                { "Capsule", new [] { "Capsule sprites", "Boss sprites palette" } },
             },
             AssetGroups2 = new Dictionary<string, List<Game.AssetGroupItem>>
             {
@@ -1553,16 +1652,15 @@ namespace sth1edwv
                     }
                 } },
                 { "Capsule", new() {
-                        new() {
-                            AssetName = "Capsule sprites", References =  new() {
-                                new() { Offset = 0x7916 + 1, Type = Game.Reference.Types.Slot1, Delta = -0x4000 }, // ld hl,$da28 ; 007916 21 28 DA 
-                                new() { Offset = 0x791C + 1, Type = Game.Reference.Types.PageNumber }              // ld a,$0c    ; 00791C 3E 0C 
-                            }
-                        }, new() {
-                            AssetName = "Boss sprites palette" // Dependent on palette left over from boss
+                    new() {
+                        AssetName = "Capsule sprites", References =  new() {
+                            new() { Offset = 0x7916 + 1, Type = Game.Reference.Types.Slot1, Delta = -0x4000 }, // ld hl,$da28 ; 007916 21 28 DA 
+                            new() { Offset = 0x791C + 1, Type = Game.Reference.Types.PageNumber }              // ld a,$0c    ; 00791C 3E 0C 
                         }
+                    }, new() {
+                        AssetName = "Boss sprites palette" // Dependent on palette left over from boss
                     }
-                }
+                } }
             },
             Levels = new List<Game.LevelHeader>
             {
@@ -1743,6 +1841,11 @@ namespace sth1edwv
                             var rawValue = new RawValue(Memory, part.Asset.OriginalOffset, part.Asset.OriginalSize, part.Asset.Encoding, part.Name);
                             _assetsLookup[asset] = rawValue;
                             item.RawValues.Add(rawValue);
+                            break;
+                        case Game.Asset.Types.Music:
+                            var music = new MusicTrack(Memory, part.Asset.OriginalOffset, 0);
+                            _assetsLookup[asset] = music;
+                            // TODO add to item?
                             break;
                         default:
                             throw new ArgumentOutOfRangeException();
