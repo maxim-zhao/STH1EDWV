@@ -1,65 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
 namespace sth1edwv
 {
-    /*
-    public class FlattenedMusicTrack
-    {
-        public int Offset { get; }
-        public int Index { get; }
-
-        public interface IEvent
-        {
-            // Nothing
-        }
-
-        public enum Notes
-        {
-            A, ASharp, B, C, CSharp, D, DSharp, E, F, FSharp, G, GSharp
-        }
-
-        public record Empty : IEvent
-        {
-            // Nothing
-        }
-
-        public record PlayNote: IEvent
-        {
-            public Notes Note { get; set; }
-            public int Octave { get; set; }
-        }
-
-        public record KeyUp : IEvent
-        {
-            // Nothing
-        }
-
-        public record OtherEvent : IEvent
-        {
-            public IChannelData ChannelData { get; set; }
-        }
-
-        public List<List<IEvent>> Events { get; set; }
-
-        public FlattenedMusicTrack(Memory memory, int offset, int index)
-        {
-            Offset = offset;
-            Index = index;
-
-            // Load the raw data
-            var data = new MusicTrack(memory, offset, index);
-
-            // Walk through that data to a "flattened" form for each channel,
-            // with one object per tick.
-            Events = data.Channels.Select(x => x.AsFlattenedEnumerable().ToList()).ToList();
-        }
-    }
-    */
-    public class MusicTrack: IDataItem
+    public class MusicTrack : IDataItem
     {
         public List<Channel> Channels { get; } = new();
         public int Offset { get; set; }
@@ -90,18 +38,81 @@ namespace sth1edwv
                     Channels.Add(new Channel(memory, channelOffset, Offset));
                 }
             }
+
+            // Some tracks in the original game are just a looped rest. We flatten these to nothing.
+            foreach (var channel in Channels.Where(channel => channel.Data.OfType<Duration>().All(x => x is Rest)))
+            {
+                channel.Clear();
+            }
+
+            // Some tracks may be shorter than others, to make better use of space. We need to add extra loops and change the looping to be consistent.
+            if (Channels.Any(x => x.IsLooped))
+            {
+                var maxIntroLength = Channels.Max(x => x.IntroLength);
+                var maxTotalLength = Channels.Max(x => x.TotalLength);
+                foreach (var channel in Channels.Where(x =>
+                             x.IsLooped && (x.TotalLength < maxTotalLength || x.IntroLength < maxIntroLength)))
+                {
+                    channel.ExtendTo(maxIntroLength, maxTotalLength);
+                }
+            }
         }
 
         public override string ToString()
         {
-            return $"{Index} @ {Offset:X}, {Channels.Count(x => x.Data.Any())} channels, " + 
-                   $"[{string.Join(", ", Channels.Select(x => x.Data.Count))}] commands, " +
-                   $"[{string.Join(", ", Channels.Select(x => x.Data.OfType<Duration>().Sum(d => d.Length)))}] lengths";
+            var sb = new StringBuilder();
+            sb.Append($"{Index} @ {Offset:X}, {Channels.Count(x => x.Data.Any())} channels, ");
+            sb.Append($"[{string.Join(", ", Channels.Select(x => x.Data.Count))}] commands, ");
+            sb.Append("Lengths: [");
+            foreach (var channel in Channels)
+            {
+                var introLength = 0;
+                var loopLength = 0;
+                var inIntro = true;
+                foreach (var channelData in channel.Data)
+                {
+                    switch (channelData)
+                    {
+                        case Duration d:
+                            if (inIntro)
+                            {
+                                introLength += d.Length;
+                            }
+                            else
+                            {
+                                loopLength += d.Length;
+                            }
+
+                            break;
+                        case MasterLoopPoint:
+                            inIntro = false;
+                            break;
+                    }
+                }
+
+                if (inIntro)
+                {
+                    sb.Append($"{introLength} beats");
+                }
+                else
+                {
+                    sb.Append($"{introLength} + {loopLength} beats");
+                }
+
+                sb.Append(", ");
+            }
+
+            sb.Append("]");
+            return sb.ToString();
         }
 
         public class Channel
         {
-            public List<IChannelData> Data { get; } = new();
+            public List<IChannelData> Data { get; private set; } = new();
+            public bool IsLooped { get; set; }
+            public int IntroLength { get; set; }
+            public int LoopLength { get; set; }
+            public int TotalLength { get; set; }
 
             public Channel(Memory memory, int offset, int loopBase)
             {
@@ -114,7 +125,7 @@ namespace sth1edwv
             private void LoadData(Memory memory, int offset, int loopBase)
             {
                 // We parse the data, following loops rather than emitting data for them.
-                var  loopCounters = new Stack<int>();
+                var loopCounters = new Stack<int>();
                 // We also embed all the note lengths, no defaults.
                 var defaultNoteLength = (byte)0;
 
@@ -147,8 +158,16 @@ namespace sth1edwv
                             break;
                         }
                         case 0x7f:
-                            Data.Add(new Rest(memory, ref offset));
+                        {
+                            var rest = new Rest(memory, ref offset);
+                            if (rest.Length == 0)
+                            {
+                                rest.Length = defaultNoteLength;
+                            }
+
+                            Data.Add(rest);
                             break;
+                        }
                         case 0x80:
                             Data.Add(new TempoControl(memory, ref offset));
                             break;
@@ -180,11 +199,12 @@ namespace sth1edwv
                             {
                                 // Loop back
                                 offset = loopBase + loopEnd.LoopBackPoint;
-                                // Sanity check
+                                // Sanity check - never happens in the original data
                                 if (memory[offset - 1] != 0x86)
                                 {
                                     throw new Exception("Bad loop back");
                                 }
+
                                 loopCounters.Push(loopCounter);
                             }
 
@@ -198,6 +218,7 @@ namespace sth1edwv
                             break;
                         case 0x8a:
                             defaultNoteLength = new DefaultNoteLength(memory, ref offset).Value;
+                            // We don't add it to the data
                             break;
                         case 0x8b:
                             Data.Add(new VolumeUp());
@@ -216,152 +237,159 @@ namespace sth1edwv
                             throw new Exception($"Invalid data {b:02X} at offset {offset - 1:05X}");
                     }
                 }
+            
+                //Optimize();
+
+                CalculateLengths();
             }
 
-            /*
-            public IEnumerable<FlattenedMusicTrack.IEvent> AsFlattenedEnumerable()
+            private void CalculateLengths()
             {
-                var currentNoteLength = 0;
-                var keyIsDown = false;
-                var holdActive = false;
-                ToneNote lastToneNote = null;
-                Stack<int> loopStack = new();
-
-                for (var i = 0; i < Data.Count; i++)
+                IsLooped = false;
+                IntroLength = LoopLength = TotalLength = 0;
+                var tickCount = 0;
+                foreach (var channelData in Data)
                 {
-                    var channelData = Data[i];
                     switch (channelData)
                     {
-                        case Attenuation:
-                        case Detune:
-                        case Envelope:
-                        case TempoControl:
-                        case VolumeDown:
-                        case VolumeUp:
-                        case Modulation:
-                        case NoiseMode:
+                        case Duration d:
+                            tickCount += d.Length;
+                            break;
                         case MasterLoopPoint:
-                        case NoiseNote:
-                            yield return new FlattenedMusicTrack.OtherEvent { ChannelData = channelData };
-                            break;
-                        case NoteLength noteLength:
-                            // We keep track of this but emit nothing
-                            currentNoteLength = noteLength.Value;
-                            break;
-                        case Dummy:
-                            // Discard these
-                            break;
-                        case EndOfSfx:
-                        case EndOfMusic:
-                            // These signal the end
-                            yield break;
-                        case Hold:
-                            // This signals that we don't emit a key up before the next key down
-                            holdActive = true;
-                            break;
-                        case LoopStart:
-                            // Start a new loop with a count of 0
-                            loopStack.Push(0);
-                            break;
-                        case LoopEnd loopEnd:
-                            // If loop stack is empty, it's an error
-                            if (loopStack.Count == 0)
-                            {
-                                throw new Exception("Loop end with empty loop stack");
-                            }
-                            // Else we increment the loop counter...
-                            var counter = loopStack.Pop();
-                            ++counter;
-                            if (counter < loopEnd.RepeatCount)
-                            {
-                                // Loop again
-                                i = loopEnd.LoopBackPoint; // TODO is this right?
-                                loopStack.Push(counter);
-                            }
-                            break;
-                        case Rest rest:
-                            if (keyIsDown)
-                            {
-                                yield return new FlattenedMusicTrack.KeyUp();
-                                keyIsDown = false;
-                            }
-                            foreach (var _ in Enumerable.Repeat(0, rest.Length == 0 ? currentNoteLength : rest.Length))
-                            {
-                                // Emit empty events for the duration of the note
-                                yield return new FlattenedMusicTrack.Empty();
-                            }
-                            break;
-                        case ToneNote toneNote:
-                            // If hold is active and the previous note is still active, don't emit an event, just more time
-                            if (!keyIsDown || !holdActive)
-                            {
-                                yield return new FlattenedMusicTrack.PlayNote
-                                {
-                                    Note = toneNote.NoteNumber switch
-                                    {
-                                        ToneNote.Values.A => FlattenedMusicTrack.Notes.A,
-                                        ToneNote.Values.ASharp => FlattenedMusicTrack.Notes.ASharp,
-                                        ToneNote.Values.B => FlattenedMusicTrack.Notes.B,
-                                        ToneNote.Values.C => FlattenedMusicTrack.Notes.C,
-                                        ToneNote.Values.CSharp => FlattenedMusicTrack.Notes.CSharp,
-                                        ToneNote.Values.D => FlattenedMusicTrack.Notes.D,
-                                        ToneNote.Values.DSharp => FlattenedMusicTrack.Notes.DSharp,
-                                        ToneNote.Values.E => FlattenedMusicTrack.Notes.E,
-                                        ToneNote.Values.F => FlattenedMusicTrack.Notes.F,
-                                        ToneNote.Values.FSharp => FlattenedMusicTrack.Notes.FSharp,
-                                        ToneNote.Values.G => FlattenedMusicTrack.Notes.G,
-                                        ToneNote.Values.GSharp => FlattenedMusicTrack.Notes.GSharp,
-                                        ToneNote.Values.LowA => FlattenedMusicTrack.Notes.A,
-                                        ToneNote.Values.LowASharp => FlattenedMusicTrack.Notes.ASharp,
-                                        ToneNote.Values.LowB => FlattenedMusicTrack.Notes.B,
-                                        _ => throw new ArgumentOutOfRangeException()
-                                    },
-                                    Octave = toneNote.NoteNumber > ToneNote.Values.GSharp
-                                        ? toneNote.Octave + 2 // "Low" notes are in the previous octave
-                                        : toneNote.Octave +
-                                          3 // Octave 0 in-game is MIDI octave 3. (Octaves start at C.)
-                                };
-                                lastToneNote = toneNote;
-                            }
-                            else
-                            {
-                                // Sanity-check hold
-                                if (toneNote.NoteNumber != lastToneNote.NoteNumber ||
-                                    toneNote.Octave != lastToneNote.Octave)
-                                {
-                                    // We don't expect this to happen?
-                                    throw new Exception("Held note changes pitch");
-                                }
-                            }
-
-                            // Time passes
-                            foreach (var _ in Enumerable.Repeat(0, toneNote.Length == 0 ? currentNoteLength - 1 : toneNote.Length - 1))
-                            {
-                                // Emit empty events for the duration of the note, minus 1 as we treat the note itself as taking one tick?
-                                yield return new FlattenedMusicTrack.Empty();
-                            }
-
-                            // Hold should be cleared no matter what
-                            holdActive = false;
+                            IsLooped = true;
+                            IntroLength = tickCount;
+                            tickCount = 0;
                             break;
                     }
                 }
-            } */
-        }
 
+                if (IsLooped)
+                {
+                    LoopLength = tickCount;
+                }
+
+                TotalLength = IntroLength + LoopLength;
+            }
+
+            private void Optimize()
+            {
+                // We want to:
+                // * Remove any looped rest at the end
+                if (IsLooped)
+                {
+                    if (!Data.SkipWhile(x => x is not MasterLoopPoint).Any(x => x is ToneNote or NoiseNote))
+                    {
+                        Data = Data.TakeWhile(x => x is not MasterLoopPoint).ToList();
+                    }
+                }
+
+
+                // * Replace 3+ volume changes to an attenuation set
+                // * Combine notes with holds, or rests, into longer durations
+                // * Remove attenuation commands that set the volume to the current value
+
+                CalculateLengths();
+            }
+
+            public void ExtendTo(int introLength, int totalLength)
+            {
+                // Sanity-check it. The extensions should be a multiple of the loop length (for looped tracks)
+                if (LoopLength > 0)
+                {
+                    if (introLength > 0 && (introLength - IntroLength) % LoopLength != 0)
+                    {
+                        throw new Exception(
+                            $"Can't extend intro to {introLength} ticks as we have intro = {IntroLength}, loop = {LoopLength}");
+                    }
+
+                    if ((totalLength - introLength) % LoopLength != 0)
+                    {
+                        throw new Exception(
+                            $"Can't extend total to {totalLength} ticks as we have intro = {IntroLength}, loop = {LoopLength}");
+                    }
+
+                    // Else we do it. Total length first...
+                    var loopsToAdd = (totalLength - TotalLength) / LoopLength;
+                    var loopStart = Data.FindIndex(x => x is MasterLoopPoint) + 1;
+                    var loopEnd = Data.Count;
+                    for (var i = 0; i < loopsToAdd; ++i)
+                    {
+                        for (var j = loopStart; j < loopEnd; ++j)
+                        {
+                            // We want to clone the items as we don't want to edit one and change more than one
+                            Data.Add((IChannelData)Data[j].Clone());
+                        }
+                    }
+
+                    // Then we may need to move the loop point
+                    if (introLength != IntroLength)
+                    {
+                        // We can reuse the objects here
+                        int tickCount = 0;
+                        var newData = new List<IChannelData>();
+                        foreach (var channelData in Data)
+                        {
+                            switch (channelData)
+                            {
+                                case MasterLoopPoint:
+                                    // Drop it
+                                    continue;
+                                case Duration d:
+                                    newData.Add(channelData);
+                                    tickCount += d.Length;
+                                    if (tickCount == introLength)
+                                    {
+                                        newData.Add(new MasterLoopPoint());
+                                    }
+
+                                    break;
+                                default:
+                                    newData.Add(channelData);
+                                    break;
+                            }
+                        }
+
+                        Data = newData;
+                    }
+                }
+                else
+                {
+                    // For unlooped tracks, they might just end early. We want to add rests to fill the space.
+                    var restLength = totalLength - TotalLength;
+                    while (restLength > 0)
+                    {
+                        int length = Math.Min(restLength, 255);
+                        Data.Add(new Rest { Length = (byte)length });
+                        restLength -= length;
+                    }
+                }
+
+                CalculateLengths();
+            }
+
+            public void Clear()
+            {
+                Data.Clear();
+                CalculateLengths();
+            }
+        }
 
         public string AsJson()
         {
             return JsonConvert.SerializeObject(this.Channels, Formatting.Indented, new JsonSerializerSettings
             {
                 TypeNameHandling = TypeNameHandling.Auto,
-                Converters = new List<JsonConverter> { new StringEnumConverter()}
+                Converters = new List<JsonConverter> { new StringEnumConverter() }
             });
         }
     }
 
     internal class Rest : Duration, IChannelData
     {
+        public Rest()
+        {
+        }
+
         public Rest(Memory memory, ref int offset)
         {
             Length = memory[offset++];
@@ -371,11 +399,22 @@ namespace sth1edwv
         {
             return $"Rest length {Length}";
         }
+
+        public object Clone()
+        {
+            return new Rest { Length = Length };
+        }
     }
 
     internal class NoiseNote : Duration, IChannelData
     {
-        public enum Drums { BassDrum, SnareDrum, Invalid }
+        public enum Drums
+        {
+            BassDrum,
+            SnareDrum,
+            Invalid
+        }
+
         public NoiseNote(byte data, Memory memory, ref int offset)
         {
             Drum = (data & 0xf) switch
@@ -387,6 +426,10 @@ namespace sth1edwv
             Length = memory[offset++];
         }
 
+        private NoiseNote()
+        {
+        }
+
         public Drums Drum { get; set; }
 
         public override string ToString()
@@ -394,6 +437,10 @@ namespace sth1edwv
             return $"Drum: {Drum} length {Length}";
         }
 
+        public object Clone()
+        {
+            return new NoiseNote { Drum = Drum, Length = Length };
+        }
     }
 
     internal class Duration
@@ -403,12 +450,35 @@ namespace sth1edwv
 
     internal class ToneNote : Duration, IChannelData
     {
-        public enum Values { C, CSharp, D, DSharp, E, F, FSharp, G, GSharp, A, ASharp, B, LowA, LowASharp, LowB, Error }
+        public enum Values
+        {
+            C,
+            CSharp,
+            D,
+            DSharp,
+            E,
+            F,
+            FSharp,
+            G,
+            GSharp,
+            A,
+            ASharp,
+            B,
+            LowA,
+            LowASharp,
+            LowB,
+            Error
+        }
+
         public ToneNote(byte data, Memory memory, ref int offset)
         {
             NoteNumber = (Values)(data & 0xf);
             Octave = data >> 8;
             Length = memory[offset++];
+        }
+
+        private ToneNote()
+        {
         }
 
         public int Octave { get; set; }
@@ -419,21 +489,10 @@ namespace sth1edwv
         {
             return $"Octave {Octave} note {NoteNumber} length {Length}";
         }
-    }
 
-    internal class EndOfMusic : IChannelData
-    {
-        public override string ToString()
+        public object Clone()
         {
-            return "End of music";
-        }
-    }
-
-    internal class EndOfSfx : IChannelData
-    {
-        public override string ToString()
-        {
-            return "End of SFX";
+            return new ToneNote { Length = Length, NoteNumber = NoteNumber, Octave = Octave };
         }
     }
 
@@ -443,6 +502,11 @@ namespace sth1edwv
         {
             return "Hold note";
         }
+
+        public object Clone()
+        {
+            return new Hold();
+        }
     }
 
     internal class VolumeDown : IChannelData
@@ -450,6 +514,11 @@ namespace sth1edwv
         public override string ToString()
         {
             return "Volume Down";
+        }
+
+        public object Clone()
+        {
+            return new VolumeDown();
         }
     }
 
@@ -459,11 +528,18 @@ namespace sth1edwv
         {
             return "Volume Up";
         }
+
+        public object Clone()
+        {
+            return new VolumeUp();
+        }
     }
 
     internal class DefaultNoteLength : Dummy
     {
-        public DefaultNoteLength(Memory memory, ref int offset): base(memory, ref offset) {}
+        public DefaultNoteLength(Memory memory, ref int offset) : base(memory, ref offset)
+        {
+        }
 
         public override string ToString()
         {
@@ -474,7 +550,8 @@ namespace sth1edwv
     internal class NoiseMode : Dummy
     {
         public NoiseMode(Memory memory, ref int offset) : base(memory, ref offset)
-        { }
+        {
+        }
 
         public override string ToString()
         {
@@ -487,6 +564,11 @@ namespace sth1edwv
         public override string ToString()
         {
             return "Master loop point";
+        }
+
+        public object Clone()
+        {
+            throw new Exception("Shouldn't be cloning a master loop point");
         }
     }
 
@@ -503,7 +585,10 @@ namespace sth1edwv
 
         public byte RepeatCount { get; set; }
 
-
+        public object Clone()
+        {
+            throw new Exception("Shouldn't be cloning a loop end");
+        }
     }
 
     internal class Envelope : IChannelData
@@ -518,9 +603,23 @@ namespace sth1edwv
             Decay3Rate = memory[offset++];
         }
 
+        private Envelope()
+        {
+        }
+
         public override string ToString()
         {
-            return $"Envelope: Attack {Attack}, decay {Decay1Rate} => {Decay1Level}, {Decay2Rate} => {Decay2Level}, {Decay3Rate} => 0";
+            return
+                $"Envelope: Attack {Attack}, decay {Decay1Rate} => {Decay1Level}, {Decay2Rate} => {Decay2Level}, {Decay3Rate} => 0";
+        }
+
+        public object Clone()
+        {
+            return new Envelope()
+            {
+                Attack = Attack, Decay1Level = Decay1Level, Decay1Rate = Decay1Rate, Decay2Level = Decay2Level,
+                Decay2Rate = Decay2Rate, Decay3Rate = Decay3Rate
+            };
         }
 
         public byte Attack { get; set; }
@@ -529,14 +628,6 @@ namespace sth1edwv
         public byte Decay2Rate { get; set; }
         public byte Decay2Level { get; set; }
         public byte Decay3Rate { get; set; }
-    }
-
-    internal class LoopStart : IChannelData
-    {
-        public override string ToString()
-        {
-            return "Loop start";
-        }
     }
 
     internal class Dummy : IChannelData
@@ -552,6 +643,11 @@ namespace sth1edwv
         {
             return $"Dummy: {Value}";
         }
+
+        public object Clone()
+        {
+            throw new Exception("Shouldn't be cloning a dummy event");
+        }
     }
 
     internal class Detune : IChannelData
@@ -562,11 +658,20 @@ namespace sth1edwv
             offset += 2;
         }
 
+        private Detune()
+        {
+        }
+
         public short Value { get; set; }
 
         public override string ToString()
         {
             return $"Detune: {Value}";
+        }
+
+        public object Clone()
+        {
+            return new Detune() { Value = Value };
         }
     }
 
@@ -586,9 +691,18 @@ namespace sth1edwv
             offset += 2;
         }
 
+        private Modulation()
+        {
+        }
+
         public override string ToString()
         {
             return $"Modulation: Delay: {Delay}, Speed: {Speed}, Count: {Count}, ChangePerStep: {ChangePerStep}";
+        }
+
+        public object Clone()
+        {
+            return new Modulation() { Delay = Delay, Speed = Speed, Count = Count, ChangePerStep = ChangePerStep };
         }
     }
 
@@ -601,17 +715,26 @@ namespace sth1edwv
             Value = memory[offset++];
         }
 
+        private Attenuation()
+        {
+        }
+
         public override string ToString()
         {
-            return $"Attenuation: {Value} = {(Value == 0xf ? "silent" : $"{Value*-2}dB")}";
+            return $"Attenuation: {Value} = {(Value == 0xf ? "silent" : $"{Value * -2}dB")}";
+        }
+
+        public object Clone()
+        {
+            return new Attenuation() { Value = Value };
         }
     }
 
-    public interface IChannelData
+    public interface IChannelData : ICloneable
     {
     }
 
-    internal class TempoControl: IChannelData
+    internal class TempoControl : IChannelData
     {
         public ushort Divider { get; set; }
         public ushort Multiplier { get; set; }
@@ -624,10 +747,22 @@ namespace sth1edwv
             offset += 2;
         }
 
+        private TempoControl()
+        {
+        }
+
         public override string ToString()
         {
             return $"Tempo scale: {Multiplier}/{Divider} = {120.0 * Multiplier / Divider} BPM";
-        }   
+        }
 
+        public object Clone()
+        {
+            return new TempoControl
+            {
+                Divider = Divider,
+                Multiplier = Multiplier
+            };
+        }
     }
 }
