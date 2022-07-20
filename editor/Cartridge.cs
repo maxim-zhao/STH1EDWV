@@ -1748,7 +1748,7 @@ namespace sth1edwv
 
             // Music pointers start at $c716, there are 20 of them.
             // They are relative to $8000, because the game maps the music code/data to slot 1.
-            for (var i = 0; i < 0x14; ++i)
+            for (var i = 0; i < 0x15; ++i)
             {
                 var pointer = Memory.Word(0xc716 + i * 2) + 0x8000;
                 Music.Add(new MusicTrack(Memory, pointer, i));
