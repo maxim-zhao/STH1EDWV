@@ -9,7 +9,6 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Newtonsoft.Json;
 using sth1edwv.BindingListView;
 using sth1edwv.Controls;
 using sth1edwv.Forms;
@@ -913,6 +912,11 @@ namespace sth1edwv
             {
                 return;
             }
+
+            //textBoxMusic.Text = musicTrack.AsJson();
+            var flattened = new FlattenedMusicTrack(musicTrack);
+
+            dataGridView1.DataSource = flattened.Events;
 
             textBoxMusic.Text = musicTrack.AsJson();
         }

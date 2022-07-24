@@ -41,6 +41,7 @@ namespace sth1edwv
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openROMToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -116,6 +117,7 @@ namespace sth1edwv
             this.tabPageMusic = new System.Windows.Forms.TabPage();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.listBoxMusic = new System.Windows.Forms.ListBox();
+            this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.textBoxMusic = new System.Windows.Forms.TextBox();
             this.tabPageSDSCTag = new System.Windows.Forms.TabPage();
             this.udSDSCVersion = new System.Windows.Forms.NumericUpDown();
@@ -175,6 +177,7 @@ namespace sth1edwv
             this.splitContainer2.Panel1.SuspendLayout();
             this.splitContainer2.Panel2.SuspendLayout();
             this.splitContainer2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.tabPageSDSCTag.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.udSDSCVersion)).BeginInit();
             this.tabPageLog.SuspendLayout();
@@ -983,6 +986,7 @@ namespace sth1edwv
             // 
             // splitContainer2.Panel2
             // 
+            this.splitContainer2.Panel2.Controls.Add(this.dataGridView1);
             this.splitContainer2.Panel2.Controls.Add(this.textBoxMusic);
             this.splitContainer2.Size = new System.Drawing.Size(1317, 524);
             this.splitContainer2.SplitterDistance = 261;
@@ -998,14 +1002,39 @@ namespace sth1edwv
             this.listBoxMusic.TabIndex = 0;
             this.listBoxMusic.SelectedIndexChanged += new System.EventHandler(this.listBoxMusic_SelectedIndexChanged);
             // 
+            // dataGridView1
+            // 
+            this.dataGridView1.AllowUserToResizeRows = false;
+            this.dataGridView1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.dataGridView1.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.DisplayedCells;
+            this.dataGridView1.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle4.Font = new System.Drawing.Font("Cascadia Code", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            dataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridView1.DefaultCellStyle = dataGridViewCellStyle4;
+            this.dataGridView1.Location = new System.Drawing.Point(306, 3);
+            this.dataGridView1.MultiSelect = false;
+            this.dataGridView1.Name = "dataGridView1";
+            this.dataGridView1.RowHeadersVisible = false;
+            this.dataGridView1.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
+            this.dataGridView1.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
+            this.dataGridView1.Size = new System.Drawing.Size(743, 518);
+            this.dataGridView1.TabIndex = 3;
+            // 
             // textBoxMusic
             // 
-            this.textBoxMusic.Dock = System.Windows.Forms.DockStyle.Fill;
             this.textBoxMusic.Location = new System.Drawing.Point(0, 0);
             this.textBoxMusic.Multiline = true;
             this.textBoxMusic.Name = "textBoxMusic";
             this.textBoxMusic.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.textBoxMusic.Size = new System.Drawing.Size(1052, 524);
+            this.textBoxMusic.Size = new System.Drawing.Size(300, 524);
             this.textBoxMusic.TabIndex = 0;
             // 
             // tabPageSDSCTag
@@ -1240,6 +1269,7 @@ namespace sth1edwv
             this.splitContainer2.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
             this.splitContainer2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.tabPageSDSCTag.ResumeLayout(false);
             this.tabPageSDSCTag.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.udSDSCVersion)).EndInit();
@@ -1347,6 +1377,7 @@ namespace sth1edwv
         private SplitContainer splitContainer2;
         private ListBox listBoxMusic;
         private TextBox textBoxMusic;
+        private DataGridView dataGridView1;
     }
 }
 
