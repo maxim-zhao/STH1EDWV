@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -40,8 +42,17 @@ namespace sth1edwv
 
         public override string ToString()
         {
-            return $"#{Index} @ {Offset:X}";
+            var sb = new StringBuilder();
+            sb.Append($"#{Index} @ {Offset:X}: ");
+            if (IntroLength > TimeSpan.Zero)
+            {
+                sb.Append($"{IntroLength:mm:ss}");
+            }
+
+            return sb.ToString();
         }
+
+        public TimeSpan IntroLength { get; set; }
 
         public class Channel
         {

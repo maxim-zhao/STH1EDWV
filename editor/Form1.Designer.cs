@@ -118,6 +118,9 @@ namespace sth1edwv
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.listBoxMusic = new System.Windows.Forms.ListBox();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
+            this.toolStrip1 = new System.Windows.Forms.ToolStrip();
+            this.toolStripLabel3 = new System.Windows.Forms.ToolStripLabel();
+            this.textboxBeatLength = new System.Windows.Forms.ToolStripTextBox();
             this.textBoxMusic = new System.Windows.Forms.TextBox();
             this.tabPageSDSCTag = new System.Windows.Forms.TabPage();
             this.udSDSCVersion = new System.Windows.Forms.NumericUpDown();
@@ -178,6 +181,7 @@ namespace sth1edwv
             this.splitContainer2.Panel2.SuspendLayout();
             this.splitContainer2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
+            this.toolStrip1.SuspendLayout();
             this.tabPageSDSCTag.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.udSDSCVersion)).BeginInit();
             this.tabPageLog.SuspendLayout();
@@ -987,6 +991,7 @@ namespace sth1edwv
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.Controls.Add(this.dataGridView1);
+            this.splitContainer2.Panel2.Controls.Add(this.toolStrip1);
             this.splitContainer2.Panel2.Controls.Add(this.textBoxMusic);
             this.splitContainer2.Size = new System.Drawing.Size(1317, 524);
             this.splitContainer2.SplitterDistance = 261;
@@ -1005,9 +1010,6 @@ namespace sth1edwv
             // dataGridView1
             // 
             this.dataGridView1.AllowUserToResizeRows = false;
-            this.dataGridView1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.dataGridView1.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.DisplayedCells;
             this.dataGridView1.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
@@ -1019,17 +1021,43 @@ namespace sth1edwv
             dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
             dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
             this.dataGridView1.DefaultCellStyle = dataGridViewCellStyle4;
-            this.dataGridView1.Location = new System.Drawing.Point(306, 3);
+            this.dataGridView1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dataGridView1.Location = new System.Drawing.Point(300, 25);
             this.dataGridView1.MultiSelect = false;
             this.dataGridView1.Name = "dataGridView1";
-            this.dataGridView1.RowHeadersVisible = false;
             this.dataGridView1.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
             this.dataGridView1.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
-            this.dataGridView1.Size = new System.Drawing.Size(743, 518);
+            this.dataGridView1.Size = new System.Drawing.Size(752, 499);
             this.dataGridView1.TabIndex = 3;
+            this.dataGridView1.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dataGridView1_CellFormatting);
+            // 
+            // toolStrip1
+            // 
+            this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripLabel3,
+            this.textboxBeatLength});
+            this.toolStrip1.Location = new System.Drawing.Point(300, 0);
+            this.toolStrip1.Name = "toolStrip1";
+            this.toolStrip1.Size = new System.Drawing.Size(752, 25);
+            this.toolStrip1.TabIndex = 4;
+            this.toolStrip1.Text = "toolStrip1";
+            // 
+            // toolStripLabel3
+            // 
+            this.toolStripLabel3.Name = "toolStripLabel3";
+            this.toolStripLabel3.Size = new System.Drawing.Size(67, 22);
+            this.toolStripLabel3.Text = "Beat length";
+            // 
+            // textboxBeatLength
+            // 
+            this.textboxBeatLength.Name = "textboxBeatLength";
+            this.textboxBeatLength.Size = new System.Drawing.Size(100, 25);
+            this.textboxBeatLength.Text = "6";
+            this.textboxBeatLength.TextChanged += new System.EventHandler(this.textboxBeatLength_TextChanged);
             // 
             // textBoxMusic
             // 
+            this.textBoxMusic.Dock = System.Windows.Forms.DockStyle.Left;
             this.textBoxMusic.Location = new System.Drawing.Point(0, 0);
             this.textBoxMusic.Multiline = true;
             this.textBoxMusic.Name = "textBoxMusic";
@@ -1270,6 +1298,8 @@ namespace sth1edwv
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
             this.splitContainer2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
+            this.toolStrip1.ResumeLayout(false);
+            this.toolStrip1.PerformLayout();
             this.tabPageSDSCTag.ResumeLayout(false);
             this.tabPageSDSCTag.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.udSDSCVersion)).EndInit();
@@ -1378,6 +1408,9 @@ namespace sth1edwv
         private ListBox listBoxMusic;
         private TextBox textBoxMusic;
         private DataGridView dataGridView1;
+        private ToolStrip toolStrip1;
+        private ToolStripLabel toolStripLabel3;
+        private ToolStripTextBox textboxBeatLength;
     }
 }
 

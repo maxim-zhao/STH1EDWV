@@ -48,6 +48,11 @@ namespace sth1edwv
             typeof(DataGridView).InvokeMember("DoubleBuffered", 
                 BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.SetProperty, 
                 null,
+                dataGridView1, 
+                new object[] { true });
+            typeof(DataGridView).InvokeMember("DoubleBuffered", 
+                BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.SetProperty, 
+                null,
                 extraDataLayoutPanel, 
                 new object[] { true });
         }
@@ -789,6 +794,7 @@ namespace sth1edwv
         private bool _awaitingUpdate;
         private Task _updateTask;
         private bool _loading;
+        private int _beatLength = 1;
 
         private void UpdateSpace()
         {
@@ -919,6 +925,31 @@ namespace sth1edwv
             dataGridView1.DataSource = flattened.Events;
 
             textBoxMusic.Text = musicTrack.AsJson();
+        }
+
+        private void textboxBeatLength_TextChanged(object sender, EventArgs e)
+        {
+            if (!int.TryParse(textboxBeatLength.Text, out var n))
+            {
+                return;
+            }
+
+            _beatLength = Math.Max(n, 1);
+            dataGridView1.Invalidate();
+        }
+
+        private void dataGridView1_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if ((e.RowIndex / _beatLength) % 2 == 1)
+            {
+                // Even beats
+                e.CellStyle.BackColor = SystemColors.Window;
+            }
+            else
+            {
+                // Odd beats
+                e.CellStyle.BackColor = SystemColors.Control;
+            }
         }
     }
 }
