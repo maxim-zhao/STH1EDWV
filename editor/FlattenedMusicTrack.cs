@@ -39,19 +39,21 @@ namespace sth1edwv
         {
             public override string ToString() => $"M{Delay};{Speed};{Count};{ChangePerStep}";
         }
-        public record Tempo(ushort Multiplier, ushort Divider) : IEvent
+        public record Tempo : IEvent
         {
+            public ushort Multiplier { get; set; }
+            public ushort Divider { get; set; }
             public override string ToString() => $"T{Multiplier}/{Divider}";
         }
-        public record LoopPoint() : IEvent {
-            public override string ToString() => "LOOP";
+        public record LoopPoint : IEvent {
+            public override string ToString() => "LOOP_START";
         }
-
-        
-        public record Rest() : IEvent {
+        public record LoopEnd : IEvent {
+            public override string ToString() => "LOOP_END";
+        }
+        public record Rest : IEvent {
             public override string ToString() => "^^";
         }
-
         public record Drum(char Type) : IEvent {
             public override string ToString() => Type.ToString();
         }
@@ -63,14 +65,15 @@ namespace sth1edwv
 
         public class Tick
         {
-            public ChannelTick Channel0 { get; init; }
-            public ChannelTick Channel1 { get; init; }
-            public ChannelTick Channel2 { get; init; }
-            public ChannelTick Channel3 { get; init; }
+            public ChannelTick Channel0 => Channels[0];
+            public ChannelTick Channel1 => Channels[1];
+            public ChannelTick Channel2 => Channels[2];
+            public ChannelTick Channel3 => Channels[3];
+            public List<ChannelTick> Channels { get; init; }
 
             public bool IsEmpty()
             {
-                return Channel0.IsEmpty() && Channel1.IsEmpty() && Channel2.IsEmpty() && Channel3.IsEmpty();
+                return Channels.Count == 0 || Channels.All(tick => tick.IsEmpty());
             }
         }
 
@@ -83,6 +86,11 @@ namespace sth1edwv
             {
                 var sb = new StringBuilder();
 
+                if (HasLooped)
+                {
+                    sb.Append("<looped> ");
+                }
+
                 if (Note != null)
                 {
                     sb.Append(Note);
@@ -90,12 +98,9 @@ namespace sth1edwv
 
                 sb.Append("    ");
 
-                if (Effects != null)
+                foreach (var effect in Effects)
                 {
-                    foreach (var effect in Effects)
-                    {
-                        sb.Append(effect).Append(' ');
-                    }
+                    sb.Append(effect).Append(' ');
                 }
 
                 return sb.ToString();
@@ -103,11 +108,14 @@ namespace sth1edwv
 
             public bool IsEmpty()
             {
-                return Note != null && Effects?.Count > 0;
+                return Note == null && Effects.Count == 0;
             }
 
+            [MaybeNull]
             public IEvent Note { get; set; }
+            [NotNull]
             public List<IEvent> Effects { get; init; }
+            public bool HasLooped { get; internal set; }
         }
         public readonly List<Tick> Events = new();
 
@@ -119,7 +127,7 @@ namespace sth1edwv
                 .Where(x => x.Data.Count > 0)
                 .Select(x => new ChannelParser(x))
                 .ToList();
-            // "Play" then into our format.
+            // "Play" them into our format.
             // Some channels may loop earlier than others, so we can't stop at the end of each channel.
             // However, we do want to stop when they've all finished. This is a bit tricky because we
             // only stop after they yield an event. So we 
@@ -163,23 +171,92 @@ namespace sth1edwv
                         }
                     }
 
-                    return new ChannelTick { Note = note, Effects = effects.Count > 0 ? effects : null };
+                    return new ChannelTick { Note = note, Effects = effects };
                 }).ToList();
-
-                if (parsers.All(x => x.HaveReachedEnd))
-                {
-                    // We are done; break out of the while loop (and discard the last event)
-                    break;
-                }
 
                 Events.Add(new Tick
                 {
-                    Channel0 = listForThisTick[0],
-                    Channel1 = listForThisTick[1],
-                    Channel2 = listForThisTick[2],
-                    Channel3 = listForThisTick[3]
+                    Channels = listForThisTick,
                 });
+
+                if (parsers.All(x => x.HaveReachedEnd))
+                {
+                    // We are done; break out of the while loop.
+                    break;
+                }
             }
+
+            // Detect if the tick length could be reduced in improve music density
+            // For example, if the events only happen on every 6th tick then we can discard 5/6 of them
+            // and increase the tick length accordingly.
+            // To do this we first try checking if every second tick is empty, then higher prime numbers.
+            // We need to restart at 2 each time though.
+            var keepGoing = true;
+            while (keepGoing)
+            {
+                // Don't keep going unless we set this to true later
+                keepGoing = false;
+                foreach (var prime in new[] { 2, 3, 5, 7, 11, 13 })
+                {
+                    var success = true;
+                    
+                    // Check if every n*prime+1th element is empty
+                    for (var i = 1; i < Events.Count; i += prime)
+                    {
+                        if (!Events[i].IsEmpty())
+                        {
+                            success = false;
+                            break;
+                        }
+                    }
+
+                    if (!success)
+                    {
+                        continue;
+                    }
+                    
+                    // Success: let's remove them all
+                    for (var i = 1;
+                         i < Events.Count;
+                         i += prime - 1) // -1 here because we are removing as we go
+                    {
+                        Events.RemoveAt(i);
+                    }
+
+                    // And then adjust all the tempo commands
+                    foreach (var tempo in Events
+                        .SelectMany(tick => tick.Channels
+                            .SelectMany(x => x.Effects)
+                            .OfType<Tempo>()))
+                    {
+                        tempo.Multiplier *= (ushort)prime;
+                    }
+
+                    keepGoing = true;
+                }
+            }
+
+            // Move end of loop events to conceptually attach to the previous tick
+            for (var eventIndex = 1; eventIndex < Events.Count; ++eventIndex)
+            {
+                for (var channelIndex = 0; channelIndex < Events[eventIndex].Channels.Count; ++channelIndex)
+                {
+                    if (Events[eventIndex].Channels[channelIndex].Effects.RemoveAll(x => x is LoopEnd) > 0)
+                    {
+                        // We removed one
+                        Events[eventIndex-1].Channels[channelIndex].Effects.Add(new LoopEnd());
+                        // Mark all remaining ticks for this channel as "post-loop"
+                        for (var i = eventIndex; i < Events.Count; ++i)
+                        {
+                            Events[i].Channels[channelIndex].HasLooped = true;
+                        }
+                    }
+                }
+            }
+
+            // And finally remove the last event. For looped tracks, it's the start of the next loop;
+            // for non-looped ones, it's empty.
+            Events.RemoveAt(Events.Count - 1);
         }
 
         private class ChannelParser
@@ -252,14 +329,12 @@ namespace sth1edwv
                             if (_masterLoopPoint > -1)
                             {
                                 _index =  _masterLoopPoint;
+                                return new LoopEnd();
                             }
-                            else
-                            {
-                                // Else we need to return nothing forever...
-                                --_index;
-                                return null;
-                            }
-                            continue;
+
+                            // Else we need to return nothing forever...
+                            --_index;
+                            return null;
                         case MusicTrack.Envelope envelope:
                             return new Envelope(envelope.Level1, envelope.DecayRate1, envelope.Level2, envelope.DecayRate2, envelope.Level3, envelope.DecayRate3);
                         case MusicTrack.Hold:
@@ -321,7 +396,7 @@ namespace sth1edwv
                             break;
                         }
                         case MusicTrack.TempoControl tempoControl:
-                            return new Tempo(tempoControl.Multiplier, tempoControl.Divider);
+                            return new Tempo { Multiplier = tempoControl.Multiplier, Divider = tempoControl.Divider};
                         case MusicTrack.ToneNote toneNote:
                         {
                             _inRest = false;

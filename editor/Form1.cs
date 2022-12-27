@@ -795,6 +795,7 @@ namespace sth1edwv
         private Task _updateTask;
         private bool _loading;
         private int _beatLength = 1;
+        private FlattenedMusicTrack m_flattenedMusicTrack;
 
         private void UpdateSpace()
         {
@@ -919,10 +920,9 @@ namespace sth1edwv
                 return;
             }
 
-            //textBoxMusic.Text = musicTrack.AsJson();
-            var flattened = new FlattenedMusicTrack(musicTrack);
+            m_flattenedMusicTrack = new FlattenedMusicTrack(musicTrack);
 
-            dataGridView1.DataSource = flattened.Events;
+            dataGridView1.DataSource = m_flattenedMusicTrack.Events;
 
             textBoxMusic.Text = musicTrack.AsJson();
         }
@@ -949,6 +949,12 @@ namespace sth1edwv
             {
                 // Odd beats
                 e.CellStyle.BackColor = SystemColors.Control;
+            }
+
+            if (m_flattenedMusicTrack != null && m_flattenedMusicTrack.Events[e.RowIndex].Channels[e.ColumnIndex].HasLooped)
+            {
+                e.CellStyle.ForeColor = SystemColors.GrayText;
+//                e.CellStyle.BackColor = SystemColors.ControlDark;
             }
         }
     }
