@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.Serialization;
 
 namespace sth1edwv.BindingListView
 {
@@ -14,12 +13,6 @@ namespace sth1edwv.BindingListView
 
         public InvalidSourceListException(string message)
             : base(message)
-        {
-
-        }
-
-        public InvalidSourceListException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
         {
 
         }

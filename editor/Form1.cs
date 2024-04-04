@@ -255,7 +255,8 @@ namespace sth1edwv
 
         private void saveROMToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            using var dialog = new SaveFileDialog { Filter = "*.sms|*.sms" };
+            using var dialog = new SaveFileDialog();
+            dialog.Filter = "*.sms|*.sms";
             if (dialog.ShowDialog(this) == DialogResult.OK)
             {
                 try

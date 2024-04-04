@@ -1,25 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <AssemblyTitle>sth1edwv</AssemblyTitle>
     <Product>sth1edwv</Product>
-    <Copyright>Copyright ©  2016</Copyright>
-    <LangVersion>9</LangVersion>
+    <LangVersion>latest</LangVersion>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <DebugType>portable</DebugType>
-    <StartupObject>sth1edwv.Program</StartupObject>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
     <ApplicationIcon>Resources\icon.ico</ApplicationIcon>
     <UseWindowsForms>True</UseWindowsForms>
   </PropertyGroup>
-  <!-- Fix for not running if built on 6.0.2: see https://github.com/dotnet/core/issues/7176 -->
-  <ItemGroup>
-    <FrameworkReference
-      Update="Microsoft.WindowsDesktop.App;Microsoft.WindowsDesktop.App.WPF;Microsoft.WindowsDesktop.App.WindowsForms"
-      TargetingPackVersion="6.0.0" />
-  </ItemGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <Optimize>True</Optimize>
   </PropertyGroup>
