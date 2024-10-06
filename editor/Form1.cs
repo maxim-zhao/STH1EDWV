@@ -119,7 +119,6 @@ namespace sth1edwv
             {
                 PalettesLayout.Controls.Add(new PaletteEditor(level.Palette, "Base palette (only sprites part is used)", OnPaletteChanged));
                 PalettesLayout.Controls.Add(new PaletteEditor(level.CyclingPalette, "Colour cycling", OnPaletteChanged));
-                // TODO: extra palettes for some levels?
             }
 
             propertyGridLevel.SelectedObject = level;
@@ -582,9 +581,10 @@ namespace sth1edwv
                 tabControlArt.TabPages.Add(tabPageArtTiles);
             }
 
-            foreach (var tileSet in artItem.SpriteTileSets)
+            foreach (var kvp in artItem.SpriteTileSets)
             {
-                var page = new TabPage("Sprites") { Tag = tileSet, Padding = new Padding(3), UseVisualStyleBackColor = true};
+                var tileSet = kvp.Value;
+                var page = new TabPage(kvp.Key) { Tag = tileSet, Padding = new Padding(3), UseVisualStyleBackColor = true};
                 var viewer = new TileSetViewer { Dock = DockStyle.Fill, TilesPerRow = tileSet.TilesPerRow };
                 page.Controls.Add(viewer);
                 var palette = firstPalette.GetData().Count >= 32

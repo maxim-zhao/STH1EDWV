@@ -1,6 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace sth1edwv.GameObjects
@@ -102,83 +105,8 @@ namespace sth1edwv.GameObjects
         public bool UseUnderwaterBossPalette { get; set; }
 
         [Category("General")] 
-        [Description("Which music track to play")]
-        //[TypeConverter(typeof(MusicConverter))]
+        [Description("Which music track to play. Value 7 can be used for silence.")]
         public int MusicIndex { get; set; }
-
-        /*
-        public class MusicConverter : StringConverter
-        {
-            // Enable a combo
-            public override bool GetStandardValuesSupported(ITypeDescriptorContext context)
-            {
-                return true;
-            }
-
-            // Disable free-form text
-            public override bool GetStandardValuesExclusive(ITypeDescriptorContext context)
-            {
-                return true;
-            }
-
-            // Get values
-            public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
-            {
-                return new StandardValuesCollection(_musicTracks);
-            }
-
-            public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
-            {
-                return (value as MusicItem)?.ToString();
-            }
-
-            public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
-            {
-                if (value is int i && destinationType == typeof(string))
-                {
-                    return _musicTracks.First(x => x.Index == i).ToString();
-                }
-
-                if (value is MusicItem mi && destinationType == typeof(string))
-                {
-                    return mi.ToString();
-                }
-                return null;
-            }
-        }
-
-        private class MusicItem
-        {
-            public int Index { get; }
-            private readonly string _name;
-
-            public MusicItem(int index, string name)
-            {
-                Index = index;
-                _name = name;
-            }
-
-            public override string ToString()
-            {
-                return $"{Index}: {_name}";
-            }
-        }
-
-        private static List<MusicItem> _musicTracks = new()
-        {
-            new(0, "Green Hill"),
-            new(1, "Bridge"),
-            new(2, "Jungle"),
-            new(3, "Labyrinth"),
-            new(4, "Scrap Brain"),
-            new(5, "Sky Base"),
-            new(6, "Title"),
-            new(8, "Invincibility"),
-            new(9, "Level Complete"),
-            new(10, "Death"),
-            new(11, "Boss"),
-        };
-*/
 
         // Objects representing referenced data
         [Category("General")] public TileSet TileSet { get; }
@@ -197,10 +125,6 @@ namespace sth1edwv.GameObjects
         [Category("General")] public int Offset { get; set; }
 
         private readonly string _label;
-        private readonly int _floorAddress;
-        private readonly int _floorSize;
-        private readonly int _offsetArt;
-        private readonly int _offsetObjectLayout;
         private readonly int _initPalette;
 
         // These should be encapsulated by a cycling palette object
@@ -213,6 +137,10 @@ namespace sth1edwv.GameObjects
 
         public Level(Cartridge cartridge, int offset, string label)
         {
+            int offsetObjectLayout;
+            int offsetArt;
+            int floorSize;
+            int floorAddress;
             _label = label;
             Offset = offset;
             int blockMappingOffset;
@@ -237,17 +165,17 @@ namespace sth1edwv.GameObjects
                     BottomEdgeFactor = reader.ReadByte(); // LH
                     StartX = reader.ReadByte(); // SX
                     StartY = reader.ReadByte(); // SY
-                    _floorAddress = reader.ReadUInt16(); // FL FL: relative to 0x14000
-                    _floorSize = reader.ReadUInt16(); // FS FS: compressed size in bytes
+                    floorAddress = reader.ReadUInt16(); // FL FL: relative to 0x14000
+                    floorSize = reader.ReadUInt16(); // FS FS: compressed size in bytes
                     blockMappingOffset = reader.ReadUInt16(); // BM BM: relative to 0x10000
-                    _offsetArt = reader.ReadUInt16(); // LA LA: Relative to 0x30000
+                    offsetArt = reader.ReadUInt16(); // LA LA: Relative to 0x30000
                     spriteArtPage = reader.ReadByte(); // SP: Page for the below
                     spriteArtAddress = reader.ReadUInt16(); // SA SA: offset from start of above bank
                     _initPalette = reader.ReadByte(); // IP: Index of palette
                     PaletteCycleRate = reader.ReadByte(); // CS: Number of frames between palette cycles
                     _paletteCycleCount = reader.ReadByte(); // CC: Number of palette cycles in a loop
                     _paletteCycleIndex = reader.ReadByte(); // CP: Which cycling palette to use
-                    _offsetObjectLayout = reader.ReadUInt16(); // OL OL: relative to 0x15580
+                    offsetObjectLayout = reader.ReadUInt16(); // OL OL: relative to 0x15580
                     var flags = reader.ReadByte(); // SR
                     // Nothing for bit 0
                     DemoMode = (flags & (1 << 1)) != 0;
@@ -277,13 +205,13 @@ namespace sth1edwv.GameObjects
             Palette = cartridge.GetPalette(cartridge.Memory.Word(0x627C + _initPalette*2), 2);
             CyclingPalette = cartridge.GetPalette(cartridge.Memory.Word(0x628C + _paletteCycleIndex*2), _paletteCycleCount);
 
-            TileSet = cartridge.GetTileSet(_offsetArt + 0x30000, null, 16);
+            TileSet = cartridge.GetTileSet(offsetArt + 0x30000, null, 16);
 
             SpriteTileSet = cartridge.GetTileSet(spriteArtAddress + spriteArtPage * 0x4000, TileSet.Groupings.Sprite, 16);
 
             Floor = cartridge.GetFloor(
-                _floorAddress + 0x14000, 
-                _floorSize, 
+                floorAddress + 0x14000, 
+                floorSize, 
                 FloorWidth);
 
             // We rewrite FloorHeight to match the data size.
@@ -308,7 +236,7 @@ namespace sth1edwv.GameObjects
             };
 
             BlockMapping = cartridge.GetBlockMapping(blockMappingOffset + 0x10000, blockCount, _solidityIndex, TileSet);
-            Objects = cartridge.GetLevelObjectSet(0x15580 + _offsetObjectLayout);
+            Objects = cartridge.GetLevelObjectSet(0x15580 + offsetObjectLayout);
 
             // We generate sub-palettes for rendering
             UpdateRenderingPalettes();

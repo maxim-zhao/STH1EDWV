@@ -2787,7 +2787,7 @@ namespace sth1edwv
                                 ? GetTileSet(offset, asset.GetLength(Memory), asset.BitPlanes, asset.TileGrouping, asset.TilesPerRow) 
                                 : GetTileSet(offset, asset.TileGrouping, asset.TilesPerRow);
                             _assetsLookup[asset] = tileSet;
-                            item.SpriteTileSets.Add(tileSet);
+                            item.SpriteTileSets.Add(part.Name, tileSet);
                             break;
                         case Game.Asset.Types.RawValue:
                             var rawValue = new RawValue(Memory, part.Asset.OriginalOffset, part.Asset.OriginalSize, part.Asset.Encoding, part.Name);
