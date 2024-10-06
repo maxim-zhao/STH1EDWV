@@ -6,7 +6,7 @@ namespace sth1edwv
     public class ArtItem
     {
         public TileSet TileSet { get; set; }
-        public Palette Palette { get; set; }
+        public Dictionary<string, Palette> Palettes { get; } = [];
         public bool PaletteEditable { get; set; }
         public string Name { get; init; }
         public TileMap TileMap { get; set; }

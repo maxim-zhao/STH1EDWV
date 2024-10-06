@@ -11,6 +11,8 @@
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
     <ApplicationIcon>Resources\icon.ico</ApplicationIcon>
     <UseWindowsForms>True</UseWindowsForms>
+    <ApplicationHighDpiMode>SystemAware</ApplicationHighDpiMode>
+    <ForceDesignerDpiUnaware>true</ForceDesignerDpiUnaware>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <Optimize>True</Optimize>

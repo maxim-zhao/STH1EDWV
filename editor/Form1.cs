@@ -553,7 +553,7 @@ namespace sth1edwv
             }
 
             // We want to hide irrelevant tabs. This is a bit of a pain because we can't just hide them, so we remove them all and re-add...
-            // Sprite pages are created dynamically so we also dispose any of those
+            // Sprite pages are created dynamically, so we also dispose any of those
             foreach (var tabPage in tabControlArt.TabPages.Cast<TabPage>().Where(x => x.Tag is TileSet))
             {
                 tabPage.Dispose();
@@ -567,17 +567,18 @@ namespace sth1edwv
 
             tabControlArt.TabPages.Clear();
 
+            var firstPalette = artItem.Palettes.First().Value;
             if (artItem.TileMap != null)
             {
                 pictureBoxArtLayout.Image?.Dispose();
-                pictureBoxArtLayout.Image = artItem.TileMap.GetImage(artItem.TileSet, artItem.Palette.GetSubPalette(0, 16));
+                pictureBoxArtLayout.Image = artItem.TileMap.GetImage(artItem.TileSet, firstPalette.GetSubPalette(0, 16));
                 tabControlArt.TabPages.Add(tabPageArtLayout);
             }
 
             if (artItem.TileSet != null)
             {
                 otherArtTileSetViewer.TilesPerRow = artItem.TileSet.TilesPerRow;
-                otherArtTileSetViewer.SetData(artItem.TileSet, artItem.Palette.GetSubPalette(0, 16));
+                otherArtTileSetViewer.SetData(artItem.TileSet, firstPalette.GetSubPalette(0, 16));
                 tabControlArt.TabPages.Add(tabPageArtTiles);
             }
 
@@ -586,9 +587,9 @@ namespace sth1edwv
                 var page = new TabPage("Sprites") { Tag = tileSet, Padding = new Padding(3), UseVisualStyleBackColor = true};
                 var viewer = new TileSetViewer { Dock = DockStyle.Fill, TilesPerRow = tileSet.TilesPerRow };
                 page.Controls.Add(viewer);
-                var palette = artItem.Palette.GetData().Count >= 32
-                    ? artItem.Palette.GetSubPalette(16, 16)
-                    : artItem.Palette;
+                var palette = firstPalette.GetData().Count >= 32
+                    ? firstPalette.GetSubPalette(16, 16)
+                    : firstPalette;
                 viewer.SetData(tileSet, palette, null, true);
                 viewer.Changed += _ => UpdateSpace();
                 tabControlArt.TabPages.Add(page);
@@ -596,23 +597,26 @@ namespace sth1edwv
 
             if (artItem.PaletteEditable)
             {
-                var paletteEditor = new PaletteEditor(artItem.Palette, "Palette", _ =>
-                {
-                    foreach (var tile in artItem.TileSet.Tiles)
-                    {
-                        tile.ResetImages();
-                    }
-
-                    otherArtTileSetViewer.Invalidate();
-                });
-                foreach (Control control in tabPageArtPalette.Controls)
+                foreach (Control control in palettesLayoutPanel.Controls)
                 {
                     control.Dispose();
-                    tabPageArtPalette.Controls.Clear();
+                    palettesLayoutPanel.Controls.Clear();
                 }
 
-                tabPageArtPalette.Controls.Add(paletteEditor);
-                paletteEditor.Dock = DockStyle.Fill;
+                foreach (var kvp in artItem.Palettes.OrderBy(x => x.Key))
+                {
+                    var paletteEditor = new PaletteEditor(kvp.Value, kvp.Key, _ =>
+                    {
+                        foreach (var tile in artItem.TileSet.Tiles)
+                        {
+                            tile.ResetImages();
+                        }
+
+                        otherArtTileSetViewer.Invalidate();
+                    });
+                    palettesLayoutPanel.Controls.Add(paletteEditor);
+                }
+
                 tabControlArt.TabPages.Add(tabPageArtPalette);
             }
 
@@ -630,7 +634,7 @@ namespace sth1edwv
 
                 // Make an editor for it
                 extraDataLayoutPanel.Controls.Add(new Label{Text = asset.Name, AutoSize = true});
-                var editor = new TileMapDataEditor(asset, artItem.TileSet, artItem.Palette);
+                var editor = new TileMapDataEditor(asset, artItem.TileSet, firstPalette);
                 editor.DataChanged += _ => UpdateSpace();
                 extraDataLayoutPanel.Controls.Add(editor);
             }
@@ -706,7 +710,8 @@ namespace sth1edwv
 
         private void buttonSaveScreen_Click(object sender, EventArgs e)
         {
-            using var sfd = new SaveFileDialog { Filter = "*.png|*.png" };
+            using var sfd = new SaveFileDialog();
+            sfd.Filter = "*.png|*.png";
             if (sfd.ShowDialog(this) == DialogResult.OK)
             {
                 pictureBoxArtLayout.Image.Save(sfd.FileName);
@@ -722,7 +727,8 @@ namespace sth1edwv
 
             try
             {
-                using var ofd = new OpenFileDialog { Filter = "*.png|*.png" };
+                using var ofd = new OpenFileDialog();
+                ofd.Filter = "*.png|*.png";
                 if (ofd.ShowDialog(this) != DialogResult.OK)
                 {
                     return;
@@ -750,7 +756,7 @@ namespace sth1edwv
                             // Change the art item to use it
                             _cartridge.ChangeTileSet(artItem, tileSet);
                             // Send it to the relevant control
-                            otherArtTileSetViewer.SetData(tileSet, artItem.Palette);
+                            otherArtTileSetViewer.SetData(tileSet, artItem.Palettes.First().Value);
                         }
                         catch (Exception exception)
                         {
@@ -759,7 +765,7 @@ namespace sth1edwv
                     }
                 }
                 pictureBoxArtLayout.Image?.Dispose();
-                pictureBoxArtLayout.Image = artItem.TileMap.GetImage(artItem.TileSet, artItem.Palette);
+                pictureBoxArtLayout.Image = artItem.TileMap.GetImage(artItem.TileSet, artItem.Palettes.First().Value);
 
                 UpdateSpace();
             }
@@ -779,7 +785,7 @@ namespace sth1edwv
             if (artItem.TileMap != null)
             {
                 pictureBoxArtLayout.Image?.Dispose();
-                pictureBoxArtLayout.Image = artItem.TileMap.GetImage(artItem.TileSet, artItem.Palette);
+                pictureBoxArtLayout.Image = artItem.TileMap.GetImage(artItem.TileSet, artItem.Palettes.First().Value);
             }
 
             UpdateSpace();

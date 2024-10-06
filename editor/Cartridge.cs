@@ -2751,7 +2751,9 @@ namespace sth1edwv
                                 : GetTileSet(offset, asset.TileGrouping, asset.TilesPerRow);
                             break;
                         case Game.Asset.Types.Palette:
-                            _assetsLookup[asset] = item.Palette = GetPalette(offset, asset.FixedSize / 16);
+                            var palette = GetPalette(offset, asset.FixedSize / 16);
+                            _assetsLookup[asset] = palette;
+                            item.Palettes.Add(part.Name, palette);
                             item.PaletteEditable = !asset.Hidden; // Hidden only applies to palettes for now...
                             // TODO we don't handle multiple palettes here yet
                             break;
@@ -2763,7 +2765,7 @@ namespace sth1edwv
                             break;
                         case Game.Asset.Types.TileMap:
                         {
-                            // We assume these are set second so we have to check if it's a set or overlay
+                            // We assume these are set second, so we have to check if it's a set or overlay
                             var tileMap = new TileMap(Memory, offset, asset.GetLength(Memory));
                             if (item.TileMap is { HasForeground: true })
                             {
