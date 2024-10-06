@@ -24,6 +24,8 @@ Still to come (in no particular order):
 - Ability to add any number of levels, tilesets, etc
 - Sonic 1 GG support
 
+[![CI](https://github.com/maxim-zhao/STH1EDWV/actions/workflows/build.yml/badge.svg)](https://github.com/maxim-zhao/STH1EDWV/actions/workflows/build.yml)
+
 [Downloads in the Releases section.](https://github.com/maxim-zhao/STH1EDWV/releases/latest)
 
 [Feedback and discussion is welcome at this SMS Power! forum thread](https://www.smspower.org/forums/18729-STH1EDWVSonicTheHedgehogEditor) or you may raise issues here on GitHub.
