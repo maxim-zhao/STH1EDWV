@@ -2755,7 +2755,6 @@ namespace sth1edwv
                             _assetsLookup[asset] = palette;
                             item.Palettes.Add(part.Name, palette);
                             item.PaletteEditable = !asset.Hidden; // Hidden only applies to palettes for now...
-                            // TODO we don't handle multiple palettes here yet
                             break;
                         case Game.Asset.Types.ForegroundTileMap:
                             // We assume these are set first

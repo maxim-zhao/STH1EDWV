@@ -28,7 +28,7 @@ jobs:
         7z a program.zip .\foo\*
 
     - name: Make artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: program
         path: editor\foo\*
