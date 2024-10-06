@@ -9,22 +9,17 @@ jobs:
 
     steps:
     - name: checkout
-      uses: actions/checkout@v4.2.0
+      uses: actions/checkout@v4
 
-    - uses: actions/setup-dotnet@v1.5.0
+    - uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x'
-
-    - name: Build Number Generator
-      uses: einaregilsson/build-number@v3
-      with:
-        token: ${{secrets.GITHUB_TOKEN}}  
 
     - name: Build
       shell: cmd
       run: |
         cd editor
-        dotnet publish sth1edwv.sln --configuration Release --output foo /p:Version=0.${{env.BUILD_NUMBER}}+${{github.sha}} --runtime win-x64 -p:PublishSingleFile=true --no-self-contained
+        dotnet publish sth1edwv.sln --configuration Release --output foo /p:Version=0.${{github.run_number}}+${{github.sha}} --runtime win-x64 -p:PublishSingleFile=true --no-self-contained
         7z a program.zip .\foo\*
 
     - name: Make artifact
@@ -38,7 +33,7 @@ jobs:
       uses: "marvinpinto/action-automatic-releases@latest"
       with:
         repo_token: "${{secrets.GITHUB_TOKEN}}"
-        automatic_release_tag: "v0.${{env.BUILD_NUMBER}}"
+        automatic_release_tag: "v0.${{github.run_number}}"
         prerelease: false
-        title: "Automatic build #${{env.BUILD_NUMBER}}"
+        title: "Automatic build #${{github.run_number}}"
         files: editor/program.zip
