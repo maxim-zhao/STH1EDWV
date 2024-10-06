@@ -6,7 +6,7 @@ namespace sth1edwv.GameObjects
 {
     public class BlockMapping: IDisposable
     {
-        public List<Block> Blocks { get; } = new();
+        public List<Block> Blocks { get; } = [];
     
         public BlockMapping(Cartridge cartridge, int address, int blockCount, int solidityIndex, TileSet tileSet)
         {

@@ -406,11 +406,11 @@ namespace sth1edwv.BindingListView
             List<PropertyDescriptor> props;
             if (_isCustomTypeDescriptor)
             {
-                props = new List<PropertyDescriptor>(_parent.AddProvidedViews(_customTypeDescriptor.GetProperties(attributes)));
+                props = [.._parent.AddProvidedViews(_customTypeDescriptor.GetProperties(attributes))];
             }
             else
             {
-                props = new List<PropertyDescriptor>(_parent.AddProvidedViews(TypeDescriptor.GetProperties(Object, attributes)));
+                props = [.._parent.AddProvidedViews(TypeDescriptor.GetProperties(Object, attributes))];
             }
             return new PropertyDescriptorCollection(props.ToArray());
         }

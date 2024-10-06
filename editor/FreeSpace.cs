@@ -17,7 +17,7 @@ namespace sth1edwv
             }
         }
 
-        private readonly List<Span> _spans = new();
+        private readonly List<Span> _spans = [];
         public int Maximum { get; set; }
         public IEnumerable<Span> Spans => _spans;
         public int MaximumUsed
@@ -164,9 +164,9 @@ namespace sth1edwv
             // MustFollow restrictions should already be handled outside this method
 
             // We try to find the smallest span that will fit the data, to minimize waste.
-            var span = possibleSpans.Where(x => x.Size >= size)
-                .OrderBy(x => x.Size)
-                .FirstOrDefault();
+            var span = possibleSpans
+                .Where(x => x.Size >= size)
+                .MinBy(x => x.Size);
             if (span != null)
             {
                 if (span.Start > 0x3ff20)

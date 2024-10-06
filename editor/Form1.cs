@@ -43,13 +43,13 @@ namespace sth1edwv
             typeof(DataGridView).InvokeMember("DoubleBuffered", 
                 BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.SetProperty, 
                 null,
-                dataGridViewBlocks, 
-                new object[] { true });
+                dataGridViewBlocks,
+                [true]);
             typeof(DataGridView).InvokeMember("DoubleBuffered", 
                 BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.SetProperty, 
                 null,
-                extraDataLayoutPanel, 
-                new object[] { true });
+                extraDataLayoutPanel,
+                [true]);
         }
 
         private void openROMToolStripMenuItem_Click(object sender, EventArgs e)

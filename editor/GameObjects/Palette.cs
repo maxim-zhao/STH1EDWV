@@ -11,7 +11,7 @@ namespace sth1edwv.GameObjects
 {
     public class Palette: IDataItem
     {
-        private readonly List<Color> _colors = new();
+        private readonly List<Color> _colors = [];
         private ColorPalette _imagePalette;
 
         public ColorPalette ImagePalette

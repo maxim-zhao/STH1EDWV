@@ -11,7 +11,7 @@ namespace sth1edwv.GameObjects
     {
         public byte X { get; set; }
         public byte Y { get; set; }
-        public List<byte> Values { get; } = new();
+        public List<byte> Values { get; } = [];
 
         public TileMapData(Memory memory, int offset, string name)
         {

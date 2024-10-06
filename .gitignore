@@ -4,3 +4,5 @@ obj/
 packages/
 *.user
 /asm-hacks/
+launchSettings.json
+*.sms

@@ -21,12 +21,12 @@ namespace sth1edwv.GameObjects
             /// <summary>
             /// A single tile
             /// </summary>
-            public static readonly List<Point> Single = new() { new Point(0, 0) };
+            public static readonly List<Point> Single = [new Point(0, 0)];
 
             /// <summary>
             /// A sprite tile in 8x16 mode
             /// </summary>
-            public static readonly List<Point> Sprite = new() { new Point(0, 0), new Point(0, 8) };
+            public static readonly List<Point> Sprite = [new Point(0, 0), new Point(0, 8)];
 
             /// <summary>
             /// Rings are ordered
@@ -35,11 +35,11 @@ namespace sth1edwv.GameObjects
             /// CD
             /// </code>
             /// </summary>
-            public static readonly List<Point> Ring = new()
-            {
+            public static readonly List<Point> Ring =
+            [
                 new Point(0, 0), new Point(8, 0),
                 new Point(0, 8), new Point(8, 8)
-            };
+            ];
 
 
             /// <summary>
@@ -49,11 +49,11 @@ namespace sth1edwv.GameObjects
             /// BD
             /// </code>
             /// </summary>
-            public static readonly List<Point> Monitor = new()
-            {
+            public static readonly List<Point> Monitor =
+            [
                 new Point(0, 0), new Point(0, 8),
                 new Point(8, 0), new Point(8, 8)
-            };
+            ];
 
             /// <summary>
             /// Sonic is built from six 8x16 sprites:
@@ -64,15 +64,15 @@ namespace sth1edwv.GameObjects
             /// HJL
             /// </code>
             /// </summary>
-            public static readonly List<Point> Sonic = new()
-            {
+            public static readonly List<Point> Sonic =
+            [
                 new Point(0, 0), new Point(0, 8),
                 new Point(8, 0), new Point(8, 8),
                 new Point(16, 0), new Point(16, 8),
                 new Point(0, 16), new Point(0, 24),
                 new Point(8, 16), new Point(8, 24),
                 new Point(16, 16), new Point(16, 24)
-            };
+            ];
         }
 
         /// <summary>

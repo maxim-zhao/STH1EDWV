@@ -30,7 +30,7 @@ namespace sth1edwv.GameObjects
         {
             return Size switch
             {
-                1 => new[] { (byte)Value },
+                1 => [(byte)Value],
                 2 => new[] { (byte)Value, (byte)(Value >> 8) },
                 _ => throw new Exception($"Unsupported raw value size {Size}")
             };
