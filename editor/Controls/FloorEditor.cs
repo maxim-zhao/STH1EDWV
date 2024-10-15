@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
+using System.Transactions;
 using System.Windows.Forms;
 using sth1edwv.GameObjects;
 using sth1edwv.Properties;
+using static sth1edwv.Controls.FloorEditor;
 
 namespace sth1edwv.Controls
 {
@@ -19,6 +21,7 @@ namespace sth1edwv.Controls
         private int _width;
         private int _height;
         private int _tileSize;
+        private int _zoom;
         private TileSet _tileSet;
         private Level _level;
         private bool _levelBounds;
@@ -35,6 +38,7 @@ namespace sth1edwv.Controls
             Paint += OnPaint;
             MouseDown += OnMouseDown;
             MouseMove += OnMouseMove;
+            _zoom = 1;
         }
 
         public void SetData(Level level)
@@ -65,7 +69,7 @@ namespace sth1edwv.Controls
                 return;
             }
             // Set bounds for scrolling
-            _tileSize = 8 + (TileGaps ? 1 : 0);
+            _tileSize = (8 * _zoom) + (TileGaps ? 1 : 0);
             _blockSize = _tileSize * 4 + (BlockGaps ? 1 : 0);
             AutoScrollMinSize = new Size(_width * _blockSize, _height * _blockSize);
         }
@@ -79,9 +83,10 @@ namespace sth1edwv.Controls
 
         public void Draw(Graphics g, Rectangle clipRectangle)
         {
+            g.InterpolationMode = InterpolationMode.NearestNeighbor;
             g.PixelOffsetMode = PixelOffsetMode.HighQuality;
 
-            using var f = new Font(SystemFonts.MessageBoxFont.FontFamily, 8.0f);
+            using var f = new Font(SystemFonts.MessageBoxFont.FontFamily, (8.0f * _zoom));
             g.Clear(SystemColors.Window);
 
             if (_level == null)
@@ -110,7 +115,8 @@ namespace sth1edwv.Controls
                         {
                             var x = blockX * _blockSize + tileX * _tileSize;
                             var y = blockY * _blockSize + tileY * _tileSize;
-                            g.DrawImageUnscaled(_tileSet.GetImageWithRings(tileIndex, _palette), x, y);
+                            var tile = _tileSet.GetImageWithRings(tileIndex, _palette);
+                            g.DrawImage(tile, x, y, (tile.Width * _zoom), (tile.Height * _zoom));
                         }
                     }
                 }
@@ -136,9 +142,11 @@ namespace sth1edwv.Controls
                 {
                     x *= _blockSize;
                     y *= _blockSize;
+                    var zoomedWidth = image.Width * _zoom;
+                    var zoomedHeight = image.Height * _zoom;
                     g.DrawRectangle(Pens.Blue, x, y, _blockSize, _blockSize);
-                    g.DrawImageUnscaled(image, x + _blockSize / 2 - image.Width / 2,
-                        y + _blockSize / 2 - image.Height / 2);
+                    g.DrawImage(image, x + _blockSize / 2 - zoomedWidth / 2,
+                        y + _blockSize / 2 - zoomedHeight / 2, zoomedWidth, zoomedHeight);
 
                     var dims = g.MeasureString(label, f).ToSize();
 
@@ -166,7 +174,7 @@ namespace sth1edwv.Controls
 
             if (LevelBounds)
             {
-                var left = _level.LeftPixels + _level.LeftPixels / 32 * (_blockSize - 32) + 8;
+                var left = _level.LeftPixels + _level.LeftPixels / 32 * (_blockSize - 32) + (8 * _zoom);
                 var top = _level.TopPixels + _level.TopPixels / 32 * (_blockSize - 32);
                 var right = _level.RightEdgeFactor * _blockSize * 8 + 256 / 32 * _blockSize;
                 var bottom = _level.BottomEdgeFactor * _blockSize * 8 + 192 / 32 * _blockSize + _level.ExtraHeight;
@@ -303,6 +311,31 @@ namespace sth1edwv.Controls
             }
 
             SetBlockIndex(index, BlockChooser.SelectedIndex);
+        }
+
+        protected override void OnMouseWheel(System.Windows.Forms.MouseEventArgs e)
+        {
+            if ((ModifierKeys & Keys.Control) != 0)
+            {
+                // Ctrl key pressed allows zooming
+                if (e.Delta > 0)
+                {
+                    _zoom++;
+                    if (_zoom > 10) _zoom = 10;
+                }
+                else
+                {
+                    _zoom--;
+                    if(_zoom < 1) _zoom = 1;
+                }
+
+                UpdateSize();
+                Invalidate();
+            }
+            else
+            {
+                base.OnMouseWheel(e);
+            }
         }
 
         public bool LevelBounds
