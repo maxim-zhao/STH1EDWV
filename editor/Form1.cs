@@ -32,7 +32,7 @@ namespace sth1edwv
             InitializeComponent();
 
             Text += $" :: v{Assembly.GetCallingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}";
-            
+
             _solidityImages = new ImageList
             {
                 ColorDepth = ColorDepth.Depth16Bit,
@@ -40,13 +40,13 @@ namespace sth1edwv
             };
             _solidityImages.Images.AddStrip(Resources.SolidityImages);
 
-            typeof(DataGridView).InvokeMember("DoubleBuffered", 
-                BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.SetProperty, 
+            typeof(DataGridView).InvokeMember("DoubleBuffered",
+                BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.SetProperty,
                 null,
                 dataGridViewBlocks,
                 [true]);
-            typeof(DataGridView).InvokeMember("DoubleBuffered", 
-                BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.SetProperty, 
+            typeof(DataGridView).InvokeMember("DoubleBuffered",
+                BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.SetProperty,
                 null,
                 extraDataLayoutPanel,
                 [true]);
@@ -59,7 +59,8 @@ namespace sth1edwv
                 return;
             }
 
-            using var d = new OpenFileDialog{Filter = "*.sms|*.sms"};
+            using var d = new OpenFileDialog();
+            d.Filter = "*.sms|*.sms";
             if (d.ShowDialog(this) != DialogResult.OK)
             {
                 return;
@@ -126,8 +127,8 @@ namespace sth1edwv
             level?.BlockMapping.UpdateUsageForLevel(level);
             level?.BlockMapping.UpdateGlobalUsage(_cartridge.Levels);
 
-            dataGridViewBlocks.DataSource = level == null 
-                ? null 
+            dataGridViewBlocks.DataSource = level == null
+                ? null
                 : new BindingListView<BlockRow>(level.BlockMapping.Blocks.Select(x => new BlockRow(x, level.TilePalette)).ToList());
             dataGridViewBlocks.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCells;
 
@@ -168,12 +169,13 @@ namespace sth1edwv
             floorEditor1.LevelBounds = buttonLevelBounds.Checked;
             floorEditor1.BlockNumbers = buttonBlockNumbers.Checked;
             floorEditor1.WithObjects = buttonShowObjects.Checked;
+            floorEditor1.Zoom = comboZoom.SelectedIndex + 1;
         }
 
         private Block GetSelectedBlock()
         {
-            return dataGridViewBlocks.SelectedRows.Count == 0 
-                ? null 
+            return dataGridViewBlocks.SelectedRows.Count == 0
+                ? null
                 : (dataGridViewBlocks.SelectedRows[0].DataBoundItem as ObjectView<BlockRow>)?.Object.Block;
         }
 
@@ -276,7 +278,8 @@ namespace sth1edwv
             using var bmp = new Bitmap(floorEditor1.AutoScrollMinSize.Width, floorEditor1.AutoScrollMinSize.Height);
             using var g = Graphics.FromImage(bmp);
             floorEditor1.Draw(g, new Rectangle(0, 0, bmp.Width, bmp.Height));
-            using var d = new SaveFileDialog { Filter = "*.png|*.png" };
+            using var d = new SaveFileDialog();
+            d.Filter = "*.png|*.png";
             if (d.ShowDialog(this) == DialogResult.OK)
             {
                 bmp.Save(d.FileName);
@@ -298,16 +301,16 @@ namespace sth1edwv
                 switch (column.DataPropertyName)
                 {
                     case nameof(Block.SolidityIndex):
-                    {
-                        column.SortMode = DataGridViewColumnSortMode.Automatic;
-                        if (column is DataGridViewComboBoxColumn c)
                         {
-                            c.DataSource = Enumerable
-                                .Range(0, _solidityImages.Images.Count)
-                                .ToList();
+                            column.SortMode = DataGridViewColumnSortMode.Automatic;
+                            if (column is DataGridViewComboBoxColumn c)
+                            {
+                                c.DataSource = Enumerable
+                                    .Range(0, _solidityImages.Images.Count)
+                                    .ToList();
+                            }
+                            break;
                         }
-                        break;
-                    }
                 }
             }
         }
@@ -421,13 +424,13 @@ namespace sth1edwv
 
         private void DrawingButtonCheckedChanged(object sender, EventArgs e)
         {
-            foreach (var button in new[]{buttonDraw, buttonSelect, buttonFloodFill})
+            foreach (var button in new[] { buttonDraw, buttonSelect, buttonFloodFill })
             {
                 button.Checked = button == sender;
             }
 
-            floorEditor1.DrawingMode = buttonDraw.Checked ? FloorEditor.Modes.Draw 
-                : buttonSelect.Checked ? FloorEditor.Modes.Select 
+            floorEditor1.DrawingMode = buttonDraw.Checked ? FloorEditor.Modes.Draw
+                : buttonSelect.Checked ? FloorEditor.Modes.Select
                 : FloorEditor.Modes.FloodFill;
         }
 
@@ -510,7 +513,7 @@ namespace sth1edwv
             layoutBlockChooser.SelectedIndex = level.Floor.BlockIndices[floorEditor1.LastClickedBlockIndex];
         }
 
-        private LevelObject getClickedLevelObject()
+        private LevelObject GetClickedLevelObject()
         {
             if (listBoxLevels.SelectedItem is not Level level)
             {
@@ -525,7 +528,7 @@ namespace sth1edwv
 
         private void editObjectToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var levelObject = getClickedLevelObject();
+            var levelObject = GetClickedLevelObject();
             if (levelObject != null)
             {
                 using var editor = new ObjectEditor(levelObject);
@@ -584,7 +587,7 @@ namespace sth1edwv
             foreach (var kvp in artItem.SpriteTileSets)
             {
                 var tileSet = kvp.Value;
-                var page = new TabPage(kvp.Key) { Tag = tileSet, Padding = new Padding(3), UseVisualStyleBackColor = true};
+                var page = new TabPage(kvp.Key) { Tag = tileSet, Padding = new Padding(3), UseVisualStyleBackColor = true };
                 var viewer = new TileSetViewer { Dock = DockStyle.Fill, TilesPerRow = tileSet.TilesPerRow };
                 page.Controls.Add(viewer);
                 var palette = firstPalette.GetData().Count >= 32
@@ -633,7 +636,7 @@ namespace sth1edwv
                 CheckExtraDataPage();
 
                 // Make an editor for it
-                extraDataLayoutPanel.Controls.Add(new Label{Text = asset.Name, AutoSize = true});
+                extraDataLayoutPanel.Controls.Add(new Label { Text = asset.Name, AutoSize = true });
                 var editor = new TileMapDataEditor(asset, artItem.TileSet, firstPalette);
                 editor.DataChanged += _ => UpdateSpace();
                 extraDataLayoutPanel.Controls.Add(editor);
@@ -644,7 +647,7 @@ namespace sth1edwv
                 CheckExtraDataPage();
 
                 // Make an editor for it
-                extraDataLayoutPanel.Controls.Add(new Label{Text = asset.Name, AutoSize = true});
+                extraDataLayoutPanel.Controls.Add(new Label { Text = asset.Name, AutoSize = true });
                 extraDataLayoutPanel.Controls.Add(new RawValueEditor(asset));
             }
 
@@ -744,8 +747,8 @@ namespace sth1edwv
                     if (MessageBox.Show(
                         this,
                         $"Failed to load image: {ex.Message}. Do you want to try again, replacing the tiles?",
-                        "Art mismatch", 
-                        MessageBoxButtons.YesNo, 
+                        "Art mismatch",
+                        MessageBoxButtons.YesNo,
                         MessageBoxIcon.Question) == DialogResult.Yes)
                     {
                         // Make the tileset
@@ -839,6 +842,7 @@ namespace sth1edwv
         private void floorEditor1_FloorChanged()
         {
             UpdateSpace();
+            comboZoom.SelectedIndex = floorEditor1.Zoom - 1;
         }
 
         private void addObjectToolStripMenuItem_Click(object sender, EventArgs e)
@@ -873,7 +877,7 @@ namespace sth1edwv
 
         private void deleteObjectToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var levelObject = getClickedLevelObject();
+            var levelObject = GetClickedLevelObject();
             if (levelObject != null && listBoxLevels.SelectedItem is Level level)
             {
                 level.Objects.Remove(levelObject);
@@ -908,7 +912,7 @@ namespace sth1edwv
         private void levelEditorContextMenu_Opening(object sender, System.ComponentModel.CancelEventArgs e)
         {
             // Disable object items if no object is selected
-            editObjectToolStripMenuItem.Enabled = deleteObjectToolStripMenuItem.Enabled = getClickedLevelObject() != null;
+            editObjectToolStripMenuItem.Enabled = deleteObjectToolStripMenuItem.Enabled = GetClickedLevelObject() != null;
         }
     }
 }

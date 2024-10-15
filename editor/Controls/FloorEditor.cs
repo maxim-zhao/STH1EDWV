@@ -3,11 +3,9 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
-using System.Transactions;
 using System.Windows.Forms;
 using sth1edwv.GameObjects;
 using sth1edwv.Properties;
-using static sth1edwv.Controls.FloorEditor;
 
 namespace sth1edwv.Controls
 {
@@ -17,11 +15,11 @@ namespace sth1edwv.Controls
         private Palette _palette;
         private BlockMapping _blockMapping;
         private LevelObjectSet _objects;
-        private int _blockSize;
-        private int _width;
-        private int _height;
-        private int _tileSize;
-        private int _zoom;
+        private int _blockSize; // The size of one block in screen pixels
+        private int _width; // Data width in blocks
+        private int _height; // Data height in blocks
+        private int _tileSize; // The size of one tile in screen pixels
+        private int _zoom; // Scaling factor for zooming
         private TileSet _tileSet;
         private Level _level;
         private bool _levelBounds;
@@ -29,6 +27,7 @@ namespace sth1edwv.Controls
         private bool _blockNumbers;
         private bool _blockGaps;
         private bool _tileGaps;
+        private bool _doDraw = true;
 
         public FloorEditor()
         {
@@ -38,7 +37,8 @@ namespace sth1edwv.Controls
             Paint += OnPaint;
             MouseDown += OnMouseDown;
             MouseMove += OnMouseMove;
-            _zoom = 1;
+            // Default to the nearest zoom level to the screen scaling factor
+            _zoom = (int)Math.Round(DeviceDpi / 96.0);
         }
 
         public void SetData(Level level)
@@ -76,6 +76,11 @@ namespace sth1edwv.Controls
 
         private void OnPaint(object sender, PaintEventArgs e)
         {
+            if (!_doDraw)
+            {
+                // We have suspended drawing to reduce flicker
+                return;
+            }
             // We apply the scroll offset to the graphics to make it draw in the right place
             e.Graphics.TranslateTransform(AutoScrollPosition.X, AutoScrollPosition.Y);
             Draw(e.Graphics, e.ClipRectangle);
@@ -86,7 +91,16 @@ namespace sth1edwv.Controls
             g.InterpolationMode = InterpolationMode.NearestNeighbor;
             g.PixelOffsetMode = PixelOffsetMode.HighQuality;
 
-            using var f = new Font(SystemFonts.MessageBoxFont.FontFamily, (8.0f * _zoom));
+            // Figure out the font size
+            var defaultFont = SystemFonts.MessageBoxFont ?? SystemFonts.DefaultFont;
+            var size = g.MeasureString("0", defaultFont);
+            var fontScale = 1.0f;
+            if (size.Height > _blockSize * 0.5)
+            {
+                fontScale = _blockSize * 0.5f/ size.Height;
+            }
+
+            using var f = new Font((SystemFonts.MessageBoxFont ?? SystemFonts.DefaultFont).FontFamily, defaultFont.SizeInPoints * fontScale);
             g.Clear(SystemColors.Window);
 
             if (_level == null)
@@ -174,10 +188,11 @@ namespace sth1edwv.Controls
 
             if (LevelBounds)
             {
-                var left = _level.LeftPixels + _level.LeftPixels / 32 * (_blockSize - 32) + (8 * _zoom);
-                var top = _level.TopPixels + _level.TopPixels / 32 * (_blockSize - 32);
-                var right = _level.RightEdgeFactor * _blockSize * 8 + 256 / 32 * _blockSize;
-                var bottom = _level.BottomEdgeFactor * _blockSize * 8 + 192 / 32 * _blockSize + _level.ExtraHeight;
+                // Compute the bounds in pixel space first...
+                var left = PixelToScreen(_level.LeftPixels);
+                var top = PixelToScreen(_level.TopPixels);
+                var right = PixelToScreen((_level.RightEdgeFactor * 8 + 14) * 32);
+                var bottom = PixelToScreen((_level.BottomEdgeFactor * 8 + 6) * 32 + _level.ExtraHeight);
                 var rect = new Rectangle(left, top, right - left, bottom - top);
                 // Draw the grey region
                 using var brush = new SolidBrush(Color.FromArgb(128, Color.Black));
@@ -188,6 +203,28 @@ namespace sth1edwv.Controls
                 rect.Height += 1;
                 g.DrawRectangle(Pens.Red, rect);
             }
+        }
+
+        private int PixelToScreen(int i)
+        {
+            // First compute the block and tile offsets
+            var block = i / 32;
+            i %= 32;
+            var tile = i / 8;
+            var pixels = i % 8;
+            // Then add them back together based on the current draw state
+            return block * _blockSize + tile * _tileSize + pixels * _zoom;
+        }
+
+        private int ScreenToPixel(int i)
+        {
+            // First compute the block and tile offsets
+            var block = i / _blockSize;
+            i %= _blockSize;
+            var tile = i / _tileSize;
+            var pixels = i / _tileSize / _zoom;
+            // Then add them back together based on the current draw state
+            return block * 32 + tile * 8 + pixels;
         }
 
         private void OnMouseDown(object sender, MouseEventArgs e)
@@ -313,29 +350,53 @@ namespace sth1edwv.Controls
             SetBlockIndex(index, BlockChooser.SelectedIndex);
         }
 
-        protected override void OnMouseWheel(System.Windows.Forms.MouseEventArgs e)
+        protected override void OnMouseWheel(MouseEventArgs e)
         {
             if ((ModifierKeys & Keys.Control) != 0)
             {
                 // Ctrl key pressed allows zooming
-                if (e.Delta > 0)
-                {
-                    _zoom++;
-                    if (_zoom > 10) _zoom = 10;
-                }
-                else
-                {
-                    _zoom--;
-                    if(_zoom < 1) _zoom = 1;
-                }
-
-                UpdateSize();
-                Invalidate();
+                var newZoom = _zoom + (e.Delta > 0 ? 1 : -1);
+                ChangeZoom(newZoom, e.X, e.Y);
             }
             else
             {
                 base.OnMouseWheel(e);
             }
+        }
+
+        private void ChangeZoom(int newZoom, int screenX, int screenY)
+        {
+            newZoom = Math.Clamp(newZoom, 1, 10);
+            if (newZoom == _zoom)
+            {
+                // No change
+                return;
+            }
+
+            if (_level == null)
+            {
+                // Nothing to do, just accept it
+                _zoom = newZoom;
+                return;
+            }
+
+            // Remember the scroll position in terms of the mouse position
+            var x = ScreenToPixel(screenX - AutoScrollPosition.X);
+            var y = ScreenToPixel(screenY - AutoScrollPosition.Y);
+
+            _zoom = newZoom;
+
+            _doDraw = false;
+            UpdateSize();
+
+            // Then restore the position post-zoom
+            x = PixelToScreen(x) - screenX;
+            y = PixelToScreen(y) - screenY;
+            AutoScrollPosition = new Point(x, y);
+
+            _doDraw = true;
+            Invalidate();
+            FloorChanged?.Invoke();
         }
 
         public bool LevelBounds
@@ -379,6 +440,12 @@ namespace sth1edwv.Controls
 
         public Modes DrawingMode { get; set; }
         public int LastClickedBlockIndex { get; set; }
+
+        public int Zoom
+        {
+            get => _zoom;
+            set => ChangeZoom(value, Width / 2, Height / 2);
+        }
 
         public event Action FloorChanged;
     }
