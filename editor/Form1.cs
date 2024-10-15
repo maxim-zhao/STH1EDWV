@@ -27,7 +27,7 @@ namespace sth1edwv
         public Form1()
         {
             Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
-            Font = SystemFonts.MessageBoxFont;
+            Font = SystemFonts.MessageBoxFont ?? SystemFonts.DefaultFont;
 
             InitializeComponent();
 

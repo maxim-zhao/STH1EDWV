@@ -20,7 +20,7 @@ namespace sth1edwv.GameObjects
         // Images are per-palette
         private readonly Dictionary<Palette, Bitmap> _images = new();
         
-        public Bitmap GetImage(Palette palette)
+        public Bitmap GetImage(Palette palette, bool screenScaling = false)
         {
             if (_images.TryGetValue(palette, out var image))
             {

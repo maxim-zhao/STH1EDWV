@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 
 namespace sth1edwv.GameObjects
 {
@@ -16,7 +17,7 @@ namespace sth1edwv.GameObjects
         }
 
         // ReSharper disable UnusedMember.Global
-        public Image Image => Block.GetImage(_palette);
+        public Image Image => Block.GetImage(_palette, true);
 
         public int Index => Block.Index;
 
@@ -42,31 +43,44 @@ namespace sth1edwv.GameObjects
     public class Block: IDisposable, IDataItem, IDrawableBlock
     {
         public TileSet TileSet { get; }
-        private readonly Dictionary<Palette, Bitmap> _images = new();
+        private readonly Dictionary<Tuple<Palette, bool>, Bitmap> _images = new();
 
         public byte[] TileIndices { get; } = new byte[16];
 
-        public Bitmap GetImage(Palette palette)
+        public Bitmap GetImage(Palette palette, bool screenScaled = false)
         {
-            if (_images.TryGetValue(palette, out var image))
+            var key = Tuple.Create(palette, screenScaled);
+            if (_images.TryGetValue(key, out var image))
             {
                 return image;
             }
 
             // Lazy rendering
             image = new Bitmap(32, 32);
-            using (var g = Graphics.FromImage(image))
+            using var g = Graphics.FromImage(image);
+            for (var i = 0; i < 16; ++i)
             {
-                for (var i = 0; i < 16; ++i)
-                {
-                    var x = i % 4 * 8;
-                    var y = i / 4 * 8;
-                    var tileIndex = TileIndices[i];
-                    g.DrawImageUnscaled(TileSet.GetImageWithRings(tileIndex, palette), x, y);
-                }
+                var x = i % 4 * 8;
+                var y = i / 4 * 8;
+                var tileIndex = TileIndices[i];
+                g.DrawImageUnscaled(TileSet.GetImageWithRings(tileIndex, palette), x, y);
             }
 
-            _images.Add(palette, image);
+            // Then apply scaling
+            // ReSharper disable CompareOfFloatsByEqualityOperator
+            if (screenScaled && (g.DpiX != 96.0f || g.DpiY != 96.0f))
+                // ReSharper restore CompareOfFloatsByEqualityOperator
+            {
+                var image2 = new Bitmap((int)(image.Width * g.DpiX / 96.0), (int)(image.Height * g.DpiY / 96.0));
+                using var g2 = Graphics.FromImage(image2);
+                g2.InterpolationMode = InterpolationMode.NearestNeighbor;
+                g2.DrawImage(image, 0, 0, image2.Width, image2.Height);
+                image.Dispose();
+                _images.Add(key, image2);
+                return image2;
+            }
+
+            _images.Add(key, image);
             return image;
         }
 

@@ -362,10 +362,10 @@ namespace sth1edwv
             // tabPageBlocks
             // 
             tabPageBlocks.Controls.Add(splitContainer4);
-            tabPageBlocks.Location = new Point(4, 24);
+            tabPageBlocks.Location = new Point(4, 22);
             tabPageBlocks.Name = "tabPageBlocks";
             tabPageBlocks.Padding = new Padding(3);
-            tabPageBlocks.Size = new Size(1004, 496);
+            tabPageBlocks.Size = new Size(1004, 498);
             tabPageBlocks.TabIndex = 3;
             tabPageBlocks.Text = "Blocks";
             tabPageBlocks.UseVisualStyleBackColor = true;
@@ -384,7 +384,7 @@ namespace sth1edwv
             // 
             splitContainer4.Panel2.AutoScroll = true;
             splitContainer4.Panel2.Controls.Add(pictureBoxBlockEditor);
-            splitContainer4.Size = new Size(998, 490);
+            splitContainer4.Size = new Size(998, 492);
             splitContainer4.SplitterDistance = 614;
             splitContainer4.TabIndex = 2;
             // 
@@ -404,7 +404,7 @@ namespace sth1edwv
             dataGridViewBlocks.RowHeadersWidth = 82;
             dataGridViewBlocks.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.DisableResizing;
             dataGridViewBlocks.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dataGridViewBlocks.Size = new Size(614, 490);
+            dataGridViewBlocks.Size = new Size(614, 492);
             dataGridViewBlocks.TabIndex = 2;
             dataGridViewBlocks.CellPainting += dataGridViewBlocks_CellPainting;
             dataGridViewBlocks.DataError += dataGridViewBlocks_DataError;
@@ -476,7 +476,7 @@ namespace sth1edwv
             pictureBoxBlockEditor.Dock = DockStyle.Fill;
             pictureBoxBlockEditor.Location = new Point(0, 0);
             pictureBoxBlockEditor.Name = "pictureBoxBlockEditor";
-            pictureBoxBlockEditor.Size = new Size(380, 490);
+            pictureBoxBlockEditor.Size = new Size(380, 492);
             pictureBoxBlockEditor.SizeMode = PictureBoxSizeMode.AutoSize;
             pictureBoxBlockEditor.TabIndex = 3;
             pictureBoxBlockEditor.TabStop = false;
@@ -486,10 +486,10 @@ namespace sth1edwv
             // 
             tabPageLayout.Controls.Add(panel1);
             tabPageLayout.Controls.Add(toolStripLayout);
-            tabPageLayout.Location = new Point(4, 22);
+            tabPageLayout.Location = new Point(4, 24);
             tabPageLayout.Name = "tabPageLayout";
             tabPageLayout.Padding = new Padding(3);
-            tabPageLayout.Size = new Size(1004, 498);
+            tabPageLayout.Size = new Size(1004, 496);
             tabPageLayout.TabIndex = 2;
             tabPageLayout.Text = "Layout";
             tabPageLayout.UseVisualStyleBackColor = true;
@@ -501,7 +501,7 @@ namespace sth1edwv
             panel1.Dock = DockStyle.Fill;
             panel1.Location = new Point(3, 81);
             panel1.Name = "panel1";
-            panel1.Size = new Size(998, 414);
+            panel1.Size = new Size(998, 412);
             panel1.TabIndex = 4;
             // 
             // splitContainer7
@@ -519,7 +519,7 @@ namespace sth1edwv
             // splitContainer7.Panel2
             // 
             splitContainer7.Panel2.Controls.Add(layoutBlockChooser);
-            splitContainer7.Size = new Size(998, 414);
+            splitContainer7.Size = new Size(998, 412);
             splitContainer7.SplitterDistance = 706;
             splitContainer7.TabIndex = 3;
             // 
@@ -535,7 +535,7 @@ namespace sth1edwv
             floorEditor1.LevelBounds = false;
             floorEditor1.Location = new Point(0, 0);
             floorEditor1.Name = "floorEditor1";
-            floorEditor1.Size = new Size(706, 414);
+            floorEditor1.Size = new Size(706, 412);
             floorEditor1.TabIndex = 0;
             floorEditor1.Text = "floorEditor1";
             floorEditor1.TileGaps = false;
@@ -553,7 +553,7 @@ namespace sth1edwv
             layoutBlockChooser.Scaling = 1;
             layoutBlockChooser.SelectedIndex = -1;
             layoutBlockChooser.ShowTransparency = false;
-            layoutBlockChooser.Size = new Size(288, 414);
+            layoutBlockChooser.Size = new Size(288, 412);
             layoutBlockChooser.TabIndex = 0;
             // 
             // levelEditorContextMenu
