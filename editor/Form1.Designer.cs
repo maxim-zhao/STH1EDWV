@@ -98,6 +98,7 @@ namespace sth1edwv
             toolStripSeparator3 = new ToolStripSeparator();
             buttonResizeFloor = new ToolStripButton();
             SharingButton = new ToolStripButton();
+            comboZoom = new ToolStripComboBox();
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
             splitContainer3 = new SplitContainer();
@@ -485,10 +486,10 @@ namespace sth1edwv
             // 
             tabPageLayout.Controls.Add(panel1);
             tabPageLayout.Controls.Add(toolStripLayout);
-            tabPageLayout.Location = new Point(4, 24);
+            tabPageLayout.Location = new Point(4, 22);
             tabPageLayout.Name = "tabPageLayout";
             tabPageLayout.Padding = new Padding(3);
-            tabPageLayout.Size = new Size(1004, 496);
+            tabPageLayout.Size = new Size(1004, 498);
             tabPageLayout.TabIndex = 2;
             tabPageLayout.Text = "Layout";
             tabPageLayout.UseVisualStyleBackColor = true;
@@ -500,7 +501,7 @@ namespace sth1edwv
             panel1.Dock = DockStyle.Fill;
             panel1.Location = new Point(3, 81);
             panel1.Name = "panel1";
-            panel1.Size = new Size(998, 412);
+            panel1.Size = new Size(998, 414);
             panel1.TabIndex = 4;
             // 
             // splitContainer7
@@ -518,7 +519,7 @@ namespace sth1edwv
             // splitContainer7.Panel2
             // 
             splitContainer7.Panel2.Controls.Add(layoutBlockChooser);
-            splitContainer7.Size = new Size(998, 412);
+            splitContainer7.Size = new Size(998, 414);
             splitContainer7.SplitterDistance = 706;
             splitContainer7.TabIndex = 3;
             // 
@@ -534,11 +535,12 @@ namespace sth1edwv
             floorEditor1.LevelBounds = false;
             floorEditor1.Location = new Point(0, 0);
             floorEditor1.Name = "floorEditor1";
-            floorEditor1.Size = new Size(706, 412);
+            floorEditor1.Size = new Size(706, 414);
             floorEditor1.TabIndex = 0;
             floorEditor1.Text = "floorEditor1";
             floorEditor1.TileGaps = false;
             floorEditor1.WithObjects = true;
+            floorEditor1.Zoom = 1;
             floorEditor1.FloorChanged += floorEditor1_FloorChanged;
             // 
             // layoutBlockChooser
@@ -551,7 +553,7 @@ namespace sth1edwv
             layoutBlockChooser.Scaling = 1;
             layoutBlockChooser.SelectedIndex = -1;
             layoutBlockChooser.ShowTransparency = false;
-            layoutBlockChooser.Size = new Size(288, 412);
+            layoutBlockChooser.Size = new Size(288, 414);
             layoutBlockChooser.TabIndex = 0;
             // 
             // levelEditorContextMenu
@@ -602,7 +604,7 @@ namespace sth1edwv
             // toolStripLayout
             // 
             toolStripLayout.ImageScalingSize = new Size(32, 32);
-            toolStripLayout.Items.AddRange(new ToolStripItem[] { toolStripLabel1, buttonShowObjects, buttonBlockNumbers, buttonBlockGaps, buttonTileGaps, buttonLevelBounds, toolStripSeparator1, toolStripButtonSaveRenderedLevel, buttonCopyFloor, buttonPasteFloor, toolStripSeparator2, toolStripLabel2, buttonDraw, buttonSelect, buttonFloodFill, toolStripSeparator3, buttonResizeFloor, SharingButton });
+            toolStripLayout.Items.AddRange(new ToolStripItem[] { toolStripLabel1, buttonShowObjects, buttonBlockNumbers, buttonBlockGaps, buttonTileGaps, buttonLevelBounds, toolStripSeparator1, toolStripButtonSaveRenderedLevel, buttonCopyFloor, buttonPasteFloor, toolStripSeparator2, toolStripLabel2, buttonDraw, buttonSelect, buttonFloodFill, toolStripSeparator3, buttonResizeFloor, SharingButton, comboZoom });
             toolStripLayout.LayoutStyle = ToolStripLayoutStyle.Flow;
             toolStripLayout.Location = new Point(3, 3);
             toolStripLayout.Name = "toolStripLayout";
@@ -767,6 +769,14 @@ namespace sth1edwv
             SharingButton.Text = "Sharing...";
             SharingButton.Click += SharingButton_Click;
             // 
+            // comboZoom
+            // 
+            comboZoom.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboZoom.Items.AddRange(new object[] { "100%", "200%", "300%", "400%", "500%", "600%", "700%", "800%", "900%", "1000%" });
+            comboZoom.Name = "comboZoom";
+            comboZoom.Size = new Size(121, 23);
+            comboZoom.SelectedIndexChanged += LevelRenderModeChanged;
+            // 
             // tabControl1
             // 
             tabControl1.Controls.Add(tabPage5);
@@ -783,10 +793,10 @@ namespace sth1edwv
             // tabPage1
             // 
             tabPage1.Controls.Add(splitContainer3);
-            tabPage1.Location = new Point(4, 22);
+            tabPage1.Location = new Point(4, 24);
             tabPage1.Name = "tabPage1";
             tabPage1.Padding = new Padding(3);
-            tabPage1.Size = new Size(1323, 530);
+            tabPage1.Size = new Size(1323, 528);
             tabPage1.TabIndex = 9;
             tabPage1.Text = "Other art";
             tabPage1.UseVisualStyleBackColor = true;
@@ -804,7 +814,7 @@ namespace sth1edwv
             // splitContainer3.Panel2
             // 
             splitContainer3.Panel2.Controls.Add(tabControlArt);
-            splitContainer3.Size = new Size(1317, 524);
+            splitContainer3.Size = new Size(1317, 522);
             splitContainer3.SplitterDistance = 260;
             splitContainer3.TabIndex = 1;
             // 
@@ -815,7 +825,7 @@ namespace sth1edwv
             listBoxArt.ItemHeight = 13;
             listBoxArt.Location = new Point(0, 0);
             listBoxArt.Name = "listBoxArt";
-            listBoxArt.Size = new Size(260, 524);
+            listBoxArt.Size = new Size(260, 522);
             listBoxArt.TabIndex = 0;
             listBoxArt.SelectedIndexChanged += listBoxArt_SelectedIndexChanged;
             // 
@@ -829,7 +839,7 @@ namespace sth1edwv
             tabControlArt.Location = new Point(0, 0);
             tabControlArt.Name = "tabControlArt";
             tabControlArt.SelectedIndex = 0;
-            tabControlArt.Size = new Size(1053, 524);
+            tabControlArt.Size = new Size(1053, 522);
             tabControlArt.TabIndex = 1;
             // 
             // tabPageArtLayout
@@ -839,7 +849,7 @@ namespace sth1edwv
             tabPageArtLayout.Location = new Point(4, 22);
             tabPageArtLayout.Name = "tabPageArtLayout";
             tabPageArtLayout.Padding = new Padding(3);
-            tabPageArtLayout.Size = new Size(1045, 498);
+            tabPageArtLayout.Size = new Size(1045, 496);
             tabPageArtLayout.TabIndex = 2;
             tabPageArtLayout.Text = "Layout";
             tabPageArtLayout.UseVisualStyleBackColor = true;
@@ -886,7 +896,7 @@ namespace sth1edwv
             tabPageArtTiles.Location = new Point(4, 24);
             tabPageArtTiles.Name = "tabPageArtTiles";
             tabPageArtTiles.Padding = new Padding(3);
-            tabPageArtTiles.Size = new Size(1045, 496);
+            tabPageArtTiles.Size = new Size(1045, 494);
             tabPageArtTiles.TabIndex = 0;
             tabPageArtTiles.Text = "Tiles";
             tabPageArtTiles.UseVisualStyleBackColor = true;
@@ -897,7 +907,7 @@ namespace sth1edwv
             otherArtTileSetViewer.Location = new Point(3, 3);
             otherArtTileSetViewer.Margin = new Padding(4, 3, 4, 3);
             otherArtTileSetViewer.Name = "otherArtTileSetViewer";
-            otherArtTileSetViewer.Size = new Size(1039, 490);
+            otherArtTileSetViewer.Size = new Size(1039, 488);
             otherArtTileSetViewer.TabIndex = 0;
             otherArtTileSetViewer.TilesPerRow = 4;
             otherArtTileSetViewer.Changed += otherArtTileSetViewer_Changed;
@@ -905,10 +915,10 @@ namespace sth1edwv
             // tabPageArtPalette
             // 
             tabPageArtPalette.Controls.Add(palettesLayoutPanel);
-            tabPageArtPalette.Location = new Point(4, 22);
+            tabPageArtPalette.Location = new Point(4, 24);
             tabPageArtPalette.Name = "tabPageArtPalette";
             tabPageArtPalette.Padding = new Padding(3);
-            tabPageArtPalette.Size = new Size(1045, 498);
+            tabPageArtPalette.Size = new Size(1045, 494);
             tabPageArtPalette.TabIndex = 1;
             tabPageArtPalette.Text = "Palettes";
             tabPageArtPalette.UseVisualStyleBackColor = true;
@@ -922,7 +932,7 @@ namespace sth1edwv
             palettesLayoutPanel.FlowDirection = FlowDirection.TopDown;
             palettesLayoutPanel.Location = new Point(3, 3);
             palettesLayoutPanel.Name = "palettesLayoutPanel";
-            palettesLayoutPanel.Size = new Size(1039, 492);
+            palettesLayoutPanel.Size = new Size(1039, 488);
             palettesLayoutPanel.TabIndex = 1;
             palettesLayoutPanel.WrapContents = false;
             // 
@@ -932,7 +942,7 @@ namespace sth1edwv
             tabPageExtraData.Location = new Point(4, 24);
             tabPageExtraData.Name = "tabPageExtraData";
             tabPageExtraData.Padding = new Padding(3);
-            tabPageExtraData.Size = new Size(1045, 496);
+            tabPageExtraData.Size = new Size(1045, 494);
             tabPageExtraData.TabIndex = 3;
             tabPageExtraData.Text = "Extra data";
             tabPageExtraData.UseVisualStyleBackColor = true;
@@ -946,7 +956,7 @@ namespace sth1edwv
             extraDataLayoutPanel.FlowDirection = FlowDirection.TopDown;
             extraDataLayoutPanel.Location = new Point(3, 3);
             extraDataLayoutPanel.Name = "extraDataLayoutPanel";
-            extraDataLayoutPanel.Size = new Size(1039, 490);
+            extraDataLayoutPanel.Size = new Size(1039, 488);
             extraDataLayoutPanel.TabIndex = 0;
             extraDataLayoutPanel.WrapContents = false;
             // 
@@ -1273,6 +1283,7 @@ namespace sth1edwv
         private TabPage tabPageArtPalette;
         private FlowLayoutPanel extraDataLayoutPanel;
         private FlowLayoutPanel palettesLayoutPanel;
+        private ToolStripComboBox comboZoom;
     }
 }
 
