@@ -5,7 +5,7 @@ namespace sth1edwv.GameObjects
 {
     /// <summary>
     /// Represents some raw tilemap data in the form x, y, data, $ff.
-    /// This is used for things like the level names, PRESS BUTTON text, etc
+    /// This is used for things like the level names, PRESS BUTTON text, etc.
     /// </summary>
     public class TileMapData : IDataItem
     {

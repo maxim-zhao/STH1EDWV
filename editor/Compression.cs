@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace sth1edwv
 {
@@ -84,7 +83,7 @@ namespace sth1edwv
             return result.ToArray();
         }
 
-        public static byte[] DecompressArt(Memory data, int offset, out int lengthConsumed)
+        public static byte[] DecompressArt(Memory data, int offset)
         {
             var magic = data.String(offset, 2);
             if (magic != "HY")
@@ -136,12 +135,11 @@ namespace sth1edwv
             }
 
             // We assume that the data is contiguous from the header to the end of whichever of the art data and duplicates data comes last.
-            lengthConsumed = Math.Max(duplicateRowsOffset + (int)duplicatesData.Position, nextArtDataOffset) - offset;
 
             return result.ToArray();
         }
 
-        public static IEnumerable<byte> PlanarToChunky(IReadOnlyList<byte> data, int offset, int rowCount, int bytes = 4)
+        private static IEnumerable<byte> PlanarToChunky(IReadOnlyList<byte> data, int offset, int rowCount, int bytes = 4)
         {
             for (var row = 0; row < rowCount; ++row)
             {
@@ -160,49 +158,85 @@ namespace sth1edwv
             }
         }
 
-        public static IEnumerable<byte[]> ToChunks(this IEnumerable<byte> input, int bytesPerChunk)
+        extension(IEnumerable<byte> input)
         {
-            var buffer = new byte[bytesPerChunk];
-            var index = 0;
-            foreach (var b in input)
+            public IEnumerable<byte[]> ToChunks(int bytesPerChunk)
             {
-                buffer[index++] = b;
-                if (index == bytesPerChunk)
+                var buffer = new byte[bytesPerChunk];
+                var index = 0;
+                foreach (var b in input)
                 {
-                    yield return buffer;
-                    buffer = new byte[bytesPerChunk];
-                    index = 0;
+                    buffer[index++] = b;
+                    if (index == bytesPerChunk)
+                    {
+                        yield return buffer;
+                        buffer = new byte[bytesPerChunk];
+                        index = 0;
+                    }
                 }
             }
-        }
 
-        public static IEnumerable<byte> PlanarToChunky(this IEnumerable<byte> input, int bitPlanes = 4)
-        {
-            using var enumerator = input.GetEnumerator();
-            var data = new byte[bitPlanes];
-            for (;;)
+            public IEnumerable<byte> PlanarToChunky(int bitPlanes = 4)
             {
-                // Get planar bytes for 8 pixels
-                for (int i = 0; i < bitPlanes; ++i)
+                using var enumerator = input.GetEnumerator();
+                var data = new byte[bitPlanes];
+                for (;;)
                 {
-                    if (!enumerator.MoveNext())
+                    // Get planar bytes for 8 pixels
+                    for (var i = 0; i < bitPlanes; ++i)
                     {
-                        yield break;
-                    }
+                        if (!enumerator.MoveNext())
+                        {
+                            yield break;
+                        }
 
-                    data[i] = enumerator.Current;
+                        data[i] = enumerator.Current;
+                    }
+                    // Each pixel is from four bitplanes
+                    for (var i = 0; i < 8; ++i)
+                    {
+                        var value = 0;
+                        for (var b = 0; b < bitPlanes; ++b)
+                        {
+                            var bit = (data[b] >> (7 - i)) & 1;
+                            value |= bit << b;
+                        }
+
+                        yield return (byte)value;
+                    }
                 }
-                // Each pixel is from four bitplanes
-                for (var i = 0; i < 8; ++i)
-                {
-                    var value = 0;
-                    for (var b = 0; b < bitPlanes; ++b)
-                    {
-                        var bit = (data[b] >> (7 - i)) & 1;
-                        value |= bit << b;
-                    }
+            }
 
-                    yield return (byte)value;
+            public IEnumerable<byte> ChunkyToPlanar(int bitPlanes = 4)
+            {
+                // Each byte is a chunky index in the range 0..15.
+                // We interleave each 8 bytes to four bitplanes.
+                using var enumerator = input.GetEnumerator();
+                var data = new byte[8];
+                for (;;)
+                {
+                    // Get 8 bytes
+                    for (int i = 0; i < 8; ++i)
+                    {
+                        if (!enumerator.MoveNext())
+                        {
+                            yield break;
+                        }
+
+                        data[i] = enumerator.Current;
+                    }
+                    // Convert them
+                    for (var plane = 0; plane < bitPlanes; ++plane)
+                    {
+                        var b = 0;
+                        for (var i = 0; i < 8; ++i)
+                        {
+                            var bit = (data[i] >> plane) & 1;
+                            b |= bit << (7 - i);
+                        }
+
+                        yield return (byte)b;
+                    }
                 }
             }
         }
@@ -253,7 +287,7 @@ namespace sth1edwv
             using var result = new MemoryStream();
             using var resultWriter = new BinaryWriter(result);
             // Header - magic chars
-            resultWriter.Write(Encoding.ASCII.GetBytes("HY"));
+            resultWriter.Write("HY"u8.ToArray());
 
             var duplicatesOffset = bitMasks.Count + 8;
             var artOffset = duplicatesOffset + duplicates.Sum(x => x < 0xf0 ? 1 : 2);
@@ -280,41 +314,8 @@ namespace sth1edwv
                 }
             }
             // And the art data, converting to chunky
-            resultWriter.Write(artData.SelectMany(row => ChunkyToPlanar(row)).ToArray());
+            resultWriter.Write(artData.SelectMany(row => row.ChunkyToPlanar()).ToArray());
             return result.ToArray();
-        }
-
-        public static IEnumerable<byte> ChunkyToPlanar(this IEnumerable<byte> input, int bitPlanes = 4)
-        {
-            // Each byte is a chunky index in the range 0..15.
-            // We interleave each 8 bytes to four bitplanes.
-            using var enumerator = input.GetEnumerator();
-            var data = new byte[8];
-            for (;;)
-            {
-                // Get 8 bytes
-                for (int i = 0; i < 8; ++i)
-                {
-                    if (!enumerator.MoveNext())
-                    {
-                        yield break;
-                    }
-
-                    data[i] = enumerator.Current;
-                }
-                // Convert them
-                for (var plane = 0; plane < bitPlanes; ++plane)
-                {
-                    var b = 0;
-                    for (var i = 0; i < 8; ++i)
-                    {
-                        var bit = (data[i] >> plane) & 1;
-                        b |= bit << (7 - i);
-                    }
-
-                    yield return (byte)b;
-                }
-            }
         }
     }
 }

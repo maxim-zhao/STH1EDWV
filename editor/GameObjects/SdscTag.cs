@@ -41,7 +41,7 @@ namespace sth1edwv.GameObjects
         public int Offset { get; set; }
         public IList<byte> GetData()
         {
-            return Encoding.ASCII.GetBytes("SDSC")
+            return "SDSC"u8.ToArray()
                 .Append((byte)Memory.ToBcd((int)Version))
                 .Append((byte)Memory.ToBcd((int)(Version * 100) % 100))
                 .Append((byte)Memory.ToBcd(Date.Day))

@@ -21,12 +21,12 @@ namespace sth1edwv.GameObjects
             /// <summary>
             /// A single tile
             /// </summary>
-            public static readonly List<Point> Single = [new Point(0, 0)];
+            public static readonly List<Point> Single = [new(0, 0)];
 
             /// <summary>
             /// A sprite tile in 8x16 mode
             /// </summary>
-            public static readonly List<Point> Sprite = [new Point(0, 0), new Point(0, 8)];
+            public static readonly List<Point> Sprite = [new(0, 0), new(0, 8)];
 
             /// <summary>
             /// Rings are ordered
@@ -37,8 +37,8 @@ namespace sth1edwv.GameObjects
             /// </summary>
             public static readonly List<Point> Ring =
             [
-                new Point(0, 0), new Point(8, 0),
-                new Point(0, 8), new Point(8, 8)
+                new(0, 0), new(8, 0),
+                new(0, 8), new(8, 8)
             ];
 
 
@@ -51,8 +51,8 @@ namespace sth1edwv.GameObjects
             /// </summary>
             public static readonly List<Point> Monitor =
             [
-                new Point(0, 0), new Point(0, 8),
-                new Point(8, 0), new Point(8, 8)
+                new(0, 0), new(0, 8),
+                new(8, 0), new(8, 8)
             ];
 
             /// <summary>
@@ -66,12 +66,12 @@ namespace sth1edwv.GameObjects
             /// </summary>
             public static readonly List<Point> Sonic =
             [
-                new Point(0, 0), new Point(0, 8),
-                new Point(8, 0), new Point(8, 8),
-                new Point(16, 0), new Point(16, 8),
-                new Point(0, 16), new Point(0, 24),
-                new Point(8, 16), new Point(8, 24),
-                new Point(16, 16), new Point(16, 24)
+                new(0, 0), new(0, 8),
+                new(8, 0), new(8, 8),
+                new(16, 0), new(16, 8),
+                new(0, 16), new(0, 24),
+                new(8, 16), new(8, 24),
+                new(16, 16), new(16, 24)
             ];
         }
 
@@ -109,7 +109,7 @@ namespace sth1edwv.GameObjects
             // Default grouping
             _grouping = grouping ?? Groupings.Single;
 
-            var decompressed = Compression.DecompressArt(memory, offset, out _);
+            var decompressed = Compression.DecompressArt(memory, offset);
             Tiles = decompressed
                 .ToChunks(64 * _grouping.Count)
                 .Select((x, index) => new Tile(x, _grouping, index))

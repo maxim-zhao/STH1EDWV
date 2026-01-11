@@ -6,3 +6,4 @@ packages/
 /asm-hacks/
 launchSettings.json
 *.sms
+_Resharper*

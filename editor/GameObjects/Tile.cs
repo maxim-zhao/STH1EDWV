@@ -27,7 +27,7 @@ namespace sth1edwv.GameObjects
                 return image;
             }
 
-            // We render only when needed. We do stick to paletted images though..
+            // We render only when needed. We do stick to paletted images though...
             image = new Bitmap(Width, Height, PixelFormat.Format8bppIndexed);
             image.Palette = palette.ImagePalette;
             var data = image.LockBits(

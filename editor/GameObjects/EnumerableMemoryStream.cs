@@ -14,23 +14,16 @@ namespace sth1edwv.GameObjects
             memoryStream.Position = 0;
         }
 
-        public class Enumerator : IEnumerator<byte>
+        private class Enumerator(MemoryStream memoryStream) : IEnumerator<byte>
         {
-            private readonly MemoryStream _memoryStream;
-
-            public Enumerator(MemoryStream memoryStream)
-            {
-                _memoryStream = memoryStream;
-            }
-
             public void Dispose()
             {
-                _memoryStream.Dispose();
+                memoryStream.Dispose();
             }
 
             public bool MoveNext()
             {
-                var value = _memoryStream.ReadByte();
+                var value = memoryStream.ReadByte();
                 if (value == -1)
                 {
                     return false;
@@ -42,13 +35,14 @@ namespace sth1edwv.GameObjects
 
             public void Reset()
             {
-                _memoryStream.Position = 0;
+                memoryStream.Position = 0;
             }
 
             public byte Current { get; private set; }
 
             object IEnumerator.Current => Current;
         }
+
         public IEnumerator<byte> GetEnumerator()
         {
             return new Enumerator(_memoryStream);

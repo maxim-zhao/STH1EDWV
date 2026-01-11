@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
-using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Windows.Forms;
 
 namespace sth1edwv.GameObjects
 {
@@ -219,7 +215,7 @@ namespace sth1edwv.GameObjects
             FloorHeight = Floor.BlockIndices.Length / FloorWidth;
 
             // Hard-coded block counts. It's hard to avoid these...
-            // we could imply them from the gaps but then we'd need to know all the offsets
+            // we could imply them from the gaps, but then we'd need to know all the offsets
             // (and whatever comes after - the monitor items art by default) before loading anything.
             // If/when we support changing the mapping sizes, we will need to address this.
             var blockCount = blockMappingOffset switch

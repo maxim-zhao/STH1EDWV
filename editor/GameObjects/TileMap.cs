@@ -121,7 +121,7 @@ namespace sth1edwv.GameObjects
 
             if (image.PixelFormat != PixelFormat.Format8bppIndexed)
             {
-                throw new Exception($"Image must be 8bpp with no transparency");
+                throw new Exception("Image must be 8bpp with no transparency");
             }
 
             // Next we need to get the data into tiles...
@@ -143,7 +143,7 @@ namespace sth1edwv.GameObjects
                             8);
                     }
 
-                    var tileIndex = tileSet.Tiles.FindIndex(x => x.Matches(buffer));
+                    var tileIndex = tileSet.Tiles.FindIndex(tile => tile.Matches(buffer));
                     if (tileIndex < 0)
                     {
                         throw new Exception($"Tile mismatch: tile in source image at ({x}, {y}) not found in tiles");
