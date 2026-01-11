@@ -61,6 +61,10 @@ namespace sth1edwv.GameObjects
         public bool DisableScrolling { get; set; }
 
         [Category("Level flags")]
+        [Description("Gravity is inverted (glitchy sprites, can't jump, can't die at top of screen)")]
+        public bool InvertedGravity { get; set; }
+
+        [Category("Level flags")]
         [Description("Uses the lightning effect. This overrides the level's own palette")]
         public bool HasLightning { get; set; }
 
@@ -182,7 +186,8 @@ namespace sth1edwv.GameObjects
                     WaveScrollY = (flags & (1 << 6)) != 0;
                     NoScrollDown = (flags & (1 << 7)) != 0;
                     flags = reader.ReadByte(); // UW
-                    // Nothing for bits 0..6
+                    // Nothing for bits 1..6
+                    InvertedGravity = (flags & (1 << 0)) != 0;
                     HasWater = (flags & (1 << 7)) != 0;
                     flags = reader.ReadByte(); // TL
                     SpecialStageTimer = (flags & (1 << 0)) != 0;
@@ -289,6 +294,7 @@ namespace sth1edwv.GameObjects
             if (NoScrollDown) flags |= 1 << 7;
             writer.Write((byte)flags); // SR
             flags = 0;
+            if (InvertedGravity) flags |= 1 << 0;
             if (HasWater) flags |= 1 << 7;
             writer.Write((byte)flags); // UW
             flags = 0;
